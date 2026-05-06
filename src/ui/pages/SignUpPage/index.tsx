@@ -28,7 +28,7 @@ type IndividualSignUpValues = {
 };
 
 type FacilitySignUpValues = {
-  contactName: string;
+  // contactName: string;
   organizationName: string;
   email: string;
   password: string;
@@ -44,7 +44,7 @@ const individualSchema = yup.object({
 });
 
 const facilitySchema = yup.object({
-  contactName: yup.string().required('Contact name is required'),
+  // contactName: yup.string().required('Contact name is required'),
   organizationName: yup.string().required('Organization name is required'),
   email: yup
     .string()
@@ -77,7 +77,7 @@ export function SignUpPage() {
   const initialValues = useMemo(() => {
     if (accountType === 'facility') {
       const values: FacilitySignUpValues = {
-        contactName: '',
+        // contactName: '',
         organizationName: '',
         email: '',
         password: '',
@@ -208,7 +208,7 @@ export function SignUpPage() {
                   >
                     {accountType === 'facility' ? (
                       <>
-                        <Box
+                        {/* <Box
                           sx={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -230,7 +230,7 @@ export function SignUpPage() {
                             placeholder="e.g Sarah Johnson"
                             fullWidth
                           />
-                        </Box>
+                        </Box> */}
 
                         <Box
                           sx={{

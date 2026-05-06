@@ -20,6 +20,8 @@ export const ROUTES_SPEC = {
     `/${API_VERSION}/auth/admin/support/tickets/${ticketId}/reopen`,
   resolveTicket: (ticketId: string) =>
     `/${API_VERSION}/auth/admin/support/tickets/${ticketId}/resolve`,
+
+  createPaymentIntent: `/${API_VERSION}/payments/mobile/payment-intent`,
 } as const;
 
 export const ROUTES = Object.fromEntries(

@@ -1,0 +1,16 @@
+import { AxiosResponse } from 'axios';
+import { resolveRoute, ROUTES } from '../../../../constants';
+import { getApiClient } from '../../../../lib';
+import {
+  ApiCreatePaymentIntentPayload,
+  ApiCreatePaymentIntentResponse,
+} from '../../../../types';
+
+export const createPaymentIntent = async (
+  payload: ApiCreatePaymentIntentPayload
+) => {
+  return await getApiClient().post<
+    ApiCreatePaymentIntentResponse,
+    AxiosResponse<ApiCreatePaymentIntentResponse>
+  >(resolveRoute(ROUTES.createPaymentIntent), payload);
+};

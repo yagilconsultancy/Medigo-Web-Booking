@@ -3,7 +3,7 @@
 import { Box, Paper, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   AppButton,
   AppGoogleMapsProvider,
@@ -11,7 +11,7 @@ import {
 } from '../../modules/components';
 import { AppLayout } from '../../modules/partials';
 import { HeaderHelpUser } from '../../modules/partials/AppHeader/ui/components';
-import { pxToRem } from '../../../common';
+import { pxToRem, usePaymentsApi } from '../../../common';
 import { BookingProvider, useBooking } from './common';
 import {
   AddressStep,
@@ -37,6 +37,8 @@ const steps = [
 function BookingFlowShell({ accountType }: { accountType: AccountType }) {
   const [activeStep, setActiveStep] = useState(0);
   const { booking } = useBooking();
+  const router = useRouter();
+  const { createPaymentIntent, isCreatingPaymentIntent } = usePaymentsApi();
 
   const stepTitle = steps[activeStep]?.label ?? '';
 
@@ -88,8 +90,48 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
   }, [activeStep, booking]);
 
   const handleBack = () => setActiveStep((s) => Math.max(0, s - 1));
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!canContinue) return;
+
+    if (activeStep === steps.length - 1) {
+      const baseFare =
+        booking.vehicle.type === 'standard'
+          ? 45
+          : booking.vehicle.type === 'wheelchair'
+            ? 75
+            : booking.vehicle.type === 'stretcher'
+              ? 120
+              : 0;
+
+      const amount = Math.round(baseFare * 100); // cents
+      const orderId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}`;
+
+      const result = await createPaymentIntent({
+        amount,
+        currency: 'usd',
+        description: 'MediGo booking payment',
+        order_id: orderId,
+        metadata: {
+          account_type: accountType,
+          service_type: booking.service.type ?? '',
+          appointment_type: booking.appointment.type ?? '',
+          vehicle_type: booking.vehicle.type ?? '',
+          trip_type: booking.trip.type ?? '',
+        },
+        setup_future_usage: 'on_session',
+      });
+
+      if (result) {
+        router.push(
+          `/checkout?client_secret=${encodeURIComponent(
+            result.clientSecret
+          )}&pk=${encodeURIComponent(result.publishableKey)}`
+        );
+      }
+
+      return;
+    }
+
     setActiveStep((s) => Math.min(steps.length - 1, s + 1));
   };
 
@@ -251,6 +293,9 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
             variant="contained"
             disabled={!canContinue}
             onClick={handleContinue}
+            isLoading={
+              activeStep === steps.length - 1 ? isCreatingPaymentIntent : false
+            }
             sx={{
               height: pxToRem(40),
               minWidth:
