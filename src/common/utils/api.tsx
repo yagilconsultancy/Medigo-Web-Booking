@@ -7,16 +7,22 @@ export const extractResponseErrors = (
   if (apiResponse.success) {
     return null;
   }
+
+  // Prefer structured `error` array/string, but fall back to `message`.
   // @ts-ignore
-  if (!apiResponse.error) {
-    return 'An error occurred';
+  const messageFallback = apiResponse?.message ?? null;
+  // @ts-ignore
+  const rawError = apiResponse?.error ?? null;
+
+  if (!rawError) {
+    return messageFallback || 'An error occurred';
   }
   // @ts-ignore
-  const errors = Array.isArray(apiResponse.error)
+  const errors = Array.isArray(rawError)
     ? // @ts-ignore
-      apiResponse.error
+      rawError
     : // @ts-ignore
-      [apiResponse.error];
+      [rawError];
   if (errors.length === 1) {
     return errors[0];
   }

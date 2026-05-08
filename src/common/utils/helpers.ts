@@ -295,7 +295,7 @@ export function timeAgo(timestamp: string): string {
 export const setAuthToken = (token: string) => {
   Cookies.set('medi_auth', token, {
     expires: 7, // days
-    secure: true, // only sent over HTTPS
+    secure: process.env.NODE_ENV === 'production', // only sent over HTTPS in prod
     sameSite: 'strict',
   });
 };
@@ -303,7 +303,7 @@ export const setAuthToken = (token: string) => {
 export const setRefreshToken = (token: string) => {
   Cookies.set('medi_refresh', token, {
     expires: 7,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
   });
 };

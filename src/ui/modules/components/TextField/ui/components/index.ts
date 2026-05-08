@@ -5,3 +5,4 @@ export * from './FormikAppPasswordField';
 export * from './AppSearchField';
 export * from './AppInputWithIconField';
 export * from './AppLabelField';
+export * from './AppOtpInput';

@@ -38,16 +38,45 @@ export function AddressStep({ accountType }: AddressStepProps) {
   const pickupAutocomplete = usePlacesAutocomplete(pickupInput);
   const dropoffAutocomplete = usePlacesAutocomplete(dropoffInput);
 
+  const fetchPlaceCoordinates = async (
+    placeId: string
+  ): Promise<{ lat: number; lng: number } | null> => {
+    if (typeof window === 'undefined') return null;
+    const g = (window as any).google;
+    if (!g?.maps?.places?.Place) return null;
+
+    try {
+      const place = new g.maps.places.Place({ id: placeId });
+      await place.fetchFields({ fields: ['location'] });
+
+      const loc = place.location;
+      if (!loc) return null;
+      return { lat: loc.lat(), lng: loc.lng() };
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Place details error:', err);
+      return null;
+    }
+  };
+
   const handleSelectPickup = async (prediction: PlacePrediction) => {
     pickupAutocomplete.clearPredictions();
     setPickupInput(prediction.description);
-    setAddress({ pickupAddress: prediction.description });
+    const coords = await fetchPlaceCoordinates(prediction.placeId);
+    setAddress({
+      pickupAddress: prediction.description,
+      pickupCoordinates: coords,
+    });
   };
 
   const handleSelectDropoff = async (prediction: PlacePrediction) => {
     dropoffAutocomplete.clearPredictions();
     setDropoffInput(prediction.description);
-    setAddress({ dropoffAddress: prediction.description });
+    const coords = await fetchPlaceCoordinates(prediction.placeId);
+    setAddress({
+      dropoffAddress: prediction.description,
+      dropoffCoordinates: coords,
+    });
   };
 
   const handleSwapLocations = () => {
@@ -56,7 +85,12 @@ export function AddressStep({ accountType }: AddressStepProps) {
 
     setPickupInput(dropoffInput);
     setDropoffInput(pickupInput);
-    setAddress({ pickupAddress: dropoffInput, dropoffAddress: pickupInput });
+    setAddress({
+      pickupAddress: dropoffInput,
+      dropoffAddress: pickupInput,
+      pickupCoordinates: booking.address.dropoffCoordinates,
+      dropoffCoordinates: booking.address.pickupCoordinates,
+    });
   };
 
   return (
@@ -98,7 +132,7 @@ export function AddressStep({ accountType }: AddressStepProps) {
           borderRadius: pxToRem(12),
           border: '1px solid #E2E8F0',
           bgcolor: '#FFFFFF',
-          overflow: 'hidden',
+          overflow: 'visible',
         }}
       >
         <Box
@@ -135,7 +169,10 @@ export function AddressStep({ accountType }: AddressStepProps) {
               value={pickupInput}
               onChange={(e) => {
                 setPickupInput(e.target.value);
-                setAddress({ pickupAddress: e.target.value });
+                setAddress({
+                  pickupAddress: e.target.value,
+                  pickupCoordinates: null,
+                });
               }}
               placeholder="Enter pickup address..."
               fullWidth
@@ -161,7 +198,7 @@ export function AddressStep({ accountType }: AddressStepProps) {
                   top: '100%',
                   left: 0,
                   right: 0,
-                  zIndex: 1500,
+                  zIndex: 2000,
                   background: '#fff',
                   border: '1px solid #E2E8F0',
                   borderRadius: pxToRem(8),
@@ -269,7 +306,10 @@ export function AddressStep({ accountType }: AddressStepProps) {
               value={dropoffInput}
               onChange={(e) => {
                 setDropoffInput(e.target.value);
-                setAddress({ dropoffAddress: e.target.value });
+                setAddress({
+                  dropoffAddress: e.target.value,
+                  dropoffCoordinates: null,
+                });
               }}
               placeholder="Enter drop-off address..."
               fullWidth
@@ -295,7 +335,7 @@ export function AddressStep({ accountType }: AddressStepProps) {
                   top: '100%',
                   left: 0,
                   right: 0,
-                  zIndex: 1500,
+                  zIndex: 2000,
                   background: '#fff',
                   border: '1px solid #E2E8F0',
                   borderRadius: pxToRem(8),
@@ -465,32 +505,11 @@ export function AddressStep({ accountType }: AddressStepProps) {
                     placeholder="(555) 000-0000"
                     countries={[
                       {
-                        id: 'ng',
-                        iso3: 'NGA',
-                        iso2: 'NG',
-                        emoji: '🇳🇬',
-                        phonecode: '234',
-                      },
-                      {
-                        id: 'us',
-                        iso3: 'USA',
-                        iso2: 'US',
-                        emoji: '🇺🇸',
-                        phonecode: '1',
-                      },
-                      {
                         id: 'ca',
                         iso3: 'CAN',
                         iso2: 'CA',
                         emoji: '🇨🇦',
                         phonecode: '1',
-                      },
-                      {
-                        id: 'gb',
-                        iso3: 'GBR',
-                        iso2: 'GB',
-                        emoji: '🇬🇧',
-                        phonecode: '44',
                       },
                     ]}
                     countryIso3FieldName="countryIso3"

@@ -38,7 +38,10 @@ export interface ValidationError {
  */
 export type ApiErrorResponse = {
   success: false;
-  error: string | string[];
+  message?: string | null;
+  error_code?: string | null;
+  details?: any;
+  error?: string | string[] | null;
 };
 
 /**

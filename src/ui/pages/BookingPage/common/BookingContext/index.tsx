@@ -5,6 +5,8 @@ import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
 export type BookingAddressState = {
   pickupAddress: string;
   dropoffAddress: string;
+  pickupCoordinates: { lat: number; lng: number } | null;
+  dropoffCoordinates: { lat: number; lng: number } | null;
 };
 
 export type BookingPatientState = {
@@ -58,13 +60,15 @@ const DEFAULT_BOOKING: BookingState = {
   address: {
     pickupAddress: '',
     dropoffAddress: '',
+    pickupCoordinates: null,
+    dropoffCoordinates: null,
   },
   patient: {
     firstName: '',
     lastName: '',
     phoneNumber: '',
-    countryCode: '+234',
-    countryIso3: 'NGA',
+    countryCode: '+1',
+    countryIso3: 'CAN',
   },
   service: {
     type: null,

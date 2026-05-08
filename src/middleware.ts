@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const publicRoutes = [
   '/login',
+  '/sign-up',
+  '/otp',
+  '/auth',
   '/forgot-password',
   '/reset-password',
   '/activate',
 ];
-const exactProtectedRoutes = ['/'];
 
 export default async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
@@ -16,15 +18,13 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for the token cookie (matching how you set it: ff_sid)
-  const token = req.cookies.get('medi_auth')?.value;
+  // Check for the auth token cookie
+  // const token = req.cookies.get('medi_auth')?.value;
 
-  // Protect routes that require authentication
-  if (exactProtectedRoutes.some((route) => path.startsWith(route))) {
-    if (!token) {
-      return NextResponse.redirect(new URL('/login', req.nextUrl));
-    }
-  }
+  // Protect all non-public routes
+  // if (!token) {
+  //   return NextResponse.redirect(new URL('/login', req.nextUrl));
+  // }
 
   return NextResponse.next();
 }

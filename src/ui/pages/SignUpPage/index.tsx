@@ -15,7 +15,7 @@ import {
 } from '../../modules/components';
 import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
-import { pxToRem } from '../../../common';
+import { pxToRem, useAuthFlowsApi } from '../../../common';
 import blueFacilityBookingIcon from '../LoginPage/ui/assets/icons/blue-facility-booking-icon.svg';
 import blueIndividualBookingIcon from '../LoginPage/ui/assets/icons/blue-individual-booking-icon.svg';
 
@@ -55,6 +55,7 @@ const facilitySchema = yup.object({
 
 export function SignUpPage() {
   const searchParams = useSearchParams();
+  const { register } = useAuthFlowsApi();
 
   const accountType = useMemo<AccountType>(() => {
     const value = searchParams.get('account');
@@ -95,6 +96,25 @@ export function SignUpPage() {
 
   const validationSchema =
     accountType === 'facility' ? facilitySchema : individualSchema;
+
+  const handleSubmit = async (values) => {
+    const payload =
+      accountType === 'facility'
+        ? {
+            email: (values as FacilitySignUpValues).email,
+            password: (values as FacilitySignUpValues).password,
+            full_name: (values as FacilitySignUpValues).organizationName,
+            role: 'facility' as const,
+          }
+        : {
+            email: (values as IndividualSignUpValues).email,
+            password: (values as IndividualSignUpValues).password,
+            full_name: (values as IndividualSignUpValues).fullName,
+            role: 'rider' as const,
+          };
+
+    await register(payload, { accountType });
+  };
 
   return (
     <AppLayout
@@ -195,7 +215,7 @@ export function SignUpPage() {
               validationSchema={validationSchema}
               validateOnMount
               enableReinitialize
-              onSubmit={async () => undefined}
+              onSubmit={handleSubmit}
             >
               {({ isSubmitting, isValid }) => (
                 <Form>
@@ -333,17 +353,6 @@ export function SignUpPage() {
                         >
                           Password
                         </Typography>
-                        <StyledLink
-                          href="#"
-                          sx={{
-                            fontSize: pxToRem(12),
-                            lineHeight: pxToRem(18),
-                            fontWeight: 500,
-                            color: '#007AFF',
-                          }}
-                        >
-                          Forgot password?
-                        </StyledLink>
                       </Box>
                       <FormikAppPasswordField
                         name="password"

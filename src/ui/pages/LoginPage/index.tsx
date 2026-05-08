@@ -15,7 +15,7 @@ import {
 } from '../../modules/components';
 import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
-import { pxToRem } from '../../../common';
+import { pxToRem, useAuthApi } from '../../../common';
 import blueFacilityBookingIcon from './ui/assets/icons/blue-facility-booking-icon.svg';
 import blueIndividualBookingIcon from './ui/assets/icons/blue-individual-booking-icon.svg';
 
@@ -37,6 +37,7 @@ const validationSchema = yup.object({
 export function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { login } = useAuthApi();
 
   const accountType = useMemo<AccountType>(() => {
     const value = searchParams.get('account');
@@ -57,6 +58,12 @@ export function LoginPage() {
   }, [accountType]);
 
   const initialValues: LoginFormValues = { email: '', password: '' };
+  const handleSubmit = async (values) => {
+    await login(
+      { email: values.email, password: values.password },
+      { redirectTo: `/booking?account=${accountType}`, accountType }
+    );
+  };
 
   return (
     <AppLayout
@@ -156,9 +163,7 @@ export function LoginPage() {
               initialValues={initialValues}
               validationSchema={validationSchema}
               validateOnMount
-              onSubmit={async () => {
-                router.push(`/booking?account=${accountType}`);
-              }}
+              onSubmit={handleSubmit}
             >
               {({ isSubmitting, isValid }) => (
                 <Form>
@@ -190,7 +195,6 @@ export function LoginPage() {
                         name="email"
                         placeholder="you@example.com"
                         fullWidth
-                        validateBeforeTouch={false}
                       />
                     </Box>
 
@@ -234,7 +238,6 @@ export function LoginPage() {
                         name="password"
                         placeholder="Enter your password"
                         fullWidth
-                        validateBeforeTouch={false}
                       />
                     </Box>
                   </Box>
