@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Paper, Typography } from '@mui/material';
-import { pxToRem } from '@/common';
+import { formatPrice, pxToRem } from '@/common';
 import { useBooking } from '../../../common';
 
 export type BookingSummaryProps = {
@@ -24,7 +24,10 @@ export function BookingSummary({
         ? 'Transport + Care Assistant'
         : null;
 
-  const appointmentLabel = booking.appointment.type;
+  const appointmentLabel =
+    booking.appointment.type === 'Other'
+      ? booking.appointment.otherDetails || 'Other'
+      : booking.appointment.type;
 
   const vehicleLabel =
     booking.vehicle.type === 'standard'
@@ -35,14 +38,8 @@ export function BookingSummary({
           ? 'Medigo Stretcher'
           : null;
 
-  const vehiclePrice =
-    booking.vehicle.type === 'standard'
-      ? 45
-      : booking.vehicle.type === 'wheelchair'
-        ? 75
-        : booking.vehicle.type === 'stretcher'
-          ? 120
-          : null;
+  const vehiclePrice = booking.vehicle.estimatedTotal;
+  const vehicleCurrency = booking.vehicle.currency ?? 'CAD';
 
   const tripTypeLabel =
     booking.trip.type === 'one_way'
@@ -315,7 +312,7 @@ export function BookingSummary({
           <Typography
             sx={{ fontSize: pxToRem(18), fontWeight: 800, color: '#2F6FED' }}
           >
-            ${vehiclePrice}
+            {formatPrice(vehiclePrice, vehicleCurrency)}
           </Typography>
         </Box>
       ) : null}

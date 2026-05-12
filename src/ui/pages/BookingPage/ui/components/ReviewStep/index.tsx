@@ -1,5 +1,4 @@
 'use client';
-
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
@@ -7,18 +6,29 @@ import LocalTaxiOutlinedIcon from '@mui/icons-material/LocalTaxiOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import DirectionsCarOutlinedIcon from '@mui/icons-material/DirectionsCarOutlined';
 import RepeatOutlinedIcon from '@mui/icons-material/RepeatOutlined';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   ButtonBase,
   Divider,
   Paper,
+  Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
 import dayjs from 'dayjs';
-import { pxToRem } from '@/common';
+import {
+  FareEstimateResponse,
+  formatPrice,
+  pxToRem,
+  useFareEstimate,
+} from '@/common';
 import { StyledImage } from '@/ui/modules/components';
 import { useBooking } from '../../../common';
+import { useEffect, useMemo, useState } from 'react';
 
 import locationIcon from '../../assets/icons/location-booking-icon.svg';
 import patientIcon from '../../assets/icons/patient-booking-icon.svg';
@@ -33,6 +43,73 @@ const makeLabel = (value: string) => (value?.trim().length ? value : '—');
 
 export function ReviewStep({ accountType, onEditStep }: ReviewStepProps) {
   const { booking } = useBooking();
+  const [fareEstimate, setFareEstimate] = useState<FareEstimateResponse | null>(
+    null
+  );
+  const { mutateAsync: createFareEstimate, isPending: isCreatingFareEstimate } =
+    useFareEstimate();
+
+  const scheduledAtIso = useMemo(() => {
+    if (!booking.trip.pickupDate) return null;
+    const candidate = booking.trip.pickupTime
+      ? dayjs(`${booking.trip.pickupDate} ${booking.trip.pickupTime}`)
+      : dayjs(booking.trip.pickupDate);
+    return candidate.isValid() ? candidate.toISOString() : null;
+  }, [booking.trip.pickupDate, booking.trip.pickupTime]);
+
+  const fareEstimatePayload = useMemo(() => {
+    const pickup = booking.address.pickupCoordinates;
+    const dropoff = booking.address.dropoffCoordinates;
+    if (!pickup || !dropoff) return null;
+    if (!booking.address.pickupAddress || !booking.address.dropoffAddress) {
+      return null;
+    }
+    if (!booking.trip.type) return null;
+
+    const tripType =
+      booking.service.type === 'transport_assistant'
+        ? 'transport_care_assistant'
+        : 'transport_only';
+
+    return {
+      pickup_address: booking.address.pickupAddress,
+      pickup_latitude: pickup.lat,
+      pickup_longitude: pickup.lng,
+      destination_address: booking.address.dropoffAddress,
+      destination_latitude: dropoff.lat,
+      destination_longitude: dropoff.lng,
+      scheduled_at: scheduledAtIso ?? undefined,
+      use_highway_407: false,
+      highway_407_route: '',
+      is_dialysis_trip: false,
+      ride_type: booking.vehicle.rideType ?? undefined,
+      trip_type: tripType,
+      trip_structure: booking.trip.type,
+    };
+  }, [
+    booking.address.dropoffAddress,
+    booking.address.dropoffCoordinates,
+    booking.address.pickupAddress,
+    booking.address.pickupCoordinates,
+    booking.service.type,
+    booking.vehicle.rideType,
+    booking.trip.type,
+    scheduledAtIso,
+  ]);
+
+  useEffect(() => {
+    const run = async () => {
+      if (!fareEstimatePayload) return;
+      try {
+        const response = await createFareEstimate(fareEstimatePayload);
+        setFareEstimate(response.data.data);
+      } catch (error) {
+        console.error(error);
+        setFareEstimate(null);
+      }
+    };
+    run();
+  }, [createFareEstimate, fareEstimatePayload]);
 
   const serviceLabel =
     booking.service.type === 'transport'
@@ -339,14 +416,25 @@ export function ReviewStep({ accountType, onEditStep }: ReviewStepProps) {
           title="Appointment"
           iconType="appointment"
           onEdit={() => onEditStep(2)}
-          rows={[{ label: 'Type', value: booking.appointment.type ?? '—' }]}
+          rows={[
+            {
+              label: 'Type',
+              value:
+                booking.appointment.type === 'Other'
+                  ? booking.appointment.otherDetails || 'Other'
+                  : (booking.appointment.type ?? '—'),
+            },
+          ]}
         />
 
         <Section
           title="Vehicle"
           iconType="vehicle"
           onEdit={() => onEditStep(3)}
-          rows={[{ label: 'Vehicle', value: vehicleLabel }]}
+          rows={[
+            { label: 'Vehicle', value: vehicleLabel },
+            { label: 'Ride type', value: booking.vehicle.rideType ?? '—' },
+          ]}
         />
 
         <Section
@@ -400,64 +488,158 @@ export function ReviewStep({ accountType, onEditStep }: ReviewStepProps) {
               gap: pxToRem(10),
             }}
           >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography sx={{ fontSize: pxToRem(11), color: '#64748B' }}>
-                Base fare
-              </Typography>
-              <Typography
+            {isCreatingFareEstimate ? (
+              <Box
                 sx={{
-                  fontSize: pxToRem(11),
-                  color: '#0F172A',
-                  fontWeight: 700,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: pxToRem(10),
                 }}
               >
-                $
-                {booking.vehicle.type === 'standard'
-                  ? 45
-                  : booking.vehicle.type === 'wheelchair'
-                    ? 75
-                    : booking.vehicle.type === 'stretcher'
-                      ? 120
-                      : 0}
+                <Skeleton variant="text" width="40%" height={pxToRem(18)} />
+                <Skeleton variant="text" width="55%" height={pxToRem(18)} />
+                <Skeleton variant="text" width="65%" height={pxToRem(20)} />
+              </Box>
+            ) : fareEstimate ? (
+              <>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography sx={{ fontSize: pxToRem(11), color: '#64748B' }}>
+                    Estimated total
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(14),
+                      color: '#2F6FED',
+                      fontWeight: 800,
+                    }}
+                  >
+                    {formatPrice(
+                      fareEstimate.total_fare,
+                      fareEstimate.currency
+                    )}
+                  </Typography>
+                </Box>
+
+                <Accordion
+                  elevation={0}
+                  disableGutters
+                  sx={{
+                    border: '1px solid #E2E8F0',
+                    borderRadius: pxToRem(10),
+                    '&:before': { display: 'none' },
+                  }}
+                >
+                  <AccordionSummary
+                    expandIcon={
+                      <ExpandMoreIcon sx={{ fontSize: pxToRem(18) }} />
+                    }
+                    sx={{ minHeight: 'unset', px: pxToRem(12), py: pxToRem(6) }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: pxToRem(11),
+                        fontWeight: 700,
+                        color: '#0F172A',
+                      }}
+                    >
+                      Price breakdown
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ px: pxToRem(12), pb: pxToRem(12) }}>
+                    <Stack spacing={pxToRem(8)}>
+                      {[
+                        ['Base fare', fareEstimate.base_fare],
+                        ['Distance charge', fareEstimate.distance_charge],
+                        ['Wait time charge', fareEstimate.wait_time_charge],
+                        ['Surcharges', fareEstimate.surcharges_total],
+                        ['Highway 407 toll', fareEstimate.highway_407_toll],
+                        [
+                          'Insurance gateway fee',
+                          fareEstimate.insurance_gateway_fee,
+                        ],
+                        ['Flat surcharge', fareEstimate.flat_surcharge],
+                        ['Platform fee', fareEstimate.platform_fee],
+                        [
+                          'Care assistant fee',
+                          booking.service.type === 'transport_assistant'
+                            ? fareEstimate.care_assistant_fee
+                            : 0,
+                        ],
+                        ['Accessibility fee', fareEstimate.accessibility_fee],
+                        ['Attendant fee', fareEstimate.attendant_fee],
+                      ].map(([label, amount]) => (
+                        <Box
+                          key={label}
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            gap: pxToRem(12),
+                          }}
+                        >
+                          <Typography
+                            sx={{ fontSize: pxToRem(11), color: '#64748B' }}
+                          >
+                            {label}
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontSize: pxToRem(11),
+                              color: '#0F172A',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {formatPrice(
+                              Number(amount ?? 0),
+                              fareEstimate.currency
+                            )}
+                          </Typography>
+                        </Box>
+                      ))}
+
+                      <Divider sx={{ my: pxToRem(2) }} />
+
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: pxToRem(12),
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontSize: pxToRem(11),
+                            color: '#0F172A',
+                            fontWeight: 800,
+                          }}
+                        >
+                          Total
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontSize: pxToRem(11),
+                            color: '#0F172A',
+                            fontWeight: 800,
+                          }}
+                        >
+                          {formatPrice(
+                            fareEstimate.total_fare,
+                            fareEstimate.currency
+                          )}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+
+                <Typography sx={{ fontSize: pxToRem(10), color: '#94A3B8' }}>
+                  + distance/wait-time charges may adjust at pickup.
+                </Typography>
+              </>
+            ) : (
+              <Typography sx={{ fontSize: pxToRem(11), color: '#94A3B8' }}>
+                Fare estimate unavailable.
               </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography sx={{ fontSize: pxToRem(11), color: '#64748B' }}>
-                Distance charge
-              </Typography>
-              <Typography sx={{ fontSize: pxToRem(10), color: '#94A3B8' }}>
-                Calculated at pickup
-              </Typography>
-            </Box>
-            <Divider sx={{ my: pxToRem(4) }} />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography
-                sx={{
-                  fontSize: pxToRem(12),
-                  color: '#0F172A',
-                  fontWeight: 700,
-                }}
-              >
-                Estimated Total
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: pxToRem(14),
-                  color: '#2F6FED',
-                  fontWeight: 800,
-                }}
-              >
-                $
-                {booking.vehicle.type === 'standard'
-                  ? 45
-                  : booking.vehicle.type === 'wheelchair'
-                    ? 75
-                    : booking.vehicle.type === 'stretcher'
-                      ? 120
-                      : 0}
-                +
-              </Typography>
-            </Box>
+            )}
           </Box>
         </Paper>
       </Stack>

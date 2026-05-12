@@ -6,7 +6,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useBooking } from '../../../common';
 import transportIcon from '../../assets/icons/transport-icon.svg';
 import transportAsstIcon from '../../assets/icons/transport-asst-icon.svg';
-import { FareEstimateResponse, pxToRem, useFareEstimate } from '@/common';
+import {
+  FareEstimateResponse,
+  formatPrice,
+  pxToRem,
+  useFareEstimate,
+} from '@/common';
 import { StyledImage } from '@/ui/modules/components';
 
 export type ServiceStepProps = {
@@ -20,8 +25,9 @@ type ServiceType = NonNullable<
 export function ServiceStep({ accountType }: ServiceStepProps) {
   const { booking, setService } = useBooking();
   const [estimateFareData, setEstimateFareData] =
-  useState<FareEstimateResponse | null>(null);
-  const { mutateAsync: createFareEstimate, isPending: isCreatingFareEstimate } = useFareEstimate();
+    useState<FareEstimateResponse | null>(null);
+  const { mutateAsync: createFareEstimate, isPending: isCreatingFareEstimate } =
+    useFareEstimate();
 
   const RideTypesPayload = useMemo(() => {
     return {
@@ -31,7 +37,7 @@ export function ServiceStep({ accountType }: ServiceStepProps) {
       destination_address: booking.address.dropoffAddress,
       destination_latitude: booking.address.dropoffCoordinates.lat,
       destination_longitude: booking.address.dropoffCoordinates.lng,
-      trip_type: 'transport_care_assistant'
+      trip_type: 'transport_care_assistant',
     };
   }, [booking.address]);
 
@@ -40,6 +46,10 @@ export function ServiceStep({ accountType }: ServiceStepProps) {
       try {
         const response = await createFareEstimate(RideTypesPayload);
         setEstimateFareData(response.data.data);
+        setService({
+          careAssistantFee: response.data.data.care_assistant_fee ?? null,
+          currency: response.data.data.currency ?? 'CAD',
+        });
         console.log(response.data.data);
       } catch (error) {
         console.error(error);
@@ -47,10 +57,26 @@ export function ServiceStep({ accountType }: ServiceStepProps) {
     };
 
     fetchFareEstimate();
-  }, [RideTypesPayload, createFareEstimate]);
+  }, [RideTypesPayload, createFareEstimate, setService]);
   const selected = booking.service.type;
+  const isLoading = isCreatingFareEstimate || estimateFareData === null;
 
-  const SERVICE_COPY: Record<
+  const loadingPrice = useMemo(
+    () => (
+      <Skeleton
+        variant="text"
+        width={pxToRem(80)}
+        height={pxToRem(24)}
+        sx={{
+          transform: 'none',
+          borderRadius: pxToRem(4),
+        }}
+      />
+    ),
+    []
+  );
+
+  const serviceCopy: Record<
     ServiceType,
     {
       title: string;
@@ -60,73 +86,56 @@ export function ServiceStep({ accountType }: ServiceStepProps) {
       icon: any;
       recommended?: boolean;
     }
-  > = {
-    transport: {
-      title: 'Transport Only',
-      price: isCreatingFareEstimate ? (
-        <Skeleton
-          variant="text"
-          width={pxToRem(80)}
-          height={pxToRem(24)}
-          sx={{
-            transform: 'none',
-            borderRadius: pxToRem(4),
-          }}
-        />
-      ) : (
-        `From $ ${(
-          estimateFareData.total_fare -
-          estimateFareData.care_assistant_fee
-        ).toFixed(2)}`
-      ),
-      description:
-        'Safe, reliable transport for patients who are independently mobile or accompanied.',
-      items: [
-        'Trained MediGo driver',
-        'Door-to-door service',
-        'Real-time ride tracking',
-        'Up to 2 passengers',
-      ],
-      icon: transportIcon,
-    },
+  > = useMemo(() => {
+    const currency = estimateFareData?.currency ?? 'CAD';
+    const transportOnlyFare =
+      estimateFareData != null
+        ? estimateFareData.total_fare - estimateFareData.care_assistant_fee
+        : undefined;
 
-    transport_assistant: {
-      title: 'Transport + Care Assistant',
-      price: isCreatingFareEstimate ? (
-        <Skeleton
-          variant="text"
-          width={pxToRem(80)}
-          height={pxToRem(24)}
-          sx={{
-            transform: 'none',
-            borderRadius: pxToRem(4),
-          }}
-        />
-      ) : (
-        `From $ ${estimateFareData.total_fare.toFixed(2)}`
-      ),
-      description:
-        'Transport with a qualified care assistant for patients who need hands-on support.',
-      items: [
-        'Trained MediGo driver with a care assistant',
-        'Door-to-door service',
-        'Real-time ride tracking',
-        'Up to 2 passengers',
-        'Only available on scheduled.',
-      ],
-      icon: transportAsstIcon,
-      recommended: true,
-    },
-  };
+    return {
+      transport: {
+        title: 'Transport Only',
+        price: isLoading
+          ? loadingPrice
+          : `From ${formatPrice(transportOnlyFare, currency)}`,
+        description:
+          'Safe, reliable transport for patients who are independently mobile or accompanied.',
+        items: [
+          'Trained MediGo driver',
+          'Door-to-door service',
+          'Real-time ride tracking',
+          'Up to 2 passengers',
+        ],
+        icon: transportIcon,
+      },
 
-  const options = useMemo(
-    () =>
-      (Object.keys(SERVICE_COPY) as ServiceType[]).map((key) => ({
-        key,
-        ...SERVICE_COPY[key],
-      })),
-    []
-  );
+      transport_assistant: {
+        title: 'Transport + Care Assistant',
+        price: isLoading
+          ? loadingPrice
+          : `From ${formatPrice(estimateFareData?.total_fare, currency)}`,
+        description:
+          'Transport with a qualified care assistant for patients who need hands-on support.',
+        items: [
+          'Trained MediGo driver with a care assistant',
+          'Door-to-door service',
+          'Real-time ride tracking',
+          'Up to 2 passengers',
+          'Only available on scheduled.',
+        ],
+        icon: transportAsstIcon,
+        recommended: true,
+      },
+    };
+  }, [estimateFareData, isLoading, loadingPrice]);
+
+  const options = useMemo(() => {
+    return (Object.keys(serviceCopy) as ServiceType[]).map((key) => ({
+      key,
+      ...serviceCopy[key],
+    }));
+  }, [serviceCopy]);
 
   return (
     <Box

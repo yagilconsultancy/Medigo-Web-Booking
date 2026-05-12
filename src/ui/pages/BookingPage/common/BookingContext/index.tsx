@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 
 export type BookingAddressState = {
   pickupAddress: string;
@@ -22,14 +29,20 @@ export type BookingState = {
   patient: BookingPatientState;
   service: {
     type: 'transport' | 'transport_assistant' | null;
+    careAssistantFee: number | null;
+    currency: string;
   };
   appointment: {
     type: string | null;
+    otherDetails: string;
   };
   vehicle: {
     type: 'standard' | 'wheelchair' | 'stretcher' | null;
+    rideType: string | null;
     passengers: number;
     promoCode: string;
+    estimatedTotal: number | null;
+    currency: string;
   };
   trip: {
     type: 'one_way' | 'round_trip' | null;
@@ -72,14 +85,20 @@ const DEFAULT_BOOKING: BookingState = {
   },
   service: {
     type: null,
+    careAssistantFee: null,
+    currency: 'CAD',
   },
   appointment: {
     type: null,
+    otherDetails: '',
   },
   vehicle: {
     type: null,
+    rideType: null,
     passengers: 1,
     promoCode: '',
+    estimatedTotal: null,
+    currency: 'CAD',
   },
   trip: {
     type: null,
@@ -100,42 +119,74 @@ const BookingContext = createContext<BookingContextValue | null>(null);
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [booking, setBooking] = useState<BookingState>(DEFAULT_BOOKING);
 
+  const setAddress = useCallback((next: Partial<BookingAddressState>) => {
+    setBooking((prev) => ({
+      ...prev,
+      address: { ...prev.address, ...next },
+    }));
+  }, []);
+
+  const setPatient = useCallback((next: Partial<BookingPatientState>) => {
+    setBooking((prev) => ({
+      ...prev,
+      patient: { ...prev.patient, ...next },
+    }));
+  }, []);
+
+  const setService = useCallback((next: Partial<BookingState['service']>) => {
+    setBooking((prev) => ({
+      ...prev,
+      service: { ...prev.service, ...next },
+    }));
+  }, []);
+
+  const setAppointment = useCallback(
+    (next: Partial<BookingState['appointment']>) => {
+      setBooking((prev) => ({
+        ...prev,
+        appointment: { ...prev.appointment, ...next },
+      }));
+    },
+    []
+  );
+
+  const setVehicle = useCallback((next: Partial<BookingState['vehicle']>) => {
+    setBooking((prev) => ({
+      ...prev,
+      vehicle: { ...prev.vehicle, ...next },
+    }));
+  }, []);
+
+  const setTrip = useCallback((next: Partial<BookingState['trip']>) => {
+    setBooking((prev) => ({
+      ...prev,
+      trip: { ...prev.trip, ...next },
+    }));
+  }, []);
+
+  const reset = useCallback(() => setBooking(DEFAULT_BOOKING), []);
+
   const value = useMemo<BookingContextValue>(
     () => ({
       booking,
-      setAddress: (next) =>
-        setBooking((prev) => ({
-          ...prev,
-          address: { ...prev.address, ...next },
-        })),
-      setPatient: (next) =>
-        setBooking((prev) => ({
-          ...prev,
-          patient: { ...prev.patient, ...next },
-        })),
-      setService: (next) =>
-        setBooking((prev) => ({
-          ...prev,
-          service: { ...prev.service, ...next },
-        })),
-      setAppointment: (next) =>
-        setBooking((prev) => ({
-          ...prev,
-          appointment: { ...prev.appointment, ...next },
-        })),
-      setVehicle: (next) =>
-        setBooking((prev) => ({
-          ...prev,
-          vehicle: { ...prev.vehicle, ...next },
-        })),
-      setTrip: (next) =>
-        setBooking((prev) => ({
-          ...prev,
-          trip: { ...prev.trip, ...next },
-        })),
-      reset: () => setBooking(DEFAULT_BOOKING),
+      setAddress,
+      setPatient,
+      setService,
+      setAppointment,
+      setVehicle,
+      setTrip,
+      reset,
     }),
-    [booking]
+    [
+      booking,
+      reset,
+      setAddress,
+      setAppointment,
+      setPatient,
+      setService,
+      setTrip,
+      setVehicle,
+    ]
   );
 
   return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Paper, Typography } from '@mui/material';
+import { Box, Paper, TextField, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useMemo } from 'react';
 import { pxToRem } from '@/common';
@@ -64,6 +64,7 @@ export function AppointmentStep({ accountType }: AppointmentStepProps) {
   );
 
   const selected = booking.appointment.type;
+  const isOtherSelected = selected === 'Other';
 
   return (
     <Box
@@ -108,7 +109,15 @@ export function AppointmentStep({ accountType }: AppointmentStepProps) {
               <Paper
                 component="button"
                 type="button"
-                onClick={() => setAppointment({ type: option.key })}
+                onClick={() =>
+                  setAppointment({
+                    type: option.key,
+                    otherDetails:
+                      option.key === 'Other'
+                        ? booking.appointment.otherDetails
+                        : '',
+                  })
+                }
                 elevation={0}
                 sx={{
                   width: '100%',
@@ -173,6 +182,17 @@ export function AppointmentStep({ accountType }: AppointmentStepProps) {
           );
         })}
       </Grid>
+
+      {isOtherSelected ? (
+        <TextField
+          value={booking.appointment.otherDetails}
+          onChange={(e) => setAppointment({ otherDetails: e.target.value })}
+          label="Please specify"
+          placeholder="e.g., ENT appointment, MRI follow-up, etc."
+          fullWidth
+          size="small"
+        />
+      ) : null}
     </Box>
   );
 }
