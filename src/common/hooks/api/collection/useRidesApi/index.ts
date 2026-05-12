@@ -293,17 +293,5 @@ export const useRidesApi = () => {
     deactivateRecurringRide,
     createSafetyReport,
     submitVehicleChecklist,
-    isCreatingRide: doCreateRide.isPending,
-    isCancellingRide: doCancelRide.isPending,
-    isSubmittingRating: doSubmitRideRating.isPending,
-    isRebookingRide: doRebookRide.isPending,
-    isSharingRide: doShareRide.isPending,
-    isTransitioningRideStatus: doTransitionRideStatus.isPending,
-    isCreatingGuestSession: doCreateGuestSession.isPending,
-    isCreatingGuestBooking: doCreateGuestBooking.isPending,
-    isCreatingRecurringRide: doCreateRecurringRide.isPending,
-    isDeactivatingRecurringRide: doDeactivateRecurringRide.isPending,
-    isCreatingSafetyReport: doCreateSafetyReport.isPending,
-    isSubmittingVehicleChecklist: doSubmitVehicleChecklist.isPending,
   };
 };

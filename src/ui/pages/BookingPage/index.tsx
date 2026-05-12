@@ -108,7 +108,7 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
 
       const result = await createPaymentIntent({
         amount,
-        currency: 'usd',
+        currency: 'CAD',
         description: 'MediGo booking payment',
         order_id: orderId,
         metadata: {

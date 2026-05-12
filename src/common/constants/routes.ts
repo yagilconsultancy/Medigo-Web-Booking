@@ -74,23 +74,6 @@ export const ROUTES_SPEC = {
     `/${API_VERSION}/users/me/saved-locations/${locationId}`,
   reorderSavedLocations: `/${API_VERSION}/users/me/saved-locations/reorder`,
 
-  // Health
-  healthLive: `/${API_VERSION}/health/live`,
-  healthReady: `/${API_VERSION}/health/ready`,
-
-  // Internal
-  internalBatchRiderActivity: `/${API_VERSION}/internal/riders/batch-activity`,
-  internalGetRiderRides: (riderId: string) =>
-    `/${API_VERSION}/internal/riders/${riderId}/rides`,
-  internalGetRiderStats: (riderId: string) =>
-    `/${API_VERSION}/internal/riders/${riderId}/stats`,
-  internalGetRide: (rideId: string) =>
-    `/${API_VERSION}/internal/rides/${rideId}`,
-  internalUpdateRideFare: (rideId: string) =>
-    `/${API_VERSION}/internal/rides/${rideId}/fare`,
-  internalGetActiveRides: `/${API_VERSION}/internal/rides/active`,
-  internalGetCompletedTodayCount: `/${API_VERSION}/internal/rides/completed-today-count`,
-
   // Rides
   createRide: `/${API_VERSION}/rides/`,
   getRideDetail: (rideId: string) => `/${API_VERSION}/rides/${rideId}`,
@@ -141,6 +124,10 @@ export const ROUTES_SPEC = {
   createSafetyReport: `/${API_VERSION}/rides/safety/reports`,
   getVehicleChecklists: `/${API_VERSION}/rides/safety/vehicle-checklist`,
   submitVehicleChecklist: `/${API_VERSION}/rides/safety/vehicle-checklist`,
+
+  // Fare Estimates
+  riderFareEstimate: `/${API_VERSION}/payments/fare-estimate`,
+  riderBaseFareEstimate: `/${API_VERSION}/payments/base-fare-estimate`,
 
   // Shared rides
   getSharedRide: (shareToken: string) =>

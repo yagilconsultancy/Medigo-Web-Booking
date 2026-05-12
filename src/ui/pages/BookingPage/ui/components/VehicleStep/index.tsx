@@ -5,9 +5,9 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import DirectionsCarOutlinedIcon from '@mui/icons-material/DirectionsCarOutlined';
 import DoorFrontOutlinedIcon from '@mui/icons-material/DoorFrontOutlined';
 import GpsFixedIcon from '@mui/icons-material/GpsFixed';
-import { Box, Paper, Typography } from '@mui/material';
-import { useMemo } from 'react';
-import { pxToRem } from '@/common';
+import { Box, Paper, Skeleton, Typography } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
+import { BaseFareEstimateResponse, pxToRem, useBaseFareEstimate } from '@/common';
 import { StyledImage } from '@/ui/modules/components';
 import { useBooking } from '../../../common';
 
@@ -37,137 +37,110 @@ type VehicleOption = {
 
 export function VehicleStep({ accountType }: VehicleStepProps) {
   const { booking, setVehicle } = useBooking();
+  const [estimateFareData, setEstimateFareData] =
+    useState<BaseFareEstimateResponse | null>(null);
+    const { mutateAsync: createBaseFareEstimate, isPending: isCreatingBaseFareEstimate } = useBaseFareEstimate();
+  
+    const RideTypesPayload = useMemo(() => {
+      return {
+        pickup_address: booking.address.pickupAddress,
+        pickup_latitude: booking.address.pickupCoordinates.lat,
+        pickup_longitude: booking.address.pickupCoordinates.lng,
+        destination_address: booking.address.dropoffAddress,
+        destination_latitude: booking.address.dropoffCoordinates.lat,
+        destination_longitude: booking.address.dropoffCoordinates.lng,
+      };
+    }, [booking.address]);
+  
+    useEffect(() => {
+      const fetchFareEstimate = async () => {
+        try {
+          const response = await createBaseFareEstimate(RideTypesPayload);
+          // @ts-ignore
+          setEstimateFareData(response.data.data);
+          console.log(response.data);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+  
+      fetchFareEstimate();
+    }, [RideTypesPayload, createBaseFareEstimate]);
 
-  const options = useMemo<VehicleOption[]>(
-    () => [
-      {
-        key: 'standard',
-        label: 'Medigo Standard',
-        subLabel: 'Comfortable everyday transport',
-        description:
-          'A modern, comfortable car for ambulatory patients who can transfer independently.',
-        image: medigoStandardImage,
-        priceLabel: 'From $45',
-        features: [
-          {
-            icon: (
-              <StyledImage
-                src={passengerIcon}
-                alt=""
-                width={12}
-                height={12}
-                sx={{ width: pxToRem(12), height: pxToRem(12) }}
-              />
-            ),
-            label: 'Up to 3 passengers',
-          },
-          {
-            icon: <DirectionsCarOutlinedIcon sx={{ fontSize: pxToRem(14) }} />,
-            label: 'Sedan / SUV',
-          },
-          {
-            icon: <DoorFrontOutlinedIcon sx={{ fontSize: pxToRem(14) }} />,
-            label: 'Door-to-door',
-          },
-          {
-            icon: <GpsFixedIcon sx={{ fontSize: pxToRem(14) }} />,
-            label: 'GPS tracked',
-          },
-        ],
-      },
-      {
-        key: 'stretcher',
-        label: 'Medigo Stretcher',
-        subLabel: 'Transport for patients lying flat',
-        description:
-          'Non-emergency ambulance transport for patients who require a full-length stretcher and clinical crew.',
-        image: medigoStretcherImage,
-        priceLabel: 'From $120',
-        features: [
-          {
-            icon: (
-              <Typography sx={{ fontSize: pxToRem(12), fontWeight: 700 }}>
-                1
-              </Typography>
-            ),
-            label: '1 patient + 2 crew',
-          },
-          {
-            icon: (
-              <Typography sx={{ fontSize: pxToRem(12), fontWeight: 700 }}>
-                O
-              </Typography>
-            ),
-            label: 'Full stretcher',
-          },
-          {
-            icon: (
-              <Typography sx={{ fontSize: pxToRem(12), fontWeight: 700 }}>
-                +
-              </Typography>
-            ),
-            label: 'Medical crew',
-          },
-          {
-            icon: (
-              <Typography sx={{ fontSize: pxToRem(12), fontWeight: 700 }}>
-                C
-              </Typography>
-            ),
-            label: 'Climate controlled',
-          },
-        ],
-      },
-      {
-        key: 'wheelchair',
-        label: 'Medigo Wheelchair',
-        subLabel: 'Fully accessible van transport',
-        description:
-          'Modified vehicle with hydraulic lift and wheelchair restraints for full accessibility.',
-        image: medigoWheelchairImage,
-        priceLabel: 'From $75',
-        features: [
-          {
-            icon: (
-              <StyledImage
-                src={passengerIcon}
-                alt=""
-                width={12}
-                height={12}
-                sx={{ width: pxToRem(12), height: pxToRem(12) }}
-              />
-            ),
-            label: '1 wheelchair + 2 passengers',
-          },
-          {
-            icon: (
-              <Typography sx={{ fontSize: pxToRem(12), fontWeight: 700 }}>
-                H
-              </Typography>
-            ),
-            label: 'Hydraulic lift',
-          },
-          {
-            icon: (
-              <Typography sx={{ fontSize: pxToRem(12), fontWeight: 700 }}>
-                R
-              </Typography>
-            ),
-            label: 'Restraint system',
-          },
-          {
-            icon: (
-              <Typography sx={{ fontSize: pxToRem(12), fontWeight: 700 }}>
-                W
-              </Typography>
-            ),
-            label: 'Wide entry',
-          },
-        ],
-      },
-    ],
-    []
-  );
+  const vehicleImageMap: Record<string, any> = {
+  standard: medigoStandardImage,
+  wheelchair_wav: medigoWheelchairImage,
+  stretcher: medigoStretcherImage,
+};
+
+  const options = useMemo<VehicleOption[]>(() => {
+    if (!estimateFareData?.estimates) return [];
+
+    return estimateFareData.estimates.map((estimate) => {
+      const features = estimate.features.map((feature) => ({
+        icon: (
+          <Box
+            sx={{
+              width: pxToRem(16),
+              height: pxToRem(16),
+              borderRadius: '999999px',
+              bgcolor: '#F1F5F9',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: pxToRem(10),
+                fontWeight: 700,
+              }}
+            >
+              ✓
+            </Typography>
+          </Box>
+        ),
+        label: feature,
+      }));
+
+      features.unshift({
+        icon: (
+          <StyledImage
+            src={passengerIcon}
+            alt=""
+            width={12}
+            height={12}
+            sx={{
+              width: pxToRem(12),
+              height: pxToRem(12),
+            }}
+          />
+        ),
+        label: estimate.passengers,
+      });
+
+      return {
+        key:
+          (
+            estimate.service_type === 'wheelchair_wav'
+              ? 'wheelchair'
+              : estimate.service_type
+          ) as VehicleType,
+
+        label: estimate.display_name,
+
+        subLabel: estimate.best_for,
+
+        description: estimate.description,
+
+        image: vehicleImageMap[estimate.service_type],
+
+        priceLabel: `From $${estimate.estimated_total.toFixed(2)}`,
+
+        features,
+      };
+    });
+  }, [estimateFareData]);
 
   const selected = booking.vehicle.type;
 
@@ -206,7 +179,141 @@ export function VehicleStep({ accountType }: VehicleStepProps) {
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: pxToRem(12) }}>
-        {options.map((option) => {
+      {isCreatingBaseFareEstimate
+        ? Array.from({ length: 3 }).map((_, index) => (
+        <Paper
+          key={index}
+          elevation={0}
+          sx={{
+            width: '100%',
+            borderRadius: pxToRem(12),
+            border: '1px solid #E2E8F0',
+            bgcolor: '#FFFFFF',
+            p: pxToRem(16),
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              gap: pxToRem(14),
+              alignItems: 'flex-start',
+            }}
+          >
+            <Skeleton
+              variant="rounded"
+              width={pxToRem(52)}
+              height={pxToRem(52)}
+              sx={{
+                borderRadius: pxToRem(10),
+                flexShrink: 0,
+              }}
+            />
+
+            <Box sx={{ flex: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: pxToRem(12),
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Skeleton
+                    variant="text"
+                    width="45%"
+                    height={pxToRem(22)}
+                    sx={{ transform: 'none' }}
+                  />
+
+                  <Skeleton
+                    variant="text"
+                    width="70%"
+                    height={pxToRem(18)}
+                    sx={{
+                      mt: pxToRem(4),
+                      transform: 'none',
+                    }}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: pxToRem(12),
+                  }}
+                >
+                  <Skeleton
+                    variant="text"
+                    width={pxToRem(70)}
+                    height={pxToRem(22)}
+                    sx={{ transform: 'none' }}
+                  />
+
+                  <Skeleton
+                    variant="circular"
+                    width={pxToRem(20)}
+                    height={pxToRem(20)}
+                  />
+                </Box>
+              </Box>
+
+              <Skeleton
+                variant="text"
+                width="100%"
+                height={pxToRem(18)}
+                sx={{
+                  mt: pxToRem(10),
+                  transform: 'none',
+                }}
+              />
+
+              <Skeleton
+                variant="text"
+                width="85%"
+                height={pxToRem(18)}
+                sx={{
+                  transform: 'none',
+                }}
+              />
+
+              <Box
+                sx={{
+                  mt: pxToRem(12),
+                  display: 'flex',
+                  gap: pxToRem(12),
+                  flexWrap: 'wrap',
+                }}
+              >
+                {Array.from({ length: 4 }).map((_, featureIndex) => (
+                  <Box
+                    key={featureIndex}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: pxToRem(6),
+                    }}
+                  >
+                    <Skeleton
+                      variant="circular"
+                      width={pxToRem(16)}
+                      height={pxToRem(16)}
+                    />
+
+                    <Skeleton
+                      variant="text"
+                      width={pxToRem(80)}
+                      height={pxToRem(18)}
+                      sx={{ transform: 'none' }}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </Paper>
+      ))
+    : options.map((option) => {
           const isSelected = selected === option.key;
 
           return (

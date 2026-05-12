@@ -1,12 +1,12 @@
 'use client';
 
 import CheckIcon from '@mui/icons-material/Check';
-import { Box, Chip, Paper, Typography } from '@mui/material';
-import { useMemo } from 'react';
+import { Box, Chip, Paper, Skeleton, Typography } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useBooking } from '../../../common';
 import transportIcon from '../../assets/icons/transport-icon.svg';
 import transportAsstIcon from '../../assets/icons/transport-asst-icon.svg';
-import { pxToRem } from '@/common';
+import { FareEstimateResponse, pxToRem, useFareEstimate } from '@/common';
 import { StyledImage } from '@/ui/modules/components';
 
 export type ServiceStepProps = {
@@ -17,51 +17,107 @@ type ServiceType = NonNullable<
   ReturnType<typeof useBooking>['booking']['service']['type']
 >;
 
-const SERVICE_COPY: Record<
-  ServiceType,
-  {
-    title: string;
-    price: string;
-    description: string;
-    items: string[];
-    icon: any;
-    recommended?: boolean;
-  }
-> = {
-  transport: {
-    title: 'Transport Only',
-    price: 'From $45',
-    description:
-      'Safe, reliable transport for patients who are independently mobile or accompanied.',
-    items: [
-      'Trained MediGo driver',
-      'Door-to-door service',
-      'Real-time ride tracking',
-      'Up to 2 passengers',
-    ],
-    icon: transportIcon,
-  },
-  transport_assistant: {
-    title: 'Transport + Care Assistant',
-    price: 'From $75',
-    description:
-      'Transport with a qualified care assistant for patients who need hands-on support.',
-    items: [
-      'Trained MediGo driver with a care assistant',
-      'Door-to-door service',
-      'Real-time ride tracking',
-      'Up to 2 passengers',
-      'Only available on scheduled.',
-    ],
-    icon: transportAsstIcon,
-    recommended: true,
-  },
-};
-
 export function ServiceStep({ accountType }: ServiceStepProps) {
   const { booking, setService } = useBooking();
+  const [estimateFareData, setEstimateFareData] =
+  useState<FareEstimateResponse | null>(null);
+  const { mutateAsync: createFareEstimate, isPending: isCreatingFareEstimate } = useFareEstimate();
 
+  const RideTypesPayload = useMemo(() => {
+    return {
+      pickup_address: booking.address.pickupAddress,
+      pickup_latitude: booking.address.pickupCoordinates.lat,
+      pickup_longitude: booking.address.pickupCoordinates.lng,
+      destination_address: booking.address.dropoffAddress,
+      destination_latitude: booking.address.dropoffCoordinates.lat,
+      destination_longitude: booking.address.dropoffCoordinates.lng,
+      trip_type: 'transport_care_assistant'
+    };
+  }, [booking.address]);
+
+  useEffect(() => {
+    const fetchFareEstimate = async () => {
+      try {
+        const response = await createFareEstimate(RideTypesPayload);
+        setEstimateFareData(response.data.data);
+        console.log(response.data.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchFareEstimate();
+  }, [RideTypesPayload, createFareEstimate]);
   const selected = booking.service.type;
+
+  const SERVICE_COPY: Record<
+    ServiceType,
+    {
+      title: string;
+      price: React.ReactNode;
+      description: string;
+      items: string[];
+      icon: any;
+      recommended?: boolean;
+    }
+  > = {
+    transport: {
+      title: 'Transport Only',
+      price: isCreatingFareEstimate ? (
+        <Skeleton
+          variant="text"
+          width={pxToRem(80)}
+          height={pxToRem(24)}
+          sx={{
+            transform: 'none',
+            borderRadius: pxToRem(4),
+          }}
+        />
+      ) : (
+        `From $ ${(
+          estimateFareData.total_fare -
+          estimateFareData.care_assistant_fee
+        ).toFixed(2)}`
+      ),
+      description:
+        'Safe, reliable transport for patients who are independently mobile or accompanied.',
+      items: [
+        'Trained MediGo driver',
+        'Door-to-door service',
+        'Real-time ride tracking',
+        'Up to 2 passengers',
+      ],
+      icon: transportIcon,
+    },
+
+    transport_assistant: {
+      title: 'Transport + Care Assistant',
+      price: isCreatingFareEstimate ? (
+        <Skeleton
+          variant="text"
+          width={pxToRem(80)}
+          height={pxToRem(24)}
+          sx={{
+            transform: 'none',
+            borderRadius: pxToRem(4),
+          }}
+        />
+      ) : (
+        `From $ ${estimateFareData.total_fare.toFixed(2)}`
+      ),
+      description:
+        'Transport with a qualified care assistant for patients who need hands-on support.',
+      items: [
+        'Trained MediGo driver with a care assistant',
+        'Door-to-door service',
+        'Real-time ride tracking',
+        'Up to 2 passengers',
+        'Only available on scheduled.',
+      ],
+      icon: transportAsstIcon,
+      recommended: true,
+    },
+  };
 
   const options = useMemo(
     () =>
