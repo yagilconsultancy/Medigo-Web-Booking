@@ -19,12 +19,12 @@ export default async function middleware(req: NextRequest) {
   }
 
   // Check for the auth token cookie
-  // const token = req.cookies.get('medi_auth')?.value;
+  const token = req.cookies.get('medi_auth')?.value;
 
   // Protect all non-public routes
-  // if (!token) {
-  //   return NextResponse.redirect(new URL('/login', req.nextUrl));
-  // }
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.nextUrl));
+  }
 
   return NextResponse.next();
 }

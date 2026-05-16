@@ -558,7 +558,7 @@ export function ReviewStep({ accountType, onEditStep }: ReviewStepProps) {
                           fareEstimate.insurance_gateway_fee,
                         ],
                         ['Flat surcharge', fareEstimate.flat_surcharge],
-                        ['Platform fee', fareEstimate.platform_fee],
+                        // ['Platform fee', fareEstimate.platform_fee],
                         [
                           'Care assistant fee',
                           booking.service.type === 'transport_assistant'

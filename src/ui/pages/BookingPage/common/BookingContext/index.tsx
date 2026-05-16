@@ -50,6 +50,7 @@ export type BookingState = {
     pickupTime: string;
     isRecurring: boolean;
     recurringFrequency: 'daily' | 'weekly' | 'bi_weekly' | 'monthly' | null;
+    recurringDaysOfWeek: number[];
     recurringStartDate: string;
     recurringEnds: 'by_date' | 'no_of_rides';
     recurringEndDate: string;
@@ -106,6 +107,7 @@ const DEFAULT_BOOKING: BookingState = {
     pickupTime: '',
     isRecurring: false,
     recurringFrequency: 'weekly',
+    recurringDaysOfWeek: [],
     recurringStartDate: '',
     recurringEnds: 'by_date',
     recurringEndDate: '',

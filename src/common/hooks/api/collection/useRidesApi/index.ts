@@ -32,8 +32,6 @@ import type {
 import { extractResponseErrors, tryExecute } from '../../../../utils';
 
 export const useRidesApi = () => {
-  const doInternalBatchRiderActivity = useInternalBatchRiderActivity();
-  const doInternalUpdateRideFare = useInternalUpdateRideFare();
   const doCreateRide = useCreateRide();
   const doCancelRide = useCancelRide();
   const doSubmitRideRating = useSubmitRideRating();
@@ -46,35 +44,6 @@ export const useRidesApi = () => {
   const doDeactivateRecurringRide = useDeactivateRecurringRide();
   const doCreateSafetyReport = useCreateSafetyReport();
   const doSubmitVehicleChecklist = useSubmitVehicleChecklist();
-
-  const internalBatchRiderActivity = async (payload: {
-    body: ApiBatchRiderActivityPayload;
-    xInternalService?: string | null;
-  }) => {
-    return await tryExecute(
-      () => doInternalBatchRiderActivity.mutateAsync(payload),
-      async () => true,
-      async () => {
-        toast.error('An error occurred');
-        return false;
-      }
-    );
-  };
-
-  const internalUpdateRideFare = async (payload: {
-    rideId: string;
-    body: ApiUpdateFarePayload;
-    xInternalService?: string | null;
-  }) => {
-    return await tryExecute(
-      () => doInternalUpdateRideFare.mutateAsync(payload),
-      async () => true,
-      async () => {
-        toast.error('An error occurred');
-        return false;
-      }
-    );
-  };
 
   const createRide = async (payload: ApiCreateRidePayload) => {
     return await tryExecute(
@@ -279,8 +248,6 @@ export const useRidesApi = () => {
   };
 
   return {
-    internalBatchRiderActivity,
-    internalUpdateRideFare,
     createRide,
     cancelRide,
     submitRideRating,

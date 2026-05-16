@@ -3,10 +3,13 @@
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import RepeatIcon from '@mui/icons-material/Repeat';
+import CalendarTodayRoundedIcon from '@mui/icons-material/CalendarTodayRounded';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import {
   alpha,
   Box,
   ButtonBase,
+  Chip,
   Paper,
   Stack,
   Switch,
@@ -20,6 +23,7 @@ import {
   AppDatePickerPopover,
   AppTextField,
   AppTimePickerPopover,
+  RowStack,
 } from '@/ui/modules/components';
 import { useBooking } from '../../../common';
 
@@ -77,17 +81,25 @@ const TIME_SLOTS = [
   '16:00',
 ];
 
+const DAYS_OF_WEEK = [
+  { value: 0, label: 'Mon', short: 'M' },
+  { value: 1, label: 'Tue', short: 'T' },
+  { value: 2, label: 'Wed', short: 'W' },
+  { value: 3, label: 'Thu', short: 'T' },
+  { value: 4, label: 'Fri', short: 'F' },
+  { value: 5, label: 'Sat', short: 'S' },
+  { value: 6, label: 'Sun', short: 'S' },
+];
+
 const toDayjsFromStoredDate = (value: string) => {
   if (!value) return null;
 
-  // Preferred storage format for this flow is ISO date (YYYY-MM-DD).
   const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (isoMatch) {
     const parsed = dayjs(value);
     return parsed.isValid() ? parsed : null;
   }
 
-  // Backward compatibility for legacy "MM/DD/YYYY" values.
   const slashMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (slashMatch) {
     const month = Number(slashMatch[1]);
@@ -102,6 +114,37 @@ const toDayjsFromStoredDate = (value: string) => {
   return null;
 };
 
+const getFrequencyDescription = (
+  frequency: string | null,
+  days: number[]
+): string => {
+  if (!frequency) return '';
+
+  const dayLabels = days
+    .sort((a, b) => a - b)
+    .map((d) => DAYS_OF_WEEK.find((day) => day.value === d)?.label ?? '')
+    .filter(Boolean);
+
+  switch (frequency) {
+    case 'daily':
+      return dayLabels.length > 0
+        ? `Every ${dayLabels.join(', ')}`
+        : 'Select which days';
+    case 'weekly':
+      return dayLabels.length > 0
+        ? `Every week on ${dayLabels.join(', ')}`
+        : 'Select which days';
+    case 'bi_weekly':
+      return dayLabels.length > 0
+        ? `Every 2 weeks on ${dayLabels.join(', ')}`
+        : 'Select which days';
+    case 'monthly':
+      return 'Once per month on the same date';
+    default:
+      return '';
+  }
+};
+
 export function TripStep({ accountType }: TripStepProps) {
   const { booking, setTrip } = useBooking();
 
@@ -109,22 +152,34 @@ export function TripStep({ accountType }: TripStepProps) {
   const pickupDateValue = toDayjsFromStoredDate(booking.trip.pickupDate);
   const pickupTime = booking.trip.pickupTime;
   const recurring = booking.trip.isRecurring;
-  const recurringStartDateValue = toDayjsFromStoredDate(
-    booking.trip.recurringStartDate
-  );
   const recurringEndDateValue = toDayjsFromStoredDate(
     booking.trip.recurringEndDate
   );
 
   const frequencyOptions = useMemo(
     () => [
-      { key: 'daily' as const, label: 'Daily' },
-      { key: 'weekly' as const, label: 'Weekly' },
-      { key: 'bi_weekly' as const, label: 'Bi-Weekly' },
-      { key: 'monthly' as const, label: 'Monthly' },
+      { key: 'daily' as const, label: 'Daily', description: 'Every selected day' },
+      { key: 'weekly' as const, label: 'Weekly', description: 'Once per week' },
+      { key: 'bi_weekly' as const, label: 'Bi-Weekly', description: 'Every 2 weeks' },
+      { key: 'monthly' as const, label: 'Monthly', description: 'Once per month' },
     ],
     []
   );
+
+  const toggleDay = (dayValue: number) => {
+    const current = booking.trip.recurringDaysOfWeek;
+    const next = current.includes(dayValue)
+      ? current.filter((d) => d !== dayValue)
+      : [...current, dayValue];
+    setTrip({ recurringDaysOfWeek: next });
+  };
+
+  const frequencyDesc = getFrequencyDescription(
+    booking.trip.recurringFrequency,
+    booking.trip.recurringDaysOfWeek
+  );
+
+  const showDaysOfWeek = booking.trip.recurringFrequency !== 'monthly';
 
   return (
     <Box
@@ -357,7 +412,7 @@ export function TripStep({ accountType }: TripStepProps) {
       </Paper>
 
       {/* Recurring Ride */}
-      <Paper
+      {/* <Paper
         elevation={0}
         sx={{
           borderRadius: pxToRem(12),
@@ -370,6 +425,18 @@ export function TripStep({ accountType }: TripStepProps) {
           sx={{ fontSize: pxToRem(12), fontWeight: 700, color: '#0F172A' }}
         >
           Recurring Ride
+          <Chip
+            size="small"
+            sx={{
+              ml: pxToRem(8),
+              height: pxToRem(18),
+              fontSize: pxToRem(9),
+              fontWeight: 600,
+              bgcolor: '#F1F5F9',
+              color: '#94A3B8',
+              '& .MuiChip-label': { px: pxToRem(6) },
+            }}
+          />
         </Typography>
         <Typography
           sx={{ mt: pxToRem(4), fontSize: pxToRem(10), color: '#94A3B8' }}
@@ -427,92 +494,248 @@ export function TripStep({ accountType }: TripStepProps) {
 
           <IOSSwitch
             checked={recurring}
-            onChange={(e) => setTrip({ isRecurring: e.target.checked })}
+            onChange={(e) =>
+              setTrip({
+                isRecurring: e.target.checked,
+                ...(!e.target.checked && {
+                  recurringFrequency: 'weekly',
+                  recurringDaysOfWeek: [],
+                  recurringEndDate: '',
+                  recurringRideCount: null,
+                }),
+              })
+            }
           />
         </Paper>
 
         {recurring ? (
-          <Box sx={{ mt: pxToRem(16) }}>
-            <Typography
-              sx={{ fontSize: pxToRem(11), fontWeight: 700, color: '#0F172A' }}
-            >
-              Frequency
-            </Typography>
-            <Box
-              sx={{
-                mt: pxToRem(10),
-                display: 'flex',
-                gap: pxToRem(10),
-                flexWrap: 'wrap',
-              }}
-            >
-              {frequencyOptions.map((f) => {
-                const isSelected = booking.trip.recurringFrequency === f.key;
-                return (
-                  <ButtonBase
-                    key={f.key}
-                    onClick={() => setTrip({ recurringFrequency: f.key })}
-                    sx={{
-                      minWidth: pxToRem(92),
-                      px: pxToRem(14),
-                      py: pxToRem(10),
-                      borderRadius: pxToRem(12),
-                      border: isSelected
-                        ? '1px solid #2F6FED'
-                        : '1px solid #EEF2F7',
-                      bgcolor: '#FFFFFF',
-                      fontSize: pxToRem(11),
-                      fontWeight: 700,
-                      color: '#0F172A',
-                    }}
-                  >
-                    {f.label}
-                  </ButtonBase>
-                );
-              })}
-            </Box>
-
-            <Box sx={{ mt: pxToRem(16) }}>
+          <Stack spacing={pxToRem(20)} sx={{ mt: pxToRem(20) }}>
+            <Box>
               <Typography
                 sx={{
                   fontSize: pxToRem(11),
                   fontWeight: 700,
                   color: '#0F172A',
+                  mb: pxToRem(10),
                 }}
               >
-                Start Date
-              </Typography>
-              <Box sx={{ mt: pxToRem(8) }}>
-                <AppDatePickerPopover
-                  value={recurringStartDateValue}
-                  onChange={(d) =>
-                    setTrip({
-                      recurringStartDate: d ? d.format('YYYY-MM-DD') : '',
-                    })
-                  }
-                  format="MM/DD/YYYY"
-                  buttonSx={{
-                    width: '100%',
-                    justifyContent: 'flex-start',
-                    borderRadius: pxToRem(12),
-                  }}
-                />
-              </Box>
-            </Box>
-
-            <Box sx={{ mt: pxToRem(16) }}>
-              <Typography
-                sx={{
-                  fontSize: pxToRem(11),
-                  fontWeight: 700,
-                  color: '#0F172A',
-                }}
-              >
-                Ends
+                Frequency{' '}
+                <Box component="span" sx={{ color: '#EF4444' }}>
+                  *
+                </Box>
               </Typography>
               <Box
                 sx={{
-                  mt: pxToRem(10),
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: pxToRem(8),
+                }}
+              >
+                {frequencyOptions.map((f) => {
+                  const isSelected =
+                    booking.trip.recurringFrequency === f.key;
+                  return (
+                    <ButtonBase
+                      key={f.key}
+                      onClick={() =>
+                        setTrip({
+                          recurringFrequency: f.key,
+                          ...(f.key === 'monthly' && {
+                            recurringDaysOfWeek: [],
+                          }),
+                        })
+                      }
+                      sx={{
+                        flexDirection: 'column',
+                        gap: pxToRem(2),
+                        px: pxToRem(12),
+                        py: pxToRem(10),
+                        borderRadius: pxToRem(12),
+                        border: isSelected
+                          ? '1.5px solid #2F6FED'
+                          : '1px solid #EEF2F7',
+                        bgcolor: isSelected
+                          ? alpha('#2F6FED', 0.04)
+                          : '#FFFFFF',
+                        transition: 'all 150ms',
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: pxToRem(11),
+                          fontWeight: 700,
+                          color: isSelected ? '#2F6FED' : '#0F172A',
+                        }}
+                      >
+                        {f.label}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: pxToRem(9),
+                          color: '#94A3B8',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {f.description}
+                      </Typography>
+                    </ButtonBase>
+                  );
+                })}
+              </Box>
+            </Box>
+
+            {showDaysOfWeek ? (
+              <Box>
+                <Typography
+                  sx={{
+                    fontSize: pxToRem(11),
+                    fontWeight: 700,
+                    color: '#0F172A',
+                    mb: pxToRem(4),
+                  }}
+                >
+                  Repeat On{' '}
+                  <Box component="span" sx={{ color: '#EF4444' }}>
+                    *
+                  </Box>
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: pxToRem(10),
+                    color: '#94A3B8',
+                    mb: pxToRem(10),
+                  }}
+                >
+                  Select the days this ride should repeat
+                </Typography>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: pxToRem(6),
+                  }}
+                >
+                  {DAYS_OF_WEEK.map((day) => {
+                    const isSelected =
+                      booking.trip.recurringDaysOfWeek.includes(day.value);
+                    const isWeekend = day.value >= 5;
+                    return (
+                      <ButtonBase
+                        key={day.value}
+                        onClick={() => toggleDay(day.value)}
+                        sx={{
+                          flex: 1,
+                          flexDirection: 'column',
+                          gap: pxToRem(2),
+                          py: pxToRem(10),
+                          borderRadius: pxToRem(10),
+                          border: isSelected
+                            ? '1.5px solid #2F6FED'
+                            : '1px solid #EEF2F7',
+                          bgcolor: isSelected
+                            ? alpha('#2F6FED', 0.06)
+                            : isWeekend
+                              ? '#FAFAFA'
+                              : '#FFFFFF',
+                          transition: 'all 150ms',
+                          position: 'relative',
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontSize: pxToRem(10),
+                            fontWeight: 700,
+                            color: isSelected ? '#2F6FED' : '#0F172A',
+                          }}
+                        >
+                          {day.label}
+                        </Typography>
+                        {isSelected ? (
+                          <Box
+                            sx={{
+                              width: 5,
+                              height: 5,
+                              borderRadius: '50%',
+                              bgcolor: '#2F6FED',
+                            }}
+                          />
+                        ) : null}
+                      </ButtonBase>
+                    );
+                  })}
+                </Box>
+
+                {frequencyDesc &&
+                booking.trip.recurringDaysOfWeek.length > 0 ? (
+                  <RowStack
+                    spacing={1}
+                    sx={{
+                      mt: pxToRem(10),
+                      px: pxToRem(10),
+                      py: pxToRem(8),
+                      borderRadius: pxToRem(8),
+                      bgcolor: alpha('#2F6FED', 0.04),
+                      border: '1px solid',
+                      borderColor: alpha('#2F6FED', 0.1),
+                    }}
+                  >
+                    <CalendarTodayRoundedIcon
+                      sx={{ fontSize: 13, color: '#2F6FED' }}
+                    />
+                    <Typography
+                      sx={{
+                        fontSize: pxToRem(11),
+                        fontWeight: 600,
+                        color: '#2F6FED',
+                      }}
+                    >
+                      {frequencyDesc}
+                    </Typography>
+                  </RowStack>
+                ) : null}
+              </Box>
+            ) : (
+              <RowStack
+                spacing={1}
+                sx={{
+                  px: pxToRem(10),
+                  py: pxToRem(8),
+                  borderRadius: pxToRem(8),
+                  bgcolor: '#F8FAFC',
+                  border: '1px solid #EEF2F7',
+                }}
+              >
+                <InfoOutlinedIcon
+                  sx={{ fontSize: 13, color: '#94A3B8' }}
+                />
+                <Typography
+                  sx={{
+                    fontSize: pxToRem(11),
+                    fontWeight: 500,
+                    color: '#64748B',
+                  }}
+                >
+                  Repeats monthly on the same date as your pickup
+                </Typography>
+              </RowStack>
+            )}
+
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: pxToRem(11),
+                  fontWeight: 700,
+                  color: '#0F172A',
+                  mb: pxToRem(10),
+                }}
+              >
+                Ends{' '}
+                <Box component="span" sx={{ color: '#EF4444' }}>
+                  *
+                </Box>
+              </Typography>
+              <Box
+                sx={{
                   width: 'fit-content',
                   p: pxToRem(3),
                   borderRadius: pxToRem(12),
@@ -584,9 +807,9 @@ export function TripStep({ accountType }: TripStepProps) {
                 />
               )}
             </Box>
-          </Box>
+          </Stack>
         ) : null}
-      </Paper>
+      </Paper> */}
 
       {/* Additional Notes */}
       <Paper

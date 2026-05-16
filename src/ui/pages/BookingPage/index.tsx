@@ -76,7 +76,12 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
 
       if (!booking.trip.isRecurring) return true;
 
-      if (!booking.trip.recurringStartDate.trim()) return false;
+      if (!booking.trip.recurringFrequency) return false;
+
+      // Days of week required for daily, weekly, bi_weekly
+      if (booking.trip.recurringFrequency !== 'monthly') {
+        if (booking.trip.recurringDaysOfWeek.length === 0) return false;
+      }
 
       if (booking.trip.recurringEnds === 'by_date') {
         return booking.trip.recurringEndDate.trim().length > 0;
