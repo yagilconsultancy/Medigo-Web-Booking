@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { pxToRem } from '@/common';
+import { pxToRem, useGetMyProfile } from '@/common';
 import { AppFooter, AppLayout } from '@/ui/modules/partials';
 import { HeaderHelpUser } from '@/ui/modules/partials/AppHeader/ui/components';
 import { AppButton, RowStack, VisuallyHiddenInput } from '@/ui/modules/components';
@@ -30,12 +30,16 @@ export type ProfileSnapshot = {
   email: string;
   phone: string;
   avatarUrl?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  homeAddress?: string;
+  medicalNotes?: string;
 };
 
 const DEFAULT_SNAPSHOT: ProfileSnapshot = {
-  name: 'Sarah Johnson',
-  email: 'user@medigo.com',
-  phone: '(555) 248-1397',
+  name: '',
+  email: '',
+  phone: '',
 };
 
 export function ProfilePage() {
@@ -43,9 +47,30 @@ export function ProfilePage() {
   const [tabIndex, setTabIndex] = useState(0);
   const activeTab = tabOrder[tabIndex] ?? 'personal';
 
+  const { data: profileResponse } = useGetMyProfile();
+  const profile = profileResponse?.success ? profileResponse.data : null;
+
   const [snapshot, setSnapshot] = useState<ProfileSnapshot>(DEFAULT_SNAPSHOT);
   const personalSubmitRef = useRef<null | (() => void)>(null);
+  const [isPersonalFormValid, setIsPersonalFormValid] = useState(false);
   const lastBlobUrlRef = useRef<string | null>(null);
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    if (profile && !hasInitialized.current) {
+      hasInitialized.current = true;
+      setSnapshot({
+        name: `${profile.first_name} ${profile.last_name}`.trim(),
+        email: profile.email || '',
+        phone: profile.phone || '',
+        avatarUrl: profile.avatar_url || undefined,
+        dateOfBirth: profile.date_of_birth || undefined,
+        gender: profile.gender || undefined,
+        homeAddress: profile.home_address || undefined,
+        medicalNotes: profile.medical_notes || undefined,
+      });
+    }
+  }, [profile]);
 
   useEffect(() => {
     return () => {
@@ -67,7 +92,7 @@ export function ProfilePage() {
       headerProps={{
         showRightContent: true,
         rightContent: (
-          <HeaderHelpUser name={headerIdentity.name} email={headerIdentity.email} />
+          <HeaderHelpUser />
         ),
       }}
     >
@@ -235,12 +260,14 @@ export function ProfilePage() {
                 {activeTab === 'personal' ? (
                   <AppButton
                     type="button"
+                    disabled={!isPersonalFormValid}
                     onClick={() => personalSubmitRef.current?.()}
                     sx={{
                       bgcolor: '#2F6FED',
                       fontSize: pxToRem(11),
                       textTransform: 'none',
                       padding: '12px 24px',
+                      '&:disabled': { opacity: 0.5 },
                     }}
                   >
                     Save Changes
@@ -279,8 +306,9 @@ export function ProfilePage() {
               <PersonalTab
                 snapshot={snapshot}
                 onSnapshotChange={setSnapshot}
-                registerSubmit={(submit) => {
+                registerSubmit={(submit, isFormValid) => {
                   personalSubmitRef.current = submit;
+                  setIsPersonalFormValid(isFormValid);
                 }}
               />
             ) : null}

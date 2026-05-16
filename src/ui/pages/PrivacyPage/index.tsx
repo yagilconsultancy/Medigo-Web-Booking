@@ -408,10 +408,7 @@ export function PrivacyPage() {
       headerProps={{
         showRightContent: true,
         rightContent: (
-          <HeaderHelpUser
-            name={headerIdentity.name}
-            email={headerIdentity.email}
-          />
+          <HeaderHelpUser />
         ),
       }}
     >

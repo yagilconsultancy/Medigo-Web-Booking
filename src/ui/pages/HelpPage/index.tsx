@@ -181,8 +181,6 @@ export function HelpPage() {
           <HeaderHelpUser
             helpLabel="Help Center"
             online
-            name="User"
-            email="user@medigo.com"
           />
         ),
       }}

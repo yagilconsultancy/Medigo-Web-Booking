@@ -3,8 +3,11 @@
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-import { pxToRem } from '@/common';
+import { getRefreshToken, pxToRem } from '@/common';
+import { useAuthFlowsApi } from '@/common/hooks/api/collection';
 import { AppButton, AppModal } from '@/ui/modules/components';
 
 export type LogoutModalProps = {
@@ -14,9 +17,29 @@ export type LogoutModalProps = {
 };
 
 export function LogoutModal({ open, setOpen, onConfirm }: LogoutModalProps) {
-  const handleLogout = () => {
-    setOpen(false);
-    onConfirm?.();
+  const router = useRouter();
+  const { logout } = useAuthFlowsApi();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    const refreshToken = getRefreshToken();
+
+    if (!refreshToken) {
+      // No refresh token, just redirect to login
+      setOpen(false);
+      onConfirm?.();
+      router.push('/login');
+      return;
+    }
+
+    const success = await logout({ refresh_token: refreshToken });
+    if (success) {
+      setOpen(false);
+      onConfirm?.();
+      router.push('/login');
+    }
+    setIsLoggingOut(false);
   };
 
   return (
@@ -99,6 +122,7 @@ export function LogoutModal({ open, setOpen, onConfirm }: LogoutModalProps) {
         <Stack spacing={pxToRem(12)} sx={{ px: pxToRem(32), py: pxToRem(24) }}>
           <AppButton
             fullWidth
+            disabled={isLoggingOut}
             onClick={handleLogout}
             sx={{
               bgcolor: '#FB2C36',
@@ -112,14 +136,18 @@ export function LogoutModal({ open, setOpen, onConfirm }: LogoutModalProps) {
                 bgcolor: '#E11D48 !important',
                 background: '#E11D48 !important',
               },
+              '&:disabled': {
+                opacity: 0.6,
+              },
             }}
           >
-            Yes, Log Out
+            {isLoggingOut ? 'Logging Out...' : 'Yes, Log Out'}
           </AppButton>
 
           <AppButton
             fullWidth
             variant="outlined"
+            disabled={isLoggingOut}
             onClick={() => setOpen(false)}
             sx={{
               height: 52,
@@ -131,6 +159,9 @@ export function LogoutModal({ open, setOpen, onConfirm }: LogoutModalProps) {
               background: '#FFFFFF',
               '&:hover': {
                 background: '#F9FAFB !important',
+              },
+              '&:disabled': {
+                opacity: 0.6,
               },
             }}
           >

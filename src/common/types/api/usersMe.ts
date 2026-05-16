@@ -7,9 +7,10 @@ export type ApiUpdateMyProfilePayload = {
   last_name?: string | null;
   date_of_birth?: string | null; // YYYY-MM-DD
   gender?: string | null;
-  avatar_url?: string | null;
+  avatar_url?: File | null;
   home_address?: string | null;
   medical_notes?: string | null;
+  phone?: string | null;
 };
 
 export type ApiUserMeProfile = {

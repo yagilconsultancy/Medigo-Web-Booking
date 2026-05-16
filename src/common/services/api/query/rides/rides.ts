@@ -4,8 +4,6 @@ import { getApiClient } from '../../../../lib';
 import type {
   ApiBookingChannelsResponse,
   ApiDashboardOverviewResponse,
-  ApiHealthLiveResponse,
-  ApiHealthReadyResponse,
   ApiMyActiveRideResponse,
   ApiMyRidesResponse,
   ApiPublicBookingConfigResponse,
@@ -26,57 +24,7 @@ import type {
   ApiGuestSessionResponse,
   ApiSharedRideResponse,
   ApiRecurringRidesResponse,
-  ApiInternalResponse,
 } from '../../../../types';
-
-export const healthLive = async () => {
-  return await getApiClient().get<
-    ApiHealthLiveResponse,
-    AxiosResponse<ApiHealthLiveResponse>
-  >(resolveRoute(ROUTES.healthLive));
-};
-
-export const healthReady = async () => {
-  return await getApiClient().get<
-    ApiHealthReadyResponse,
-    AxiosResponse<ApiHealthReadyResponse>
-  >(resolveRoute(ROUTES.healthReady));
-};
-
-export const internalGetActiveRides = async () => {
-  return await getApiClient().get<
-    ApiInternalResponse,
-    AxiosResponse<ApiInternalResponse>
-  >(resolveRoute(ROUTES.internalGetActiveRides));
-};
-
-export const internalGetCompletedTodayCount = async () => {
-  return await getApiClient().get<
-    ApiInternalResponse,
-    AxiosResponse<ApiInternalResponse>
-  >(resolveRoute(ROUTES.internalGetCompletedTodayCount));
-};
-
-export const internalGetRide = async (rideId: string) => {
-  return await getApiClient().get<
-    ApiInternalResponse,
-    AxiosResponse<ApiInternalResponse>
-  >(resolveRoute(ROUTES.internalGetRide, rideId));
-};
-
-export const internalGetRiderRides = async (riderId: string) => {
-  return await getApiClient().get<
-    ApiInternalResponse,
-    AxiosResponse<ApiInternalResponse>
-  >(resolveRoute(ROUTES.internalGetRiderRides, riderId));
-};
-
-export const internalGetRiderStats = async (riderId: string) => {
-  return await getApiClient().get<
-    ApiInternalResponse,
-    AxiosResponse<ApiInternalResponse>
-  >(resolveRoute(ROUTES.internalGetRiderStats, riderId));
-};
 
 export const getRideDetail = async (rideId: string) => {
   return await getApiClient().get<
@@ -205,7 +153,7 @@ export const getMyRides = async (params?: {
   return await getApiClient().get<
     ApiMyRidesResponse,
     AxiosResponse<ApiMyRidesResponse>
-  >(resolveRoute(ROUTES.getMyRides), { params });
+  >(resolveRoute(ROUTES.getRideOverview), { params });
 };
 
 export const getMyActiveRide = async () => {

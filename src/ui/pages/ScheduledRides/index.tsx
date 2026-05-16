@@ -106,7 +106,7 @@ export function ScheduledRidesPage() {
       headerProps={{
         showRightContent: true,
         rightContent: (
-          <HeaderHelpUser name={headerIdentity.name} email={headerIdentity.email} />
+          <HeaderHelpUser />
         ),
       }}
     >

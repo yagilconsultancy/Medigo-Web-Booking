@@ -26,35 +26,6 @@ import type {
   ApiRecurringRideResponse,
 } from '../../../../types';
 
-export const internalBatchRiderActivity = async (payload: {
-  body: ApiBatchRiderActivityPayload;
-  xInternalService?: string | null;
-}) => {
-  return await getApiClient().post<
-    ApiInternalResponse,
-    AxiosResponse<ApiInternalResponse>
-  >(resolveRoute(ROUTES.internalBatchRiderActivity), payload.body, {
-    headers: payload.xInternalService
-      ? { 'x-internal-service': payload.xInternalService }
-      : undefined,
-  });
-};
-
-export const internalUpdateRideFare = async (payload: {
-  rideId: string;
-  body: ApiUpdateFarePayload;
-  xInternalService?: string | null;
-}) => {
-  return await getApiClient().put<
-    ApiInternalResponse,
-    AxiosResponse<ApiInternalResponse>
-  >(resolveRoute(ROUTES.internalUpdateRideFare, payload.rideId), payload.body, {
-    headers: payload.xInternalService
-      ? { 'x-internal-service': payload.xInternalService }
-      : undefined,
-  });
-};
-
 export const createRide = async (payload: ApiCreateRidePayload) => {
   return await getApiClient().post<
     ApiRideResponse,

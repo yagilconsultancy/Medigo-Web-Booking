@@ -7,8 +7,6 @@ import {
   useCreateRide,
   useCreateSafetyReport,
   useDeactivateRecurringRide,
-  useInternalBatchRiderActivity,
-  useInternalUpdateRideFare,
   useRebookRide,
   useShareRide,
   useSubmitRideRating,
@@ -16,7 +14,6 @@ import {
   useTransitionRideStatus,
 } from '../../mutation';
 import type {
-  ApiBatchRiderActivityPayload,
   ApiCancelRidePayload,
   ApiCreateGuestBookingPayload,
   ApiCreateGuestSessionPayload,
@@ -27,7 +24,6 @@ import type {
   ApiStatusTransitionPayload,
   ApiSubmitRatingPayload,
   ApiSubmitVehicleChecklistPayload,
-  ApiUpdateFarePayload,
 } from '../../../../types';
 import { extractResponseErrors, tryExecute } from '../../../../utils';
 

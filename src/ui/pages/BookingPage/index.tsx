@@ -11,7 +11,7 @@ import {
 } from '../../modules/components';
 import { AppLayout } from '../../modules/partials';
 import { HeaderHelpUser } from '../../modules/partials/AppHeader/ui/components';
-import { pxToRem, usePaymentsApi } from '../../../common';
+import { pxToRem, usePaymentsApi, useRidesApi } from '../../../common';
 import { BookingProvider, useBooking } from './common';
 import {
   AddressStep,
@@ -37,9 +37,11 @@ const steps = [
 
 function BookingFlowShell({ accountType }: { accountType: AccountType }) {
   const [activeStep, setActiveStep] = useState(0);
+  const [isBookingRide, setIsBookingRide] = useState(false);
   const { booking } = useBooking();
   const router = useRouter();
-  const { createPaymentIntent, isCreatingPaymentIntent } = usePaymentsApi();
+  const { createPaymentIntent } = usePaymentsApi();
+  const { createRide } = useRidesApi();
 
   const stepTitle = steps[activeStep]?.label ?? '';
 
@@ -100,23 +102,70 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
     if (!canContinue) return;
 
     if (activeStep === steps.length - 1) {
-      const baseFare =
-        booking.vehicle.type === 'standard'
-          ? 45
-          : booking.vehicle.type === 'wheelchair'
-            ? 75
-            : booking.vehicle.type === 'stretcher'
-              ? 120
-              : 0;
+      setIsBookingRide(true);
 
-      const amount = Math.round(baseFare * 100); // cents
-      const orderId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}`;
+      // Build the scheduled_at ISO string from date + time
+      const scheduledAt = booking.trip.pickupDate && booking.trip.pickupTime
+        ? new Date(`${booking.trip.pickupDate}T${booking.trip.pickupTime}`).toISOString()
+        : new Date().toISOString();
 
-      const result = await createPaymentIntent({
+      const ridePayload: Record<string, any> = {
+        ride_type: booking.vehicle.type ?? 'ambulatory',
+        trip_type: booking.service.type === 'transport_assistant'
+          ? 'transport_care_assistant'
+          : 'transport_only',
+        trip_structure: booking.trip.type ?? 'one_way',
+        pickup_address: booking.address.pickupAddress,
+        pickup_latitude: booking.address.pickupCoordinates?.lat,
+        pickup_longitude: booking.address.pickupCoordinates?.lng,
+        destination_address: booking.address.dropoffAddress,
+        destination_latitude: booking.address.dropoffCoordinates?.lat,
+        destination_longitude: booking.address.dropoffCoordinates?.lng,
+        scheduled_at: scheduledAt,
+        passenger_first_name: booking.patient.firstName,
+        passenger_last_name: booking.patient.lastName,
+        passenger_phone: `${booking.patient.countryCode}${booking.patient.phoneNumber}`,
+        visit_type: booking.appointment.type,
+        facility_name: booking.appointment.otherDetails || undefined,
+        special_instructions: booking.trip.notes || undefined,
+        estimated_fare: booking.vehicle.estimatedTotal ?? undefined,
+        use_highway_407: false,
+        is_dialysis_trip: false,
+        booking_channel: 'web_app',
+      };
+
+      // Add recurring fields only if recurring
+      if (booking.trip.isRecurring && booking.trip.recurringFrequency) {
+        ridePayload.recurring_frequency = booking.trip.recurringFrequency;
+        ridePayload.recurring_days_of_week = booking.trip.recurringDaysOfWeek;
+        if (booking.trip.recurringEndDate) {
+          ridePayload.recurring_end_date = booking.trip.recurringEndDate;
+        }
+      }
+
+      // Remove any keys with null/undefined values
+      Object.keys(ridePayload).forEach((key) => {
+        if (ridePayload[key] == null) {
+          delete ridePayload[key];
+        }
+      });
+
+      const rideResult = await createRide(ridePayload as any);
+
+      if (!rideResult) {
+        setIsBookingRide(false);
+        return;
+      }
+
+      // Ride created successfully — now proceed to payment
+      const amount = Math.round((rideResult.estimated_fare ?? 0) * 100); // cents
+      const currency = booking.vehicle.currency || booking.service.currency || 'CAD';
+
+      const paymentResult = await createPaymentIntent({
         amount,
-        currency: 'CAD',
-        description: 'MediGo booking payment',
-        order_id: orderId,
+        currency,
+        description: booking.trip.notes || 'MediGo booking payment',
+        order_id: rideResult.id,
         metadata: {
           account_type: accountType,
           service_type: booking.service.type ?? '',
@@ -127,11 +176,13 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
         setup_future_usage: 'on_session',
       });
 
-      if (result) {
+      setIsBookingRide(false);
+
+      if (paymentResult) {
         router.push(
-          `/checkout?client_secret=${encodeURIComponent(
-            result.clientSecret
-          )}&pk=${encodeURIComponent(result.publishableKey)}`
+          `/booking-success?ride_id=${encodeURIComponent(rideResult.id)}&client_secret=${encodeURIComponent(
+            paymentResult.clientSecret
+          )}&pk=${encodeURIComponent(paymentResult.publishableKey)}`
         );
       }
 
@@ -309,7 +360,7 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
             disabled={!canContinue}
             onClick={handleContinue}
             isLoading={
-              activeStep === steps.length - 1 ? isCreatingPaymentIntent : false
+              activeStep === steps.length - 1 ? isBookingRide : false
             }
             sx={{
               height: pxToRem(40),
@@ -327,7 +378,7 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
             }}
           >
             {activeStep === steps.length - 1
-              ? 'Proceed to Payment'
+              ? 'Book a Ride'
               : 'Continue'}
           </AppButton>
         </Box>

@@ -6,13 +6,14 @@ import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import RouteRoundedIcon from '@mui/icons-material/RouteRounded';
 import TocRoundedIcon from '@mui/icons-material/TocRounded';
-import { Box, Button, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, Skeleton, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { pxToRem } from '@/common';
+import { pxToRem, useGetMyRides, useResolvedApiQuery } from '@/common';
 import { AppFooter, AppLayout } from '@/ui/modules/partials';
 import { HeaderHelpUser } from '@/ui/modules/partials/AppHeader/ui/components';
 import { AppButton, RowStack } from '@/ui/modules/components';
+import { EmptyState } from '@/ui/modules/blocks';
 import { RideHistoryAccordion, type RideHistoryItem } from './ui/components/RideHistoryAccordion';
 import { RideStatCard } from './ui/components/RideStatCard';
 
@@ -135,51 +136,153 @@ export function UserRidesPage() {
   const router = useRouter();
   const [tabIndex, setTabIndex] = useState(0);
   const activeTab = tabOrder[tabIndex] ?? 'all';
+  const myRidesResponse = useGetMyRides({ page: 1, limit: 100 });
+  const isLoading = myRidesResponse.isLoading;
+  const myRidesData = myRidesResponse.data?.success
+    ? myRidesResponse.data.data
+    : null;
+  const myRides = myRidesData?.rides ?? [];
+  const summary = myRidesData?.summary;
+
+  const formatRideStatus = (
+    status: string
+    ): RideHistoryItem['status'] => {
+    if (status === 'cancelled') return 'cancelled';
+    if (status === 'completed') return 'completed';
+
+    return 'requested';
+    };
+
+    const formatRideType = (rideType: string) => {
+    switch (rideType) {
+        case 'wheelchair':
+        return 'MediGO Wheelchair';
+
+        case 'stretcher':
+        return 'MediGO Stretcher';
+
+        default:
+        return 'MediGO Standard';
+    }
+    };
+
+    const rides: RideHistoryItem[] = useMemo(() => {
+        if (!myRides) return [];
+
+        return myRides.map((ride: any) => ({
+            id: ride.id.slice(0, 8).toUpperCase(),
+            status: formatRideStatus(ride.status),
+
+            serviceName: formatRideType(ride.ride_type),
+
+            pickupAddress: ride.pickup_address,
+
+            dropoffAddress: ride.destination_address,
+
+            dateLabel: new Date(ride.scheduled_at).toLocaleDateString(
+            'en-US',
+            {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            }
+            ),
+
+            timeLabel: new Date(ride.scheduled_at).toLocaleTimeString(
+            'en-US',
+            {
+                hour: 'numeric',
+                minute: '2-digit',
+            }
+            ),
+
+            details: ride.driver_name
+            ? {
+                driver: ride.driver_name,
+                vehicle:
+                  ride.driver_vehicle_make && ride.driver_vehicle_model
+                    ? `${ride.driver_vehicle_make} ${ride.driver_vehicle_model} — ${formatRideType(ride.ride_type).replace('MediGO ', '')}`
+                    : formatRideType(ride.ride_type),
+                distance: ride.estimated_distance_miles
+                  ? `${ride.estimated_distance_miles.toFixed(1)} mi`
+                  : '-',
+                duration: ride.estimated_duration_minutes
+                  ? `${ride.estimated_duration_minutes} min`
+                  : '-',
+                ratingLabel: ride.driver_rating
+                  ? `Rated ${ride.driver_rating} stars`
+                  : 'Not rated yet',
+              }
+            : ride.status === 'cancelled'
+            ? undefined
+            : {
+                driver: 'Driver not yet assigned',
+                vehicle: formatRideType(ride.ride_type),
+                distance: ride.estimated_distance_miles
+                  ? `${ride.estimated_distance_miles.toFixed(1)} mi`
+                  : '-',
+                duration: ride.estimated_duration_minutes
+                  ? `${ride.estimated_duration_minutes} min`
+                  : '-',
+                ratingLabel: 'Pending',
+              },
+
+            cancelled:
+            ride.status === 'cancelled'
+                ? {
+                    requestedVehicleLabel: formatRideType(ride.ride_type),
+
+                    cancelledTitle: 'Ride Cancelled',
+
+                    reason: ride.special_instructions
+                    ? `Reason: ${ride.special_instructions}`
+                    : undefined,
+
+                    note: 'This ride was cancelled.',
+
+                    chargeLabel: 'No charge',
+                }
+                : undefined,
+        }));
+        }, [myRides]);
 
   const filteredRides = useMemo(() => {
-    if (activeTab === 'all') return RIDES;
-    return RIDES.filter((ride) => ride.status === activeTab);
-  }, [activeTab]);
+    if (activeTab === 'all') return rides;
+    return rides.filter((ride) => ride.status === activeTab);
+  }, [activeTab, rides]);
 
-  const headerIdentity = useMemo(() => {
-    return { name: 'Sarah Johnson', email: 'user@medigo.com' };
-  }, []);
 
-  const stats = useMemo(() => {
-    const total = RIDES.length;
-    const completed = RIDES.filter((ride) => ride.status === 'completed').length;
-    const cancelled = RIDES.filter((ride) => ride.status === 'cancelled').length;
-
+  const statCards = useMemo(() => {
     return [
       {
         icon: <TocRoundedIcon sx={{ fontSize: pxToRem(18) }} />,
-        value: `${total}`,
+        value: summary?.total_rides?.toString() ?? '0',
         label: 'Total Rides',
       },
       {
         icon: <CheckCircleRoundedIcon sx={{ fontSize: pxToRem(18) }} />,
-        value: `${completed}`,
+        value: summary?.completed_rides?.toString() ?? '0',
         label: 'Completed',
       },
       {
         icon: <CancelRoundedIcon sx={{ fontSize: pxToRem(18) }} />,
-        value: `${cancelled}`,
+        value: summary?.cancelled_rides?.toString() ?? '0',
         label: 'Cancelled',
       },
       {
         icon: <RouteRoundedIcon sx={{ fontSize: pxToRem(18) }} />,
-        value: '41.1',
+        value: summary?.miles_traveled?.toFixed(1) ?? '0.0',
         label: 'Miles Traveled',
       },
     ];
-  }, []);
+  }, [summary]);
 
   return (
     <AppLayout
       headerProps={{
         showRightContent: true,
         rightContent: (
-          <HeaderHelpUser name={headerIdentity.name} email={headerIdentity.email} />
+          <HeaderHelpUser />
         ),
       }}
     >
@@ -245,6 +348,7 @@ export function UserRidesPage() {
                 py: pxToRem(10),
                 boxShadow: '0px 8px 20px rgba(21,93,252,0.16)',
               }}
+              onClick={() => router.push("/booking")}
             >
               Book a Ride
             </AppButton>
@@ -262,14 +366,25 @@ export function UserRidesPage() {
               gap: pxToRem(16),
             }}
           >
-            {stats.map((stat) => (
-              <RideStatCard
-                key={stat.label}
-                icon={stat.icon}
-                value={stat.value}
-                label={stat.label}
-              />
-            ))}
+            {isLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    variant="rectangular"
+                    sx={{
+                      height: pxToRem(100),
+                      borderRadius: pxToRem(12),
+                    }}
+                  />
+                ))
+              : statCards.map((stat) => (
+                  <RideStatCard
+                    key={stat.label}
+                    icon={stat.icon}
+                    value={stat.value}
+                    label={stat.label}
+                  />
+                ))}
           </Box>
 
           <RowStack
@@ -321,11 +436,63 @@ export function UserRidesPage() {
                 fontWeight: 600,
               }}
             >
-              {filteredRides.length} rides
+              {isLoading ? '...' : `${filteredRides.length} rides`}
             </Typography>
           </RowStack>
 
-          <RideHistoryAccordion items={filteredRides} />
+          {isLoading ? (
+            <Stack spacing={2}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton
+                  key={i}
+                  variant="rectangular"
+                  sx={{
+                    height: pxToRem(120),
+                    borderRadius: pxToRem(12),
+                  }}
+                />
+              ))}
+            </Stack>
+          ) : filteredRides.length === 0 ? (
+            <Box
+              sx={{
+                bgcolor: '#FFFFFF',
+                borderRadius: pxToRem(12),
+                border: '1px solid #E2E8F0',
+                py: pxToRem(60),
+              }}
+            >
+              <EmptyState
+                emptyState={
+                  <Stack spacing={1} alignItems="center">
+                    <Typography
+                      sx={{
+                        color: '#0F172A',
+                        fontSize: pxToRem(16),
+                        fontWeight: 600,
+                        textAlign: 'center',
+                      }}
+                    >
+                      No rides found
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color: '#64748B',
+                        fontSize: pxToRem(13),
+                        textAlign: 'center',
+                      }}
+                    >
+                      {activeTab === 'all'
+                        ? "You haven't booked any rides yet"
+                        : `You have no ${activeTab} rides`}
+                    </Typography>
+                  </Stack>
+                }
+              />
+            </Box>
+          ) : (
+            <RideHistoryAccordion items={filteredRides} />
+          )}
         </Box>
 
         <AppFooter />

@@ -35,10 +35,37 @@ import type {
 } from '../../../../types';
 
 export const updateMyProfile = async (payload: ApiUpdateMyProfilePayload) => {
+  const formData = new FormData();
+  if (payload.first_name !== undefined) {
+    formData.append('first_name', payload.first_name);
+  }
+  if (payload.last_name !== undefined) {
+    formData.append('last_name', payload.last_name);
+  }
+  if (payload.date_of_birth !== undefined) {
+    formData.append('date_of_birth', payload.date_of_birth);
+  }
+  if (payload.gender !== undefined) {
+    formData.append('gender', payload.gender);
+  }
+  if (payload.avatar_url !== undefined && payload.avatar_url instanceof File) {
+    formData.append('avatar_url', payload.avatar_url);
+  }
+  if (payload.home_address !== undefined) {
+    formData.append('home_address', payload.home_address);
+  }
+  if (payload.medical_notes !== undefined) {
+    formData.append('medical_notes', payload.medical_notes);
+  }
+  if (payload.phone !== undefined) {
+    formData.append('phone', payload.phone);
+  }
   return await getApiClient().put<
     ApiUpdateMyProfileResponse,
     AxiosResponse<ApiUpdateMyProfileResponse>
-  >(resolveRoute(ROUTES.updateMyProfile), payload);
+  >(resolveRoute(ROUTES.updateMyProfile), formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 };
 
 export const createEmergencyContact = async (

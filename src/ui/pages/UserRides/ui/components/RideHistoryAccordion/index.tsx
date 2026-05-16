@@ -7,6 +7,7 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import AccessibleForwardRoundedIcon from '@mui/icons-material/AccessibleForwardRounded';
+import RouteRoundedIcon from '@mui/icons-material/RouteRounded';
 import {
   Accordion,
   AccordionDetails,
@@ -23,7 +24,7 @@ import { useState } from 'react';
 import { pxToRem } from '@/common';
 import { RowStack } from '@/ui/modules/components';
 
-export type RideStatus = 'completed' | 'cancelled';
+export type RideStatus = 'completed' | 'cancelled' | 'requested';
 
 export type RideHistoryItem = {
   id: string;
@@ -58,12 +59,21 @@ const getStatusChipSx = (status: RideStatus) => {
     } as const;
   }
 
+  if (status === 'requested') {
+    return {
+      bgcolor: '#EFF6FF',
+      borderColor: '#BFDBFE',
+      color: '#155DFC',
+    } as const;
+  }
+
   return {
     bgcolor: '#ECFDF5',
     borderColor: '#A7F3D0',
     color: '#047857',
   } as const;
 };
+
 
 const RideTypeIcon = ({ serviceName }: { serviceName: string }) => {
   if (serviceName.toLowerCase().includes('wheelchair')) {
@@ -162,16 +172,23 @@ export function RideHistoryAccordion({
                         >
                           {ride.id}
                         </Typography>
-
                         <Chip
                           icon={
                             ride.status === 'cancelled' ? (
                               <CloseRoundedIcon sx={{ fontSize: pxToRem(14) }} />
+                            ) : ride.status === 'requested' ? (
+                              <RouteRoundedIcon sx={{ fontSize: pxToRem(14) }} />
                             ) : (
                               <CheckCircleRoundedIcon sx={{ fontSize: pxToRem(14) }} />
                             )
                           }
-                          label={ride.status === 'cancelled' ? 'Cancelled' : 'Completed'}
+                          label={
+                            ride.status === 'cancelled'
+                              ? 'Cancelled'
+                              : ride.status === 'requested'
+                                ? 'Requested'
+                                : 'Completed'
+                          }
                           variant="outlined"
                           size="small"
                           sx={{
@@ -188,7 +205,6 @@ export function RideHistoryAccordion({
                             ...chipSx,
                           }}
                         />
-
                         <Typography
                           sx={{
                             color: '#94A3B8',
@@ -281,7 +297,111 @@ export function RideHistoryAccordion({
               <AccordionDetails sx={{ px: 0, pb: 0 }}>
                 <Divider sx={{ borderColor: '#F3F4F6' }} />
 
-                {ride.status === 'completed' ? (
+                {ride.status === 'cancelled' ? (
+                  // Cancelled rides - show cancellation info
+                  <Box sx={{ px: pxToRem(24), py: pxToRem(18) }}>
+                    <Stack spacing={1.25}>
+                      <Typography
+                        sx={{
+                          color: '#94A3B8',
+                          fontSize: pxToRem(10),
+                          fontWeight: 700,
+                          letterSpacing: pxToRem(1),
+                        }}
+                      >
+                        REQUESTED VEHICLE
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: '#0F172A',
+                          fontSize: pxToRem(13),
+                          fontWeight: 600,
+                        }}
+                      >
+                        {ride.cancelled?.requestedVehicleLabel ?? ride.serviceName}
+                      </Typography>
+                    </Stack>
+
+                    <Box
+                      sx={{
+                        mt: pxToRem(16),
+                        bgcolor: '#FEF2F2',
+                        border: '1px solid #FECACA',
+                        borderRadius: pxToRem(12),
+                        p: pxToRem(16),
+                      }}
+                    >
+                      <RowStack justifyContent="space-between" alignItems="flex-start" gap={2}>
+                        <RowStack alignItems="flex-start" gap={pxToRem(12)} sx={{ minWidth: 0 }}>
+                          <Box
+                            sx={{
+                              width: pxToRem(36),
+                              height: pxToRem(36),
+                              borderRadius: pxToRem(12),
+                              bgcolor: 'rgba(185,28,28,0.08)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                              color: '#B91C1C',
+                            }}
+                          >
+                            <CloseRoundedIcon sx={{ fontSize: pxToRem(18) }} />
+                          </Box>
+
+                          <Stack spacing={0.75} sx={{ minWidth: 0 }}>
+                            <Typography
+                              sx={{
+                                color: '#B91C1C',
+                                fontSize: pxToRem(13),
+                                fontWeight: 700,
+                              }}
+                            >
+                              {ride.cancelled?.cancelledTitle ?? 'Ride Cancelled'}
+                            </Typography>
+                            {ride.cancelled?.reason ? (
+                              <Typography
+                                sx={{
+                                  color: '#B91C1C',
+                                  fontSize: pxToRem(12),
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {ride.cancelled.reason}
+                              </Typography>
+                            ) : null}
+                            {ride.cancelled?.note ? (
+                              <Typography
+                                sx={{
+                                  color: '#F87171',
+                                  fontSize: pxToRem(12),
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {ride.cancelled.note}
+                              </Typography>
+                            ) : null}
+                          </Stack>
+                        </RowStack>
+
+                        {ride.cancelled?.chargeLabel ? (
+                          <Chip
+                            label={ride.cancelled.chargeLabel}
+                            size="small"
+                            sx={{
+                              bgcolor: 'rgba(248,113,113,0.12)',
+                              color: '#B91C1C',
+                              fontWeight: 600,
+                              fontSize: pxToRem(11),
+                              height: pxToRem(22),
+                            }}
+                          />
+                        ) : null}
+                      </RowStack>
+                    </Box>
+                  </Box>
+                ) : (
+                  // Completed or Requested rides - show ride details
                   <Box sx={{ px: pxToRem(24), py: pxToRem(18) }}>
                     <RowStack
                       sx={{
@@ -384,173 +504,75 @@ export function RideHistoryAccordion({
                       </Stack>
                     </RowStack>
 
-                    <Divider sx={{ borderColor: '#F3F4F6', my: pxToRem(16) }} />
+                    {ride.status === 'completed' && (
+                      <>
+                        <Divider sx={{ borderColor: '#F3F4F6', my: pxToRem(16) }} />
 
-                    <RowStack justifyContent="space-between" gap={2} flexWrap="wrap">
-                      <Stack spacing={0.75}>
-                        <Typography
-                          sx={{
-                            color: '#94A3B8',
-                            fontSize: pxToRem(10),
-                            fontWeight: 700,
-                            letterSpacing: pxToRem(1),
-                          }}
-                        >
-                          YOUR RATING
-                        </Typography>
-
-                        <RowStack spacing={1}>
-                          <RowStack spacing={0.25}>
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <StarRoundedIcon
-                                key={i}
-                                sx={{ color: '#F59E0B', fontSize: pxToRem(16) }}
-                              />
-                            ))}
-                          </RowStack>
-
-                          <Typography
-                            sx={{
-                              color: '#64748B',
-                              fontSize: pxToRem(12),
-                              fontWeight: 600,
-                            }}
-                          >
-                            {ride.details?.ratingLabel ?? 'Rated 5 stars'}
-                          </Typography>
-                        </RowStack>
-                      </Stack>
-
-                      <ButtonBase
-                        onClick={() => undefined}
-                        sx={{ borderRadius: pxToRem(10) }}
-                      >
-                        <RowStack
-                          spacing={1}
-                          sx={{
-                            bgcolor: '#EFF6FF',
-                            borderRadius: pxToRem(10),
-                            px: pxToRem(14),
-                            py: pxToRem(9),
-                            color: '#155DFC',
-                          }}
-                        >
-                          <ReceiptLongRoundedIcon sx={{ fontSize: pxToRem(16) }} />
-                          <Typography
-                            sx={{
-                              color: '#155DFC',
-                              fontSize: pxToRem(13),
-                              fontWeight: 600,
-                              lineHeight: pxToRem(20),
-                            }}
-                          >
-                            Receipt
-                          </Typography>
-                        </RowStack>
-                      </ButtonBase>
-                    </RowStack>
-                  </Box>
-                ) : (
-                  <Box sx={{ px: pxToRem(24), py: pxToRem(18) }}>
-                    <Stack spacing={1.25}>
-                      <Typography
-                        sx={{
-                          color: '#94A3B8',
-                          fontSize: pxToRem(10),
-                          fontWeight: 700,
-                          letterSpacing: pxToRem(1),
-                        }}
-                      >
-                        REQUESTED VEHICLE
-                      </Typography>
-                      <Typography
-                        sx={{
-                          color: '#0F172A',
-                          fontSize: pxToRem(13),
-                          fontWeight: 600,
-                        }}
-                      >
-                        {ride.cancelled?.requestedVehicleLabel ?? ride.serviceName}
-                      </Typography>
-                    </Stack>
-
-                    <Box
-                      sx={{
-                        mt: pxToRem(16),
-                        bgcolor: '#FEF2F2',
-                        border: '1px solid #FECACA',
-                        borderRadius: pxToRem(12),
-                        p: pxToRem(16),
-                      }}
-                    >
-                      <RowStack justifyContent="space-between" alignItems="flex-start" gap={2}>
-                        <RowStack alignItems="flex-start" gap={pxToRem(12)} sx={{ minWidth: 0 }}>
-                          <Box
-                            sx={{
-                              width: pxToRem(36),
-                              height: pxToRem(36),
-                              borderRadius: pxToRem(12),
-                              bgcolor: 'rgba(185,28,28,0.08)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                              color: '#B91C1C',
-                            }}
-                          >
-                            <CloseRoundedIcon sx={{ fontSize: pxToRem(18) }} />
-                          </Box>
-
-                          <Stack spacing={0.75} sx={{ minWidth: 0 }}>
+                        <RowStack justifyContent="space-between" gap={2} flexWrap="wrap">
+                          <Stack spacing={0.75}>
                             <Typography
                               sx={{
-                                color: '#B91C1C',
-                                fontSize: pxToRem(13),
+                                color: '#94A3B8',
+                                fontSize: pxToRem(10),
                                 fontWeight: 700,
+                                letterSpacing: pxToRem(1),
                               }}
                             >
-                              {ride.cancelled?.cancelledTitle ?? 'Cancelled by you'}
+                              YOUR RATING
                             </Typography>
-                            {ride.cancelled?.reason ? (
-                              <Typography
-                                sx={{
-                                  color: '#B91C1C',
-                                  fontSize: pxToRem(12),
-                                  fontWeight: 500,
-                                }}
-                              >
-                                {ride.cancelled.reason}
-                              </Typography>
-                            ) : null}
-                            {ride.cancelled?.note ? (
-                              <Typography
-                                sx={{
-                                  color: '#F87171',
-                                  fontSize: pxToRem(12),
-                                  fontWeight: 500,
-                                }}
-                              >
-                                {ride.cancelled.note}
-                              </Typography>
-                            ) : null}
-                          </Stack>
-                        </RowStack>
 
-                        {ride.cancelled?.chargeLabel ? (
-                          <Chip
-                            label={ride.cancelled.chargeLabel}
-                            size="small"
-                            sx={{
-                              bgcolor: 'rgba(248,113,113,0.12)',
-                              color: '#B91C1C',
-                              fontWeight: 600,
-                              fontSize: pxToRem(11),
-                              height: pxToRem(22),
-                            }}
-                          />
-                        ) : null}
-                      </RowStack>
-                    </Box>
+                            <RowStack spacing={1}>
+                              <RowStack spacing={0.25}>
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <StarRoundedIcon
+                                    key={i}
+                                    sx={{ color: '#F59E0B', fontSize: pxToRem(16) }}
+                                  />
+                                ))}
+                              </RowStack>
+
+                              <Typography
+                                sx={{
+                                  color: '#64748B',
+                                  fontSize: pxToRem(12),
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {ride.details?.ratingLabel ?? 'Rated 5 stars'}
+                              </Typography>
+                            </RowStack>
+                          </Stack>
+
+                          <ButtonBase
+                            onClick={() => undefined}
+                            sx={{ borderRadius: pxToRem(10) }}
+                          >
+                            <RowStack
+                              spacing={1}
+                              sx={{
+                                bgcolor: '#EFF6FF',
+                                borderRadius: pxToRem(10),
+                                px: pxToRem(14),
+                                py: pxToRem(9),
+                                color: '#155DFC',
+                              }}
+                            >
+                              <ReceiptLongRoundedIcon sx={{ fontSize: pxToRem(16) }} />
+                              <Typography
+                                sx={{
+                                  color: '#155DFC',
+                                  fontSize: pxToRem(13),
+                                  fontWeight: 600,
+                                  lineHeight: pxToRem(20),
+                                }}
+                              >
+                                Receipt
+                              </Typography>
+                            </RowStack>
+                          </ButtonBase>
+                        </RowStack>
+                      </>
+                    )}
                   </Box>
                 )}
               </AccordionDetails>

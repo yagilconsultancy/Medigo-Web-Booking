@@ -1,13 +1,18 @@
 'use client';
 
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
-import { Box, Paper, Stack, Typography } from '@mui/material';
+import { Box, Paper, Skeleton, Stack, Typography } from '@mui/material';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
+import dayjs from 'dayjs';
 
-import { pxToRem } from '@/common';
+import {
+  pxToRem,
+  useGetRideDetail,
+  useResolvedApiQuery,
+} from '@/common';
 import { AppFooter, AppLayout } from '@/ui/modules/partials';
 import { HeaderHelpUser } from '@/ui/modules/partials/AppHeader/ui/components';
 import { AppButton, RowStack } from '@/ui/modules/components';
@@ -61,15 +66,36 @@ export function BookingSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const bookingRef = searchParams.get('ref') || 'MG-45O6EM';
-  const patientName = searchParams.get('patient') || 'Sarah Johnson';
-  const pickup = searchParams.get('pickup') || 'Toronto General Hospital, 200 Elizabeth St, Toronto, ON M5G 2C4, Canada';
-  const dropoff = searchParams.get('dropoff') || '123 Queen St W, Toronto, ON M5H 2M9, Canada';
-  const dateTime = searchParams.get('datetime') || 'Thursday, 22 October 2026';
-  const time = searchParams.get('time') || '08:00';
-  const vehicleType = searchParams.get('vehicle') || 'Medigo Stretcher';
-  const serviceType = searchParams.get('service') || 'Transport + Escort';
-  const totalPaid = searchParams.get('total') || '$260';
+  const rideId = searchParams.get('ride_id') || '';
+
+  const { data: rideResponse, isLoading } = useGetRideDetail(rideId || undefined);
+  // const {} = useResolvedApiQuery(
+  //   useGetRideDetail,
+  //   null,
+  //   rideId
+  // )
+  const rideDetail = rideResponse?.success ? rideResponse.data : null;
+
+  const bookingRef = rideId
+    ? `${rideId}`
+    : '';
+
+  const patientName = rideDetail
+    ? `${rideDetail.passenger_first_name ?? ''} ${rideDetail.passenger_last_name ?? ''}`.trim()
+    : '';
+  const pickup = rideDetail?.pickup_address ?? '';
+  const dropoff = rideDetail?.destination_address ?? '';
+  const dateTime = rideDetail?.scheduled_at
+    ? dayjs(rideDetail.scheduled_at).format('dddd, DD MMMM YYYY')
+    : '';
+  const time = rideDetail?.scheduled_at
+    ? dayjs(rideDetail.scheduled_at).format('HH:mm')
+    : '';
+  const vehicleType = rideDetail?.ride_type ?? '';
+  const serviceType = rideDetail?.trip_type ?? '';
+  const totalPaid = rideDetail?.estimated_fare != null
+    ? `$${rideDetail.estimated_fare.toFixed(2)}`
+    : '$0.00';
 
   const details: DetailRow[] = useMemo(
     () => [
@@ -103,6 +129,31 @@ export function BookingSuccessPage() {
     navigator.clipboard.writeText(bookingRef);
     toast.success('Booking reference copied!');
   };
+
+  if (isLoading) {
+    return (
+      <AppLayout
+        headerProps={{ showRightContent: true, rightContent: <HeaderHelpUser /> }}
+      >
+        <Box
+          sx={{
+            bgcolor: '#F8FAFC',
+            minHeight: `calc(100vh - ${pxToRem(64)})`,
+            display: 'flex',
+            justifyContent: 'center',
+            px: { xs: pxToRem(16), md: pxToRem(40) },
+            py: pxToRem(56),
+          }}
+        >
+          <Box sx={{ width: '100%', maxWidth: 580 }}>
+            <Skeleton variant="circular" width={72} height={72} sx={{ mx: 'auto', mb: pxToRem(20) }} />
+            <Skeleton variant="text" width={200} sx={{ mx: 'auto', mb: pxToRem(8) }} />
+            <Skeleton variant="rounded" height={300} sx={{ borderRadius: pxToRem(16) }} />
+          </Box>
+        </Box>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout
@@ -250,6 +301,9 @@ export function BookingSuccessPage() {
                     fontWeight: 800,
                     color: '#14532D',
                     letterSpacing: '0.06em',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {bookingRef}
@@ -408,7 +462,7 @@ export function BookingSuccessPage() {
                               color: '#64748B',
                             }}
                           >
-                            {detail.secondary}
+                            {detail.secondary.replace('_', ' ')}
                           </Typography>
                         ) : null}
                       </>

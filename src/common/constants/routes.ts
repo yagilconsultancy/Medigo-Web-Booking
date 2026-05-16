@@ -118,6 +118,7 @@ export const ROUTES_SPEC = {
   // Rider rides
   getMyRides: `/${API_VERSION}/rides/rider/me`,
   getMyActiveRide: `/${API_VERSION}/rides/rider/me/active`,
+  getRideOverview: `/${API_VERSION}/rides/rider/me/overview`,
 
   // Rides safety
   listSafetyReports: `/${API_VERSION}/rides/safety/reports`,

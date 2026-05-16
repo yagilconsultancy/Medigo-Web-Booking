@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { pxToRem } from '@/common';
+import { pxToRem, useGetMyProfile } from '@/common';
 import { StyledImage } from '@/ui/modules/components';
 import { LogoutModal } from '../LogoutModal';
 
@@ -25,8 +25,6 @@ import icon17 from '../../assets/icons/Icon-17.svg';
 import icon18 from '../../assets/icons/Icon-18.svg';
 
 export type ProfilePopOverComponentProps = {
-  name?: string;
-  email?: string;
   online?: boolean;
   anchorEl?: HTMLElement | null;
   open?: boolean;
@@ -35,8 +33,6 @@ export type ProfilePopOverComponentProps = {
 };
 
 export function ProfilePopOverComponent({
-  name = 'User',
-  email = 'user@medigo.com',
   online = true,
   anchorEl: anchorElProp,
   open: openProp,
@@ -44,6 +40,12 @@ export function ProfilePopOverComponent({
   hideTrigger = false,
 }: ProfilePopOverComponentProps) {
   const router = useRouter();
+  const { data: profileResponse } = useGetMyProfile();
+  const profile = profileResponse?.success ? profileResponse.data : null;
+  const name = profile
+    ? `${profile.first_name} ${profile.last_name}`.trim()
+    : 'User';
+  const email = profile?.email || 'user@medigo.com';
   const [uncontrolledAnchorEl, setUncontrolledAnchorEl] =
     useState<HTMLElement | null>(null);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -68,13 +70,13 @@ export function ProfilePopOverComponent({
         description: 'View your ride history',
         icon: icon14,
       },
-      {
-        key: 'schedule',
-        label: 'Scheduled rides',
-        link: '/scheduled-rides',
-        description: 'Upcoming scheduled trips',
-        icon: icon15,
-      },
+    //   {
+    //     key: 'schedule',
+    //     label: 'Scheduled rides',
+    //     link: '/scheduled-rides',
+    //     description: 'Upcoming scheduled trips',
+    //     icon: icon15,
+    //   },
     //   {
     //     key: 'payments',
     //     label: 'Payments',
@@ -298,9 +300,6 @@ export function ProfilePopOverComponent({
       <LogoutModal
         open={logoutModalOpen}
         setOpen={setLogoutModalOpen}
-        onConfirm={() => {
-          router.push('/login');
-        }}
       />
     </>
   );

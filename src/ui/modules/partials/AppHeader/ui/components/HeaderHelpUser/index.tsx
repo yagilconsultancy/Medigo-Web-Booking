@@ -8,15 +8,11 @@ import { StyledLink } from '@/ui/modules/components';
 export type HeaderHelpUserProps = {
   helpLabel?: string;
   online?: boolean;
-  name?: string;
-  email?: string;
 };
 
 export function HeaderHelpUser({
   helpLabel = 'Need help?',
   online = true,
-  name = 'User',
-  email = 'user@medigo.com',
 }: HeaderHelpUserProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
@@ -97,8 +93,6 @@ export function HeaderHelpUser({
         anchorEl={anchorEl}
         open={open}
         onClose={() => setAnchorEl(null)}
-        name={name}
-        email={email}
         online={online}
       />
     </Box>

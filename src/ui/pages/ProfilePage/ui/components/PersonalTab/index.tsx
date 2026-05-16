@@ -1,11 +1,17 @@
 'use client';
 
-import { Box, Button, Paper, Stack } from '@mui/material';
+import { Box, Button, List, ListItem, Paper, Stack } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import dayjs, { Dayjs } from 'dayjs';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FormikProvider, useFormik } from 'formik';
-import { pxToRem } from '@/common';
+import * as Yup from 'yup';
+import {
+  pxToRem,
+  usePlacesAutocomplete,
+  PlacePrediction,
+} from '@/common';
+import { useUsersMeApi } from '@/common/hooks/api/collection';
 import {
   AppDatePickerPopover,
   Centered,
@@ -31,6 +37,11 @@ type PersonalFormValues = {
   avatarPreviewUrl: string | null;
 };
 
+// No validation - all fields optional
+const validationSchema = Yup.object({
+  email: Yup.string().email('Invalid email address'),
+});
+
 function toDayjsFromStoredDate(value: string): Dayjs | null {
   if (!value) return null;
   const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -42,19 +53,18 @@ function toDayjsFromStoredDate(value: string): Dayjs | null {
 }
 
 function getInitialValues(snapshot: ProfileSnapshot): PersonalFormValues {
-  const [firstName, ...rest] = (snapshot.name || 'Sarah Johnson').trim().split(/\s+/);
+  const [firstName, ...rest] = (snapshot.name || '').trim().split(/\s+/);
   const lastName = rest.join(' ');
 
   return {
-    firstName: firstName || 'Sarah',
-    lastName: lastName || 'Johnson',
-    dateOfBirth: '1990-10-10',
-    email: snapshot.email || 'user@medigo.com',
-    phone: snapshot.phone || '(555) 248-1397',
-    homeAddress:
-      'Toronto General Hospital, 200 Elizabeth St, Toronto, ON M5G 2C4, Canada',
-    emergencyContactName: 'Michael Johnson',
-    emergencyContactPhone: '(555) 987-6543',
+    firstName: firstName || '',
+    lastName: lastName || '',
+    dateOfBirth: snapshot.dateOfBirth || '',
+    email: snapshot.email || '',
+    phone: snapshot.phone || '',
+    homeAddress: snapshot.homeAddress || '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
     avatarFile: null,
     avatarPreviewUrl: snapshot.avatarUrl ?? null,
   };
@@ -67,28 +77,69 @@ export function PersonalTab({
 }: {
   snapshot: ProfileSnapshot;
   onSnapshotChange: (next: ProfileSnapshot) => void;
-  registerSubmit?: (submit: () => void) => void;
+  registerSubmit?: (submit: () => void, isFormValid: boolean) => void;
 }) {
+  const { updateMyProfile, uploadAvatar } = useUsersMeApi();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const formik = useFormik<PersonalFormValues>({
     initialValues: getInitialValues(snapshot),
     enableReinitialize: true,
-    onSubmit: (values) => {
-      const name = `${values.firstName} ${values.lastName}`.trim();
-      onSnapshotChange({
-        ...snapshot,
-        name,
-        email: values.email,
-        phone: values.phone,
-        avatarUrl: values.avatarPreviewUrl ?? undefined,
+    validationSchema,
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      setIsSubmitting(true);
+      setSubmitting(true);
+
+      // Update profile with all fields including avatar file and phone
+      const result = await updateMyProfile({
+        first_name: values.firstName,
+        last_name: values.lastName,
+        date_of_birth: values.dateOfBirth || undefined,
+        home_address: values.homeAddress || undefined,
+        phone: values.phone || undefined,
+        avatar_url: values.avatarFile || undefined,
       });
+
+      if (result) {
+        const name = `${values.firstName} ${values.lastName}`.trim();
+        onSnapshotChange({
+          ...snapshot,
+          name,
+          email: values.email,
+          phone: values.phone,
+          avatarUrl: values.avatarPreviewUrl ?? undefined,
+          homeAddress: values.homeAddress,
+        });
+
+        // Reset form with updated values to clear dirty state
+        resetForm({ values });
+      }
+
+      setIsSubmitting(false);
+      setSubmitting(false);
     },
   });
 
   useEffect(() => {
     registerSubmit?.(() => {
       void formik.submitForm();
-    });
-  }, [formik, registerSubmit]);
+    }, formik.dirty && !isSubmitting);
+  }, [formik, registerSubmit, formik.dirty, isSubmitting]);
+
+  // Address autocomplete
+  const [addressInput, setAddressInput] = useState(formik.values.homeAddress);
+  const addressAutocomplete = usePlacesAutocomplete(addressInput);
+
+  // Sync addressInput with formik value when it changes (e.g., after form reset)
+  useEffect(() => {
+    setAddressInput(formik.values.homeAddress);
+  }, [formik.values.homeAddress]);
+
+  const handleSelectAddress = (prediction: PlacePrediction) => {
+    addressAutocomplete.clearPredictions();
+    setAddressInput(prediction.description);
+    void formik.setFieldValue('homeAddress', prediction.description);
+  };
 
   const dobValue = toDayjsFromStoredDate(formik.values.dateOfBirth);
 
@@ -166,13 +217,53 @@ export function PersonalTab({
                       />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
-                      <FormikAppTextField
-                        name="homeAddress"
-                        placeholder="Home Address"
-                        size="small"
-                        multiline
-                        minRows={2}
-                      />
+                      <Box sx={{ position: 'relative' }}>
+                        <FormikAppTextField
+                          name="homeAddress"
+                          placeholder="Home Address"
+                          size="small"
+                          value={addressInput}
+                          onChange={(e: any) => {
+                            const val = e.target.value;
+                            setAddressInput(val);
+                            void formik.setFieldValue('homeAddress', val);
+                          }}
+                        />
+                        {addressAutocomplete.predictions.length > 0 && (
+                          <Paper
+                            elevation={4}
+                            sx={{
+                              position: 'absolute',
+                              top: '100%',
+                              left: 0,
+                              right: 0,
+                              zIndex: 10,
+                              maxHeight: '200px',
+                              overflowY: 'auto',
+                              mt: pxToRem(4),
+                              borderRadius: pxToRem(8),
+                            }}
+                          >
+                            <List dense disablePadding>
+                              {addressAutocomplete.predictions.map((p) => (
+                                <ListItem
+                                  key={p.placeId}
+                                  onClick={() => handleSelectAddress(p)}
+                                  sx={{
+                                    cursor: 'pointer',
+                                    px: pxToRem(12),
+                                    py: pxToRem(8),
+                                    fontSize: pxToRem(12),
+                                    '&:hover': { bgcolor: '#F1F5F9' },
+                                  }}
+                                >
+                                  {p.description}
+                                </ListItem>
+                              ))}
+                            </List>
+                          </Paper>
+                        )}
+                      </Box>
                     </Grid>
                   </Grid>
                 </Box>

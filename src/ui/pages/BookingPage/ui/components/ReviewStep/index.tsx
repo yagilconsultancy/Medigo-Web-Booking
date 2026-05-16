@@ -42,7 +42,7 @@ type ReviewStepProps = {
 const makeLabel = (value: string) => (value?.trim().length ? value : '—');
 
 export function ReviewStep({ accountType, onEditStep }: ReviewStepProps) {
-  const { booking } = useBooking();
+  const { booking, setVehicle } = useBooking();
   const [fareEstimate, setFareEstimate] = useState<FareEstimateResponse | null>(
     null
   );
@@ -102,13 +102,18 @@ export function ReviewStep({ accountType, onEditStep }: ReviewStepProps) {
       if (!fareEstimatePayload) return;
       try {
         const response = await createFareEstimate(fareEstimatePayload);
-        setFareEstimate(response.data.data);
+        const estimate = response.data.data;
+        setFareEstimate(estimate);
+        if (estimate?.total_fare != null) {
+          setVehicle({ estimatedTotal: estimate.total_fare });
+        }
       } catch (error) {
         console.error(error);
         setFareEstimate(null);
       }
     };
     run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [createFareEstimate, fareEstimatePayload]);
 
   const serviceLabel =

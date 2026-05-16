@@ -2,7 +2,10 @@
 
 import { Box, Divider, Paper, Typography } from '@mui/material';
 import { FormikProvider, useFormik } from 'formik';
+import * as Yup from 'yup';
+import { useState } from 'react';
 import { pxToRem } from '@/common';
+import { useAuthFlowsApi } from '@/common/hooks/api/collection';
 import { AppButton, FormikAppPasswordField } from '@/ui/modules/components';
 import blueLockIcon from '../../assets/icons/blue-lock.svg';
 import purplePrintsIcon from '../../assets/icons/purple-prints.svg';
@@ -14,6 +17,16 @@ type SecurityFormValues = {
   confirmPassword: string;
 };
 
+const validationSchema = Yup.object({
+  currentPassword: Yup.string().required('Current password is required'),
+  newPassword: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .required('New password is required'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('newPassword')], 'Passwords must match')
+    .required('Confirm password is required'),
+});
+
 function getInitialValues(): SecurityFormValues {
   return {
     currentPassword: '',
@@ -23,12 +36,27 @@ function getInitialValues(): SecurityFormValues {
 }
 
 export function SecurityTab({ phone }: { phone?: string }) {
+  const { changePassword } = useAuthFlowsApi();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const formik = useFormik<SecurityFormValues>({
     initialValues: getInitialValues(),
-    onSubmit: () => {
-      // no-op: wire to API later
+    validationSchema,
+    onSubmit: async (values, { resetForm }) => {
+      setIsSubmitting(true);
+      const success = await changePassword({
+        current_password: values.currentPassword,
+        new_password: values.newPassword,
+      });
+      if (success) {
+        resetForm();
+      }
+      setIsSubmitting(false);
     },
   });
+
+  const isButtonDisabled =
+    !formik.isValid || !formik.dirty || isSubmitting;
 
   return (
     <FormikProvider value={formik}>
@@ -70,9 +98,11 @@ export function SecurityTab({ phone }: { phone?: string }) {
             />
             <AppButton
               type="submit"
+              disabled={isButtonDisabled}
               sx={{
                 mt: pxToRem(4),
                 '&:hover': { bgcolor: '#2563EB' },
+                '&:disabled': { opacity: 0.5 },
               }}
             >
               Update Password

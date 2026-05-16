@@ -36,6 +36,9 @@ export type ApiCreateRidePayload = {
   destination_longitude?: number | null;
   scheduled_at: string; // ISO
   passenger_id?: string | null;
+  passenger_first_name?: string | null;
+  passenger_last_name?: string | null;
+  passenger_phone?: string | null;
   visit_type?: string | null;
   appointment_time?: string | null; // ISO
   facility_name?: string | null;
@@ -50,6 +53,9 @@ export type ApiCreateRidePayload = {
   highway_407_route?: string | null;
   is_dialysis_trip?: boolean;
   booking_channel?: string;
+  recurring_frequency?: 'daily' | 'weekly' | 'bi_weekly' | 'monthly' | null;
+  recurring_days_of_week?: number[] | null;
+  recurring_end_date?: string | null; // YYYY-MM-DD
 };
 
 export type ApiRide = {
@@ -65,6 +71,10 @@ export type ApiRide = {
   destination_address: string;
   scheduled_at: string; // ISO
   status: string;
+  passenger_id: string | null;
+  passenger_first_name: string | null;
+  passenger_last_name: string | null;
+  passenger_phone: string | null;
   estimated_distance_miles: number | null;
   estimated_duration_minutes: number | null;
   estimated_fare: number | null;
@@ -75,6 +85,7 @@ export type ApiRide = {
   booking_channel: string;
   facility_id: string | null;
   guest_session_id: string | null;
+  recurring_ride_id: string | null;
   use_highway_407: boolean;
   highway_407_route: string | null;
   is_dialysis_trip: boolean;
@@ -90,6 +101,26 @@ export type ApiRide = {
   driver_vehicle_color: string | null;
   driver_vehicle_plate: string | null;
 };
+export type ApiRideOverview = {
+  summary: {
+    total_rides: number,
+    completed_rides: number,
+    cancelled_rides: number,
+    miles_traveled: number
+  },
+  stats: {
+    total_rides: number,
+    miles_traveled: number,
+    average_rating_given: number,
+    member_since: string
+  },
+  rides: ApiRide[];
+    filtered_total: number,
+    page: number;
+    limit: number,
+    total_pages: number,
+    status_filter: string
+}
 
 export type ApiStatusLog = {
   id: string;
@@ -129,6 +160,10 @@ export type ApiRideDetail = {
   pickup_at: string | null; // ISO
   dropoff_at: string | null; // ISO
   status: string;
+  passenger_id: string | null;
+  passenger_first_name: string | null;
+  passenger_last_name: string | null;
+  passenger_phone: string | null;
   estimated_distance_miles: number | null;
   actual_distance_miles: number | null;
   estimated_duration_minutes: number | null;
@@ -141,6 +176,7 @@ export type ApiRideDetail = {
   booking_channel: string;
   facility_id: string | null;
   guest_session_id: string | null;
+  recurring_ride_id: string | null;
   special_instructions: string | null;
   mobility_level: string | null;
   assistance_level: string | null;
@@ -251,7 +287,7 @@ export type ApiSafetyReportsResponse = ApiPaginatedResponse<ApiSafetyReport>;
 export type ApiVehicleChecklistResponse = ApiResponse<ApiVehicleChecklist>;
 export type ApiVehicleChecklistsResponse = ApiResponse<ApiVehicleChecklist[]>;
 
-export type ApiMyRidesResponse = ApiResponse<ApiPaginatedResponseData<ApiRide>>;
+export type ApiMyRidesResponse = ApiResponse<ApiRideOverview>;
 export type ApiMyActiveRideResponse = ApiResponse<ApiRide | null>;
 
 export type ApiDashboardOverviewResponse = ApiResponse<ApiDashboardKpis>;

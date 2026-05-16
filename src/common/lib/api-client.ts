@@ -31,6 +31,7 @@ const processQueue = (error: AxiosError | null = null) => {
 
 const isLoginRoute = (route?: string) => route && route.includes('/login');
 const isRefreshRoute = (route?: string) => route && route.includes('/refresh');
+const isChangePasswordRoute = (route?: string) => route && route.includes('/change-password');
 
 export const getApiClient = () => {
   if (apiClient) {
@@ -63,50 +64,51 @@ export const getApiClient = () => {
       };
 
       if (error.response && error.response.status === 401) {
-        // Don't intercept if the route is a login or refresh route
+        // Don't intercept if the route is a login, refresh, or change-password route
         if (
           isLoginRoute(originalRequest?.url) ||
-          isRefreshRoute(originalRequest?.url)
+          isRefreshRoute(originalRequest?.url) ||
+          isChangePasswordRoute(originalRequest?.url)
         ) {
           return Promise.reject(error);
         }
 
         // If this is a retry attempt that failed, logout
-        if (originalRequest._retry) {
+        // if (originalRequest._retry) {
           handleLogout();
           return Promise.reject(error);
-        }
+        // }
 
         // If we're already refreshing, queue this request
-        if (isRefreshing) {
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject });
-          })
-            .then(() => {
-              // Retry the original request with new token
-              const token = getAuthToken();
-              if (token && originalRequest.headers) {
-                originalRequest.headers.Authorization = `Bearer ${token}`;
-              }
-              return apiClient!(originalRequest);
-            })
-            .catch((err) => {
-              return Promise.reject(err);
-            });
-        }
+        // if (isRefreshing) {
+        //   return new Promise((resolve, reject) => {
+        //     failedQueue.push({ resolve, reject });
+        //   })
+        //     .then(() => {
+        //       // Retry the original request with new token
+        //       const token = getAuthToken();
+        //       if (token && originalRequest.headers) {
+        //         originalRequest.headers.Authorization = `Bearer ${token}`;
+        //       }
+        //       return apiClient!(originalRequest);
+        //     })
+        //     .catch((err) => {
+        //       return Promise.reject(err);
+        //     });
+        // }
 
-        // Mark that we're refreshing
-        originalRequest._retry = true;
-        isRefreshing = true;
+        // // Mark that we're refreshing
+        // originalRequest._retry = true;
+        // isRefreshing = true;
 
-        const refreshToken = getRefreshToken();
+        // const refreshToken = getRefreshToken();
 
-        if (!refreshToken) {
-          // No refresh token available, logout
-          isRefreshing = false;
-          handleLogout();
-          return Promise.reject(error);
-        }
+        // if (!refreshToken) {
+        //   // No refresh token available, logout
+        //   isRefreshing = false;
+        //   handleLogout();
+        //   return Promise.reject(error);
+        // }
 
         // try {
         //   // Attempt to refresh the token

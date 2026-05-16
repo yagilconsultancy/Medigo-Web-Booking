@@ -166,12 +166,20 @@ export const useAuthFlowsApi = () => {
       () => doChangePassword.mutateAsync(payload),
       async (response) => {
         const responseData = response.data;
-        if (responseData.success) return true;
+        if (responseData.success) {
+          toast.success('Password changed successfully');
+          return true;
+        }
         toast.error(extractResponseErrors(responseData));
         return false;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error: any) => {
+        // Check if it's a 401 error (wrong current password)
+        if (error?.response?.status === 401) {
+          toast.error('Current password is incorrect');
+        } else {
+          toast.error('An error occurred while changing password');
+        }
         return false;
       }
     );
