@@ -6,3 +6,4 @@ export * from './types';
 export * from './hooks';
 export * from './data';
 export * from './lib';
+export * from './store';

@@ -2,9 +2,8 @@
 
 import { useMemo } from 'react';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
-import { Box, Divider, Typography } from '@mui/material';
+import { Box, Divider, MenuItem, Select, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
-import { useSearchParams } from 'next/navigation';
 import * as yup from 'yup';
 import {
   AppButton,
@@ -15,11 +14,9 @@ import {
 } from '../../modules/components';
 import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
-import { pxToRem, useAuthFlowsApi } from '../../../common';
+import { pxToRem, useAccountStore, useAuthFlowsApi } from '../../../common';
 import blueFacilityBookingIcon from '../LoginPage/ui/assets/icons/blue-facility-booking-icon.svg';
 import blueIndividualBookingIcon from '../LoginPage/ui/assets/icons/blue-individual-booking-icon.svg';
-
-type AccountType = 'individual' | 'facility';
 
 type IndividualSignUpValues = {
   fullName: string;
@@ -54,26 +51,19 @@ const facilitySchema = yup.object({
 });
 
 export function SignUpPage() {
-  const searchParams = useSearchParams();
   const { register } = useAuthFlowsApi();
+  const { accountType, setAccountType } = useAccountStore();
 
-  const accountType = useMemo<AccountType>(() => {
-    const value = searchParams.get('account');
-    return value === 'facility' ? 'facility' : 'individual';
-  }, [searchParams]);
-
-  const accountMeta = useMemo(() => {
-    if (accountType === 'facility') {
-      return {
-        label: 'Facility account',
-        icon: blueFacilityBookingIcon,
-      };
-    }
-    return {
+  const accountMeta = {
+    individual: {
       label: 'Individual account',
       icon: blueIndividualBookingIcon,
-    };
-  }, [accountType]);
+    },
+    facility: {
+      label: 'Facility account',
+      icon: blueFacilityBookingIcon,
+    },
+  };
 
   const initialValues = useMemo(() => {
     if (accountType === 'facility') {
@@ -149,42 +139,104 @@ export function SignUpPage() {
               position: 'relative',
             }}
           >
-            <Box
+            <Select
+              value={accountType}
+              onChange={(e) => setAccountType(e.target.value as AccountType)}
               sx={{
                 position: 'absolute',
                 top: pxToRem(12),
                 left: pxToRem(26),
                 height: pxToRem(32),
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: pxToRem(8),
                 bgcolor: '#EFF6FF',
                 border: '0.6px solid #DBEAFE',
                 borderRadius: '999999px',
+                fontSize: pxToRem(11),
+                fontWeight: 600,
+                color: '#2563EB',
+                letterSpacing: '0.01em',
                 pl: pxToRem(14),
-                pr: pxToRem(12),
-                py: pxToRem(6),
+                pr: pxToRem(6),
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '& .MuiSelect-select': {
+                  py: pxToRem(6),
+                  pr: pxToRem(28),
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: pxToRem(8),
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
               }}
+              renderValue={(value) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(8) }}>
+                  <StyledImage
+                    src={accountMeta[value].icon}
+                    alt=""
+                    width={14}
+                    height={14}
+                    sx={{ width: pxToRem(14), height: pxToRem(14) }}
+                  />
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(11),
+                      lineHeight: pxToRem(16),
+                      fontWeight: 600,
+                      color: '#2563EB',
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    {accountMeta[value].label}
+                  </Typography>
+                </Box>
+              )}
             >
-              <StyledImage
-                src={accountMeta.icon}
-                alt=""
-                width={14}
-                height={14}
-                sx={{ width: pxToRem(14), height: pxToRem(14) }}
-              />
-              <Typography
-                sx={{
-                  fontSize: pxToRem(11),
-                  lineHeight: pxToRem(16),
-                  fontWeight: 600,
-                  color: '#2563EB',
-                  letterSpacing: '0.01em',
-                }}
-              >
-                {accountMeta.label}
-              </Typography>
-            </Box>
+              <MenuItem value="individual">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(8) }}>
+                  <StyledImage
+                    src={blueIndividualBookingIcon}
+                    alt=""
+                    width={14}
+                    height={14}
+                    sx={{ width: pxToRem(14), height: pxToRem(14) }}
+                  />
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(13),
+                      fontWeight: 500,
+                      color: '#0F172A',
+                    }}
+                  >
+                    Individual account
+                  </Typography>
+                </Box>
+              </MenuItem>
+              <MenuItem value="facility">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(8) }}>
+                  <StyledImage
+                    src={blueFacilityBookingIcon}
+                    alt=""
+                    width={14}
+                    height={14}
+                    sx={{ width: pxToRem(14), height: pxToRem(14) }}
+                  />
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(13),
+                      fontWeight: 500,
+                      color: '#0F172A',
+                    }}
+                  >
+                    Facility account
+                  </Typography>
+                </Box>
+              </MenuItem>
+            </Select>
 
             <Typography
               sx={{
@@ -411,7 +463,7 @@ export function SignUpPage() {
                       Already have an account?
                     </Typography>
                     <StyledLink
-                      href={`/login?account=${accountType}`}
+                      href="/login"
                       sx={{
                         fontSize: pxToRem(15),
                         lineHeight: pxToRem(24),

@@ -3,7 +3,7 @@
 import { Box, Paper, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   AppButton,
   AppGoogleMapsProvider,
@@ -11,7 +11,12 @@ import {
 } from '../../modules/components';
 import { AppLayout } from '../../modules/partials';
 import { HeaderHelpUser } from '../../modules/partials/AppHeader/ui/components';
-import { pxToRem, usePaymentsApi, useRidesApi } from '../../../common';
+import {
+  pxToRem,
+  useAccountStore,
+  usePaymentsApi,
+  useRidesApi,
+} from '../../../common';
 import { BookingProvider, useBooking } from './common';
 import {
   AddressStep,
@@ -24,7 +29,7 @@ import {
   VehicleStep,
 } from './ui/components';
 
-type AccountType = 'individual' | 'facility';
+import type { AccountType } from '../../../common/store/useAccountStore';
 
 const steps = [
   { label: 'Address' },
@@ -180,7 +185,7 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
 
       if (paymentResult) {
         router.push(
-          `/booking-success?ride_id=${encodeURIComponent(rideResult.id)}&client_secret=${encodeURIComponent(
+          `/checkout?ride_id=${encodeURIComponent(rideResult.id)}&client_secret=${encodeURIComponent(
             paymentResult.clientSecret
           )}&pk=${encodeURIComponent(paymentResult.publishableKey)}`
         );
@@ -388,12 +393,7 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
 }
 
 export function BookingPage() {
-  const searchParams = useSearchParams();
-  const accountType = useMemo<AccountType>(() => {
-    const value = searchParams.get('account');
-    return value === 'facility' ? 'facility' : 'individual';
-  }, [searchParams]);
-
+  const { accountType } = useAccountStore();
   const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
 
   const content = (

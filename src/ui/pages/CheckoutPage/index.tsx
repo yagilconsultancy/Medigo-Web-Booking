@@ -13,7 +13,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { pxToRem } from '@/common';
 import { AppButton } from '@/ui/modules/components';
 
-function CheckoutForm() {
+function CheckoutForm({ rideId }: { rideId: string }) {
   const stripe = useStripe();
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +29,7 @@ function CheckoutForm() {
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/booking?payment=success`,
+        return_url: `${window.location.origin}/booking-success?ride_id=${encodeURIComponent(rideId)}`,
       },
     });
 
@@ -67,6 +67,7 @@ export function CheckoutPage() {
   const searchParams = useSearchParams();
   const clientSecret = searchParams.get('client_secret') ?? '';
   const publishableKeyFromBackend = searchParams.get('pk') ?? '';
+  const rideId = searchParams.get('ride_id') ?? '';
 
   const stripePromise = useMemo(() => {
     const key =
@@ -94,6 +95,16 @@ export function CheckoutPage() {
       <Box sx={{ p: pxToRem(24) }}>
         <Typography sx={{ fontSize: pxToRem(14), color: '#EF4444' }}>
           Please start checkout from the booking flow.
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!rideId) {
+    return (
+      <Box sx={{ p: pxToRem(24) }}>
+        <Typography sx={{ fontSize: pxToRem(14), color: '#EF4444' }}>
+          Missing ride information.
         </Typography>
       </Box>
     );
@@ -132,7 +143,7 @@ export function CheckoutPage() {
 
         <Box sx={{ mt: pxToRem(16) }}>
           <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <CheckoutForm />
+            <CheckoutForm rideId={rideId} />
           </Elements>
         </Box>
       </Paper>
