@@ -5,6 +5,22 @@ export const ROUTES_SPEC = {
   // Base
   ping: `/${API_VERSION}/ping`,
 
+  // Health
+  healthLive: `/${API_VERSION}/health/live`,
+  healthReady: `/${API_VERSION}/health/ready`,
+
+  // Internal (admin/service-to-service)
+  internalGetActiveRides: `/${API_VERSION}/internal/rides/active`,
+  internalGetCompletedTodayCount: `/${API_VERSION}/internal/rides/completed-today-count`,
+  internalGetRide: (rideId: string) => `/${API_VERSION}/internal/rides/${rideId}`,
+  internalGetRiderRides: (riderId: string) =>
+    `/${API_VERSION}/internal/riders/${riderId}/rides`,
+  internalGetRiderStats: (riderId: string) =>
+    `/${API_VERSION}/internal/riders/${riderId}/stats`,
+  internalBatchRiderActivity: `/${API_VERSION}/internal/rider-activity/batch`,
+  internalUpdateRideFare: (rideId: string) =>
+    `/${API_VERSION}/internal/rides/${rideId}/fare`,
+
   // Auth (stubs for compile-time completeness)
   register: `/${API_VERSION}/auth/register`,
   verifyOtp: `/${API_VERSION}/auth/verify-otp`,

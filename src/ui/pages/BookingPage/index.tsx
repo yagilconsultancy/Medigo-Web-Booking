@@ -17,6 +17,7 @@ import {
   AddressStep,
   AppointmentStep,
   BookingSummary,
+  ProfilePopOverComponent,
   ReviewStep,
   ServiceStep,
   TripStep,
@@ -172,11 +173,20 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
             >
               STEP {activeStep + 1} OF {steps.length}
             </Typography>
-            <Typography
-              sx={{ fontSize: pxToRem(12), fontWeight: 400, color: '#94A3B8' }}
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(12) }}
             >
-              {stepTitle}
-            </Typography>
+              <Typography
+                sx={{
+                  fontSize: pxToRem(12),
+                  fontWeight: 400,
+                  color: '#94A3B8',
+                }}
+              >
+                {stepTitle}
+              </Typography>
+              {/* <ProfilePopOverComponent /> */}
+            </Box>
           </Box>
           <BookingStepper activeStep={activeStep} steps={steps} />
         </Box>

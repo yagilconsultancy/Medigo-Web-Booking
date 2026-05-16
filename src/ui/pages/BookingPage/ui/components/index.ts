@@ -5,3 +5,5 @@ export * from './AppointmentStep';
 export * from './VehicleStep';
 export * from './TripStep';
 export * from './ReviewStep';
+export * from './ProfilePopOverComponent';
+export * from './LogoutModal';

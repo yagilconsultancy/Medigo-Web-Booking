@@ -23,6 +23,21 @@ export type AppTextFieldProps = TextFieldProps & {
   endIcon?: React.ReactNode;
 };
 
+const normalizeErrorMessage = (value: unknown): string | undefined => {
+  if (value == null) return undefined;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    const parts = value
+      .map((item) => (typeof item === 'string' ? item : null))
+      .filter((item): item is string => Boolean(item && item.trim().length));
+    return parts.length ? parts.join(', ') : undefined;
+  }
+  return undefined;
+};
+
 export const AppTextField = (props: AppTextFieldProps) => {
   const {
     error,
@@ -40,6 +55,7 @@ export const AppTextField = (props: AppTextFieldProps) => {
     ...rest
   } = props;
   const styles = useTextFieldStyles(props);
+  const resolvedErrorMessage = normalizeErrorMessage(errorMessage);
 
   return (
     <Box
@@ -63,7 +79,7 @@ export const AppTextField = (props: AppTextFieldProps) => {
           }),
         }}
       />
-      <Collapse in={error} orientation={'vertical'}>
+      <Collapse in={Boolean(error && resolvedErrorMessage)} orientation={'vertical'}>
         <RowStack
           sx={{
             width: '100%',
@@ -78,7 +94,7 @@ export const AppTextField = (props: AppTextFieldProps) => {
               fontWeight: 500,
             }}
           >
-            {errorMessage}
+            {resolvedErrorMessage}
           </Typography>
         </RowStack>
       </Collapse>
