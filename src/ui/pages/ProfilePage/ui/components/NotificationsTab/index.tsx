@@ -37,7 +37,11 @@ export function NotificationsTab() {
   });
 
   return (
-    <Box component="form" onSubmit={formik.handleSubmit} sx={{ display: 'grid', gap: pxToRem(16) }}>
+    <Box
+      component="form"
+      onSubmit={formik.handleSubmit}
+      sx={{ display: 'grid', gap: pxToRem(16) }}
+    >
       <Paper
         elevation={0}
         sx={{
@@ -47,7 +51,11 @@ export function NotificationsTab() {
           p: pxToRem(16),
         }}
       >
-        <SectionTitle label="Ride Updates" iconSrc={greyCellIcon as any} bgSection="#F8FAFC" />
+        <SectionTitle
+          label="Ride Updates"
+          iconSrc={greyCellIcon as any}
+          bgSection="#F8FAFC"
+        />
 
         <Box sx={{ mt: pxToRem(12), display: 'grid', gap: pxToRem(12) }}>
           {[
@@ -77,12 +85,18 @@ export function NotificationsTab() {
               }}
             >
               <Box>
-                <Box sx={{ fontSize: pxToRem(11), fontWeight: 900 }}>{row.title}</Box>
-                <Box sx={{ fontSize: pxToRem(10), color: '#94A3B8' }}>{row.desc}</Box>
+                <Box sx={{ fontSize: pxToRem(11), fontWeight: 900 }}>
+                  {row.title}
+                </Box>
+                <Box sx={{ fontSize: pxToRem(10), color: '#94A3B8' }}>
+                  {row.desc}
+                </Box>
               </Box>
               <IOSSwitch
                 checked={formik.values[row.key]}
-                onChange={(e) => formik.setFieldValue(row.key, e.target.checked)}
+                onChange={(e) =>
+                  formik.setFieldValue(row.key, e.target.checked)
+                }
               />
             </Box>
           ))}
@@ -98,7 +112,11 @@ export function NotificationsTab() {
           p: pxToRem(16),
         }}
       >
-        <SectionTitle label="Communication" iconSrc={purplePhoneIcon as any} bgSection="#F5F3FF" />
+        <SectionTitle
+          label="Communication"
+          iconSrc={purplePhoneIcon as any}
+          bgSection="#F5F3FF"
+        />
 
         <Box sx={{ mt: pxToRem(12), display: 'grid', gap: pxToRem(12) }}>
           {[
@@ -128,12 +146,18 @@ export function NotificationsTab() {
               }}
             >
               <Box>
-                <Box sx={{ fontSize: pxToRem(11), fontWeight: 900 }}>{row.title}</Box>
-                <Box sx={{ fontSize: pxToRem(10), color: '#94A3B8' }}>{row.desc}</Box>
+                <Box sx={{ fontSize: pxToRem(11), fontWeight: 900 }}>
+                  {row.title}
+                </Box>
+                <Box sx={{ fontSize: pxToRem(10), color: '#94A3B8' }}>
+                  {row.desc}
+                </Box>
               </Box>
               <IOSSwitch
                 checked={formik.values[row.key]}
-                onChange={(e) => formik.setFieldValue(row.key, e.target.checked)}
+                onChange={(e) =>
+                  formik.setFieldValue(row.key, e.target.checked)
+                }
               />
             </Box>
           ))}
@@ -157,4 +181,3 @@ export function NotificationsTab() {
     </Box>
   );
 }
-

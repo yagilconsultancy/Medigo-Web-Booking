@@ -6,11 +6,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
 import { FormikProvider, useFormik } from 'formik';
 import * as Yup from 'yup';
-import {
-  pxToRem,
-  usePlacesAutocomplete,
-  PlacePrediction,
-} from '@/common';
+import { pxToRem, usePlacesAutocomplete, PlacePrediction } from '@/common';
 import { useUsersMeApi } from '@/common/hooks/api/collection';
 import {
   AppDatePickerPopover,
@@ -184,7 +180,11 @@ export function PersonalTab({
                     <Grid size={{ xs: 12, sm: 6 }}>
                       <Box sx={{ display: 'grid', gap: pxToRem(8) }}>
                         <Box
-                          sx={{ fontSize: pxToRem(12), fontWeight: 700, color: '#0F172A' }}
+                          sx={{
+                            fontSize: pxToRem(12),
+                            fontWeight: 700,
+                            color: '#0F172A',
+                          }}
                         >
                           Date of Birth
                         </Box>
@@ -197,7 +197,10 @@ export function PersonalTab({
                             )
                           }
                           format="MM/DD/YYYY"
-                          buttonSx={{ width: '100%', justifyContent: 'flex-start' }}
+                          buttonSx={{
+                            width: '100%',
+                            justifyContent: 'flex-start',
+                          }}
                         />
                       </Box>
                     </Grid>
@@ -306,58 +309,74 @@ export function PersonalTab({
               </Paper>
             </Grid>
 
-          <Grid size={{ xs: 12, md: 3 }}>
-            <Centered
-              sx={{
-                borderRadius: pxToRem(12),
-                border: '1px solid #E2E8F0',
-                background:
-                  'linear-gradient(135deg, #EFF6FF 0%, #ECF4FF 7.14%, #E9F3FF 14.29%, #E6F1FF 21.43%, #E4EFFE 28.57%, #E1EDFE 35.71%, #DEECFE 42.86%, #DBEAFE 50%, #D7E8FE 57.14%, #D3E6FE 64.29%, #CFE4FE 71.43%, #CBE1FE 78.57%, #C7DFFE 85.71%, #C3DDFE 92.86%, #BFDBFE 100%)',
-                p: '32px',
-                height: '210.167px',
-              }}
-              direction={'column'}
-            >
-              <SectionTitle label="Premium Member" iconSrc={whiteGuardIcon} bgSection="#155DFC" />
-              <Box sx={{ mt: pxToRem(8), fontSize: pxToRem(10), color: '#64748B', lineHeight: pxToRem(14) }}>
-                Access to priority scheduling, 24/7 support, and exclusive benefits.
-              </Box>
-              <Button
-                variant="outlined"
-                size="small"
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Centered
                 sx={{
-                  mt: pxToRem(12),
-                  borderRadius: pxToRem(10),
-                  borderColor: '#BFDBFE',
-                  bgcolor: '#FFFFFF',
-                  color: '#2563EB',
-                  fontSize: pxToRem(10),
-                  fontWeight: 800,
-                  textTransform: 'none',
+                  borderRadius: pxToRem(12),
+                  border: '1px solid #E2E8F0',
+                  background:
+                    'linear-gradient(135deg, #EFF6FF 0%, #ECF4FF 7.14%, #E9F3FF 14.29%, #E6F1FF 21.43%, #E4EFFE 28.57%, #E1EDFE 35.71%, #DEECFE 42.86%, #DBEAFE 50%, #D7E8FE 57.14%, #D3E6FE 64.29%, #CFE4FE 71.43%, #CBE1FE 78.57%, #C7DFFE 85.71%, #C3DDFE 92.86%, #BFDBFE 100%)',
+                  p: '32px',
+                  height: '210.167px',
                 }}
+                direction={'column'}
               >
-                Member since January 2024
-              </Button>
-            </Centered>
+                <SectionTitle
+                  label="Premium Member"
+                  iconSrc={whiteGuardIcon}
+                  bgSection="#155DFC"
+                />
+                <Box
+                  sx={{
+                    mt: pxToRem(8),
+                    fontSize: pxToRem(10),
+                    color: '#64748B',
+                    lineHeight: pxToRem(14),
+                  }}
+                >
+                  Access to priority scheduling, 24/7 support, and exclusive
+                  benefits.
+                </Box>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    mt: pxToRem(12),
+                    borderRadius: pxToRem(10),
+                    borderColor: '#BFDBFE',
+                    bgcolor: '#FFFFFF',
+                    color: '#2563EB',
+                    fontSize: pxToRem(10),
+                    fontWeight: 800,
+                    textTransform: 'none',
+                  }}
+                >
+                  Member since January 2024
+                </Button>
+              </Centered>
 
-            <Stack
-              sx={{
-                mt: pxToRem(16),
-                borderRadius: pxToRem(12),
-                border: '1px solid #E2E8F0',
-                bgcolor: '#FFFFFF',
-                p: '32px',
-              }}
-              spacing={3}
-            >
-              <SectionTitle label="Your Stats" iconSrc={whiteGuardIcon} bgSection="#155DFC" />
-              <Stack spacing={2}>
-                <StatRow label="Total Rides" value="47" />
-                <StatRow label="Miles Traveled" value="1,284" />
-                <StatRow label="Avg. Rating Given" value="4.9" />
-                <StatRow label="Member Since" value="Jan 2024" />
+              <Stack
+                sx={{
+                  mt: pxToRem(16),
+                  borderRadius: pxToRem(12),
+                  border: '1px solid #E2E8F0',
+                  bgcolor: '#FFFFFF',
+                  p: '32px',
+                }}
+                spacing={3}
+              >
+                <SectionTitle
+                  label="Your Stats"
+                  iconSrc={whiteGuardIcon}
+                  bgSection="#155DFC"
+                />
+                <Stack spacing={2}>
+                  <StatRow label="Total Rides" value="47" />
+                  <StatRow label="Miles Traveled" value="1,284" />
+                  <StatRow label="Avg. Rating Given" value="4.9" />
+                  <StatRow label="Member Since" value="Jan 2024" />
+                </Stack>
               </Stack>
-            </Stack>
             </Grid>
           </Grid>
         </Box>

@@ -74,7 +74,6 @@ const getStatusChipSx = (status: RideStatus) => {
   } as const;
 };
 
-
 const RideTypeIcon = ({ serviceName }: { serviceName: string }) => {
   if (serviceName.toLowerCase().includes('wheelchair')) {
     return <AccessibleForwardRoundedIcon sx={{ fontSize: pxToRem(20) }} />;
@@ -83,11 +82,7 @@ const RideTypeIcon = ({ serviceName }: { serviceName: string }) => {
   return <DirectionsCarRoundedIcon sx={{ fontSize: pxToRem(20) }} />;
 };
 
-export function RideHistoryAccordion({
-  items,
-}: {
-  items: RideHistoryItem[];
-}) {
+export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
   const [expandedId, setExpandedId] = useState<string | false>(false);
 
   return (
@@ -142,7 +137,11 @@ export function RideHistoryAccordion({
                   alignItems="flex-start"
                   gap={2}
                 >
-                  <RowStack alignItems="flex-start" gap={pxToRem(20)} sx={{ minWidth: 0 }}>
+                  <RowStack
+                    alignItems="flex-start"
+                    gap={pxToRem(20)}
+                    sx={{ minWidth: 0 }}
+                  >
                     <Box
                       sx={{
                         width: pxToRem(48),
@@ -160,7 +159,10 @@ export function RideHistoryAccordion({
                     </Box>
 
                     <Stack spacing={1.5} sx={{ minWidth: 0 }}>
-                      <RowStack spacing={1.25} sx={{ minWidth: 0, flexWrap: 'wrap' }}>
+                      <RowStack
+                        spacing={1.25}
+                        sx={{ minWidth: 0, flexWrap: 'wrap' }}
+                      >
                         <Typography
                           sx={{
                             color: '#0F172A',
@@ -175,11 +177,17 @@ export function RideHistoryAccordion({
                         <Chip
                           icon={
                             ride.status === 'cancelled' ? (
-                              <CloseRoundedIcon sx={{ fontSize: pxToRem(14) }} />
+                              <CloseRoundedIcon
+                                sx={{ fontSize: pxToRem(14) }}
+                              />
                             ) : ride.status === 'requested' ? (
-                              <RouteRoundedIcon sx={{ fontSize: pxToRem(14) }} />
+                              <RouteRoundedIcon
+                                sx={{ fontSize: pxToRem(14) }}
+                              />
                             ) : (
-                              <CheckCircleRoundedIcon sx={{ fontSize: pxToRem(14) }} />
+                              <CheckCircleRoundedIcon
+                                sx={{ fontSize: pxToRem(14) }}
+                              />
                             )
                           }
                           label={
@@ -318,7 +326,8 @@ export function RideHistoryAccordion({
                           fontWeight: 600,
                         }}
                       >
-                        {ride.cancelled?.requestedVehicleLabel ?? ride.serviceName}
+                        {ride.cancelled?.requestedVehicleLabel ??
+                          ride.serviceName}
                       </Typography>
                     </Stack>
 
@@ -331,8 +340,16 @@ export function RideHistoryAccordion({
                         p: pxToRem(16),
                       }}
                     >
-                      <RowStack justifyContent="space-between" alignItems="flex-start" gap={2}>
-                        <RowStack alignItems="flex-start" gap={pxToRem(12)} sx={{ minWidth: 0 }}>
+                      <RowStack
+                        justifyContent="space-between"
+                        alignItems="flex-start"
+                        gap={2}
+                      >
+                        <RowStack
+                          alignItems="flex-start"
+                          gap={pxToRem(12)}
+                          sx={{ minWidth: 0 }}
+                        >
                           <Box
                             sx={{
                               width: pxToRem(36),
@@ -357,7 +374,8 @@ export function RideHistoryAccordion({
                                 fontWeight: 700,
                               }}
                             >
-                              {ride.cancelled?.cancelledTitle ?? 'Ride Cancelled'}
+                              {ride.cancelled?.cancelledTitle ??
+                                'Ride Cancelled'}
                             </Typography>
                             {ride.cancelled?.reason ? (
                               <Typography
@@ -506,9 +524,15 @@ export function RideHistoryAccordion({
 
                     {ride.status === 'completed' && (
                       <>
-                        <Divider sx={{ borderColor: '#F3F4F6', my: pxToRem(16) }} />
+                        <Divider
+                          sx={{ borderColor: '#F3F4F6', my: pxToRem(16) }}
+                        />
 
-                        <RowStack justifyContent="space-between" gap={2} flexWrap="wrap">
+                        <RowStack
+                          justifyContent="space-between"
+                          gap={2}
+                          flexWrap="wrap"
+                        >
                           <Stack spacing={0.75}>
                             <Typography
                               sx={{
@@ -526,7 +550,10 @@ export function RideHistoryAccordion({
                                 {Array.from({ length: 5 }).map((_, i) => (
                                   <StarRoundedIcon
                                     key={i}
-                                    sx={{ color: '#F59E0B', fontSize: pxToRem(16) }}
+                                    sx={{
+                                      color: '#F59E0B',
+                                      fontSize: pxToRem(16),
+                                    }}
                                   />
                                 ))}
                               </RowStack>
@@ -557,7 +584,9 @@ export function RideHistoryAccordion({
                                 color: '#155DFC',
                               }}
                             >
-                              <ReceiptLongRoundedIcon sx={{ fontSize: pxToRem(16) }} />
+                              <ReceiptLongRoundedIcon
+                                sx={{ fontSize: pxToRem(16) }}
+                              />
                               <Typography
                                 sx={{
                                   color: '#155DFC',

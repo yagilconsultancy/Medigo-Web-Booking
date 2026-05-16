@@ -17,14 +17,18 @@ import { AppButton, RowStack } from '@/ui/modules/components';
 import { RideStatCard } from '../UserRides/ui/components/RideStatCard';
 import { CancelScheduledRideModal } from './ui/components/CancelScheduledRideModal';
 import { EditScheduledRideModal } from './ui/components/EditScheduledRideModal';
-import { ScheduledRideList, type ScheduledRideItem } from './ui/components/ScheduledRideList';
+import {
+  ScheduledRideList,
+  type ScheduledRideItem,
+} from './ui/components/ScheduledRideList';
 
 const RIDES: ScheduledRideItem[] = [
   {
     id: 'SR-2201',
     status: 'confirmed',
     pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
-    destinationAddress: 'Princess Margaret Cancer Centre – Oncology, Toronto, ON',
+    destinationAddress:
+      'Princess Margaret Cancer Centre – Oncology, Toronto, ON',
     dateLabel: 'Friday, Apr 24, 2026',
     timeLabel: '8:30 AM',
     driverAssigned: 'James Rivera',
@@ -73,9 +77,13 @@ export function ScheduledRidesPage() {
   }, []);
 
   const stats = useMemo(() => {
-    const confirmed = RIDES.filter((ride) => ride.status === 'confirmed').length;
+    const confirmed = RIDES.filter(
+      (ride) => ride.status === 'confirmed'
+    ).length;
     const pending = RIDES.filter((ride) => ride.status === 'pending').length;
-    const recurring = RIDES.filter((ride) => ride.status === 'recurring').length;
+    const recurring = RIDES.filter(
+      (ride) => ride.status === 'recurring'
+    ).length;
 
     return [
       {
@@ -105,9 +113,7 @@ export function ScheduledRidesPage() {
     <AppLayout
       headerProps={{
         showRightContent: true,
-        rightContent: (
-          <HeaderHelpUser />
-        ),
+        rightContent: <HeaderHelpUser />,
       }}
     >
       <Box
@@ -137,7 +143,11 @@ export function ScheduledRidesPage() {
             Back
           </Button>
 
-          <RowStack justifyContent="space-between" alignItems="flex-start" gap={2}>
+          <RowStack
+            justifyContent="space-between"
+            alignItems="flex-start"
+            gap={2}
+          >
             <Stack spacing={pxToRem(6)}>
               <Typography
                 sx={{
@@ -214,7 +224,12 @@ export function ScheduledRidesPage() {
                 overflow: 'hidden',
               }}
             >
-              <RowStack justifyContent="space-between" alignItems="center" gap={2} flexWrap="wrap">
+              <RowStack
+                justifyContent="space-between"
+                alignItems="center"
+                gap={2}
+                flexWrap="wrap"
+              >
                 <RowStack spacing={2} sx={{ minWidth: 0 }}>
                   <Box
                     sx={{
@@ -228,19 +243,33 @@ export function ScheduledRidesPage() {
                       flexShrink: 0,
                     }}
                   >
-                    <CalendarMonthRoundedIcon sx={{ fontSize: pxToRem(18), color: '#FFFFFF' }} />
+                    <CalendarMonthRoundedIcon
+                      sx={{ fontSize: pxToRem(18), color: '#FFFFFF' }}
+                    />
                   </Box>
 
                   <Stack spacing={pxToRem(2)} sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontSize: pxToRem(10), fontWeight: 700, letterSpacing: pxToRem(1.1), opacity: 0.8 }}>
+                    <Typography
+                      sx={{
+                        fontSize: pxToRem(10),
+                        fontWeight: 700,
+                        letterSpacing: pxToRem(1.1),
+                        opacity: 0.8,
+                      }}
+                    >
                       NEXT RIDE
                     </Typography>
                     <Typography sx={{ fontSize: pxToRem(13), fontWeight: 700 }}>
                       {nextRide.dateLabel} • {nextRide.timeLabel}
                     </Typography>
-                    <Typography sx={{ fontSize: pxToRem(11), opacity: 0.9 }} noWrap>
+                    <Typography
+                      sx={{ fontSize: pxToRem(11), opacity: 0.9 }}
+                      noWrap
+                    >
                       {nextRide.destinationAddress}
-                      {nextRide.driverAssigned ? ` · Driver ${nextRide.driverAssigned} assigned` : ''}
+                      {nextRide.driverAssigned
+                        ? ` · Driver ${nextRide.driverAssigned} assigned`
+                        : ''}
                     </Typography>
                   </Stack>
                 </RowStack>
@@ -281,8 +310,16 @@ export function ScheduledRidesPage() {
         <AppFooter />
       </Box>
 
-      <EditScheduledRideModal open={editOpen} setOpen={setEditOpen} ride={activeRide} />
-      <CancelScheduledRideModal open={cancelOpen} setOpen={setCancelOpen} ride={activeRide} />
+      <EditScheduledRideModal
+        open={editOpen}
+        setOpen={setEditOpen}
+        ride={activeRide}
+      />
+      <CancelScheduledRideModal
+        open={cancelOpen}
+        setOpen={setCancelOpen}
+        ride={activeRide}
+      />
     </AppLayout>
   );
 }

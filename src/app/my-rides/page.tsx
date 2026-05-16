@@ -1,5 +1,5 @@
-import { UserRidesPage } from "@/ui/pages";
+import { UserRidesPage } from '@/ui/pages';
 
 export default function MyRides() {
-    return <UserRidesPage />;
+  return <UserRidesPage />;
 }

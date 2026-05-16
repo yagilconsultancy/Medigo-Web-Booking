@@ -79,7 +79,10 @@ export const AppTextField = (props: AppTextFieldProps) => {
           }),
         }}
       />
-      <Collapse in={Boolean(error && resolvedErrorMessage)} orientation={'vertical'}>
+      <Collapse
+        in={Boolean(error && resolvedErrorMessage)}
+        orientation={'vertical'}
+      >
         <RowStack
           sx={{
             width: '100%',

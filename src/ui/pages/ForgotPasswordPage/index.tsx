@@ -92,8 +92,8 @@ export function ForgotPasswordPage() {
                 mb: pxToRem(22),
               }}
             >
-              Enter your email address and we'll send you instructions to reset
-              your password.
+              Enter your email address and we&apos;ll send you instructions to
+              reset your password.
             </Typography>
 
             <Formik
@@ -134,7 +134,9 @@ export function ForgotPasswordPage() {
                     variant="contained"
                     fullWidth
                     isLoading={isSubmitting || isRequestingPasswordReset}
-                    disabled={!isValid || isSubmitting || isRequestingPasswordReset}
+                    disabled={
+                      !isValid || isSubmitting || isRequestingPasswordReset
+                    }
                     sx={{
                       height: pxToRem(48),
                       borderRadius: pxToRem(14),

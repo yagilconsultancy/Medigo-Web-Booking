@@ -16,10 +16,11 @@ export function StatRow({ label, value }: { label: string; value: string }) {
       <Typography sx={{ fontSize: pxToRem(10), color: '#94A3B8' }}>
         {label}
       </Typography>
-      <Typography sx={{ fontSize: pxToRem(10), color: '#0F172A', fontWeight: 800 }}>
+      <Typography
+        sx={{ fontSize: pxToRem(10), color: '#0F172A', fontWeight: 800 }}
+      >
         {value}
       </Typography>
     </Box>
   );
 }
-

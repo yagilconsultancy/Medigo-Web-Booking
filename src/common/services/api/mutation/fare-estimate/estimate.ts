@@ -2,18 +2,16 @@ import { AxiosResponse } from 'axios';
 import { resolveRoute, ROUTES } from '../../../../constants';
 import { getApiClient } from '../../../../lib';
 import {
-    ApiBaseFareEstimateRequest,
+  ApiBaseFareEstimateRequest,
   ApiBaseFareEstimateResponse,
   ApiFareEstimateRequest,
 } from '../../../../types';
 
-export const createFareEstimate = async (
-  payload: ApiFareEstimateRequest
-) => {
-  return await getApiClient().post<
-    any,
-    AxiosResponse<any>
-  >(resolveRoute(ROUTES.riderFareEstimate), payload);
+export const createFareEstimate = async (payload: ApiFareEstimateRequest) => {
+  return await getApiClient().post<any, AxiosResponse<any>>(
+    resolveRoute(ROUTES.riderFareEstimate),
+    payload
+  );
 };
 
 export const createBaseFareEstimate = async (

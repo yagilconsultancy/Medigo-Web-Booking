@@ -23,7 +23,9 @@ type ResetPasswordFormValues = {
 const validationSchema = yup.object({
   token: yup
     .string()
-    .required('Reset token is required. Please check your email for the token.'),
+    .required(
+      'Reset token is required. Please check your email for the token.'
+    ),
   newPassword: yup
     .string()
     .min(8, 'Password must be at least 8 characters')
@@ -51,7 +53,9 @@ export function ResetPasswordPage() {
     });
 
     if (success) {
-      toast.success('Password reset successfully. Please sign in with your new password.');
+      toast.success(
+        'Password reset successfully. Please sign in with your new password.'
+      );
       router.push('/login');
     }
   };

@@ -110,15 +110,19 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
       setIsBookingRide(true);
 
       // Build the scheduled_at ISO string from date + time
-      const scheduledAt = booking.trip.pickupDate && booking.trip.pickupTime
-        ? new Date(`${booking.trip.pickupDate}T${booking.trip.pickupTime}`).toISOString()
-        : new Date().toISOString();
+      const scheduledAt =
+        booking.trip.pickupDate && booking.trip.pickupTime
+          ? new Date(
+              `${booking.trip.pickupDate}T${booking.trip.pickupTime}`
+            ).toISOString()
+          : new Date().toISOString();
 
       const ridePayload: Record<string, any> = {
         ride_type: booking.vehicle.type ?? 'ambulatory',
-        trip_type: booking.service.type === 'transport_assistant'
-          ? 'transport_care_assistant'
-          : 'transport_only',
+        trip_type:
+          booking.service.type === 'transport_assistant'
+            ? 'transport_care_assistant'
+            : 'transport_only',
         trip_structure: booking.trip.type ?? 'one_way',
         pickup_address: booking.address.pickupAddress,
         pickup_latitude: booking.address.pickupCoordinates?.lat,
@@ -164,7 +168,8 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
 
       // Ride created successfully — now proceed to payment
       const amount = Math.round((rideResult.estimated_fare ?? 0) * 100); // cents
-      const currency = booking.vehicle.currency || booking.service.currency || 'CAD';
+      const currency =
+        booking.vehicle.currency || booking.service.currency || 'CAD';
 
       const paymentResult = await createPaymentIntent({
         amount,
@@ -364,9 +369,7 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
             variant="contained"
             disabled={!canContinue}
             onClick={handleContinue}
-            isLoading={
-              activeStep === steps.length - 1 ? isBookingRide : false
-            }
+            isLoading={activeStep === steps.length - 1 ? isBookingRide : false}
             sx={{
               height: pxToRem(40),
               minWidth:
@@ -382,9 +385,7 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
               },
             }}
           >
-            {activeStep === steps.length - 1
-              ? 'Book a Ride'
-              : 'Continue'}
+            {activeStep === steps.length - 1 ? 'Book a Ride' : 'Continue'}
           </AppButton>
         </Box>
       </Box>

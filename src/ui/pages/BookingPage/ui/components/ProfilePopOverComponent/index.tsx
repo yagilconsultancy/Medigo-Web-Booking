@@ -70,20 +70,20 @@ export function ProfilePopOverComponent({
         description: 'View your ride history',
         icon: icon14,
       },
-    //   {
-    //     key: 'schedule',
-    //     label: 'Scheduled rides',
-    //     link: '/scheduled-rides',
-    //     description: 'Upcoming scheduled trips',
-    //     icon: icon15,
-    //   },
-    //   {
-    //     key: 'payments',
-    //     label: 'Payments',
-    //     link: '/payments',
-    //     description: 'Payment methods and receipts',
-    //     icon: icon16,
-    //   },
+      //   {
+      //     key: 'schedule',
+      //     label: 'Scheduled rides',
+      //     link: '/scheduled-rides',
+      //     description: 'Upcoming scheduled trips',
+      //     icon: icon15,
+      //   },
+      //   {
+      //     key: 'payments',
+      //     label: 'Payments',
+      //     link: '/payments',
+      //     description: 'Payment methods and receipts',
+      //     icon: icon16,
+      //   },
       {
         key: 'help',
         label: 'Help',
@@ -297,10 +297,7 @@ export function ProfilePopOverComponent({
         </Box>
       </Popover>
 
-      <LogoutModal
-        open={logoutModalOpen}
-        setOpen={setLogoutModalOpen}
-      />
+      <LogoutModal open={logoutModalOpen} setOpen={setLogoutModalOpen} />
     </>
   );
 }

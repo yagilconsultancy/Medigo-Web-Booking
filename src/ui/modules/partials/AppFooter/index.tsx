@@ -50,7 +50,13 @@ export function AppFooter({ sx }: AppFooterProps) {
             </Typography>
           </StyledLink>
 
-          <Typography sx={{ color: '#E5E7EB', fontSize: pxToRem(16), lineHeight: pxToRem(24) }}>
+          <Typography
+            sx={{
+              color: '#E5E7EB',
+              fontSize: pxToRem(16),
+              lineHeight: pxToRem(24),
+            }}
+          >
             ·
           </Typography>
 
@@ -67,7 +73,13 @@ export function AppFooter({ sx }: AppFooterProps) {
             </Typography>
           </StyledLink>
 
-          <Typography sx={{ color: '#E5E7EB', fontSize: pxToRem(16), lineHeight: pxToRem(24) }}>
+          <Typography
+            sx={{
+              color: '#E5E7EB',
+              fontSize: pxToRem(16),
+              lineHeight: pxToRem(24),
+            }}
+          >
             ·
           </Typography>
 

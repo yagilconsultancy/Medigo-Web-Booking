@@ -158,10 +158,22 @@ export function TripStep({ accountType }: TripStepProps) {
 
   const frequencyOptions = useMemo(
     () => [
-      { key: 'daily' as const, label: 'Daily', description: 'Every selected day' },
+      {
+        key: 'daily' as const,
+        label: 'Daily',
+        description: 'Every selected day',
+      },
       { key: 'weekly' as const, label: 'Weekly', description: 'Once per week' },
-      { key: 'bi_weekly' as const, label: 'Bi-Weekly', description: 'Every 2 weeks' },
-      { key: 'monthly' as const, label: 'Monthly', description: 'Once per month' },
+      {
+        key: 'bi_weekly' as const,
+        label: 'Bi-Weekly',
+        description: 'Every 2 weeks',
+      },
+      {
+        key: 'monthly' as const,
+        label: 'Monthly',
+        description: 'Once per month',
+      },
     ],
     []
   );

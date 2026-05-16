@@ -3,7 +3,14 @@
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
-import { Box, ButtonBase, IconButton, Stack, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  ButtonBase,
+  IconButton,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { pxToRem } from '@/common';
 import { AppModal, RowStack } from '@/ui/modules/components';
 import type { ScheduledRideItem } from '../ScheduledRideList';
@@ -77,7 +84,9 @@ export function EditScheduledRideModal({
             }}
             aria-label="Close edit ride"
           >
-            <CloseRoundedIcon sx={{ fontSize: pxToRem(18), color: '#0F172A' }} />
+            <CloseRoundedIcon
+              sx={{ fontSize: pxToRem(18), color: '#0F172A' }}
+            />
           </IconButton>
         </RowStack>
 
@@ -130,7 +139,13 @@ export function EditScheduledRideModal({
               </RowStack>
 
               <Box sx={{ pl: pxToRem(19) }}>
-                <Box sx={{ width: pxToRem(1), height: pxToRem(16), bgcolor: '#E5E7EB' }} />
+                <Box
+                  sx={{
+                    width: pxToRem(1),
+                    height: pxToRem(16),
+                    bgcolor: '#E5E7EB',
+                  }}
+                />
               </Box>
 
               <Typography
@@ -262,7 +277,10 @@ export function EditScheduledRideModal({
                 }}
               >
                 Notes for Driver{' '}
-                <Box component="span" sx={{ fontWeight: 400, textTransform: 'none' }}>
+                <Box
+                  component="span"
+                  sx={{ fontWeight: 400, textTransform: 'none' }}
+                >
                   (optional)
                 </Box>
               </Typography>
@@ -300,7 +318,9 @@ export function EditScheduledRideModal({
                 p: pxToRem(16),
               }}
             >
-              <InfoOutlinedIcon sx={{ fontSize: pxToRem(16), color: '#92400E', mt: pxToRem(2) }} />
+              <InfoOutlinedIcon
+                sx={{ fontSize: pxToRem(16), color: '#92400E', mt: pxToRem(2) }}
+              />
               <Typography
                 sx={{
                   color: '#92400E',
@@ -308,8 +328,8 @@ export function EditScheduledRideModal({
                   lineHeight: pxToRem(19.5),
                 }}
               >
-                Changes to confirmed rides may require re-confirmation from dispatch.
-                You&apos;ll be notified by SMS.
+                Changes to confirmed rides may require re-confirmation from
+                dispatch. You&apos;ll be notified by SMS.
               </Typography>
             </RowStack>
           </Stack>
@@ -323,7 +343,10 @@ export function EditScheduledRideModal({
             py: pxToRem(20),
           }}
         >
-          <ButtonBase onClick={() => setOpen(false)} sx={{ borderRadius: pxToRem(999) }}>
+          <ButtonBase
+            onClick={() => setOpen(false)}
+            sx={{ borderRadius: pxToRem(999) }}
+          >
             <Box
               sx={{
                 border: '1px solid #E5E7EB',
@@ -332,13 +355,22 @@ export function EditScheduledRideModal({
                 py: pxToRem(10),
               }}
             >
-              <Typography sx={{ color: '#64748B', fontSize: pxToRem(13), fontWeight: 600 }}>
+              <Typography
+                sx={{
+                  color: '#64748B',
+                  fontSize: pxToRem(13),
+                  fontWeight: 600,
+                }}
+              >
                 Discard
               </Typography>
             </Box>
           </ButtonBase>
 
-          <ButtonBase onClick={() => setOpen(false)} sx={{ borderRadius: pxToRem(999) }}>
+          <ButtonBase
+            onClick={() => setOpen(false)}
+            sx={{ borderRadius: pxToRem(999) }}
+          >
             <RowStack
               spacing={1}
               sx={{
@@ -349,10 +381,18 @@ export function EditScheduledRideModal({
                 boxShadow: '0px 2px 5px rgba(21,93,252,0.28)',
               }}
             >
-              <Typography sx={{ color: '#FFFFFF', fontSize: pxToRem(13), fontWeight: 700 }}>
+              <Typography
+                sx={{
+                  color: '#FFFFFF',
+                  fontSize: pxToRem(13),
+                  fontWeight: 700,
+                }}
+              >
                 Save Changes
               </Typography>
-              <KeyboardArrowRightRoundedIcon sx={{ fontSize: pxToRem(18), color: '#FFFFFF' }} />
+              <KeyboardArrowRightRoundedIcon
+                sx={{ fontSize: pxToRem(18), color: '#FFFFFF' }}
+              />
             </RowStack>
           </ButtonBase>
         </RowStack>
@@ -360,4 +400,3 @@ export function EditScheduledRideModal({
     </AppModal>
   );
 }
-

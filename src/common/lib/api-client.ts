@@ -31,7 +31,8 @@ const processQueue = (error: AxiosError | null = null) => {
 
 const isLoginRoute = (route?: string) => route && route.includes('/login');
 const isRefreshRoute = (route?: string) => route && route.includes('/refresh');
-const isChangePasswordRoute = (route?: string) => route && route.includes('/change-password');
+const isChangePasswordRoute = (route?: string) =>
+  route && route.includes('/change-password');
 
 export const getApiClient = () => {
   if (apiClient) {
@@ -75,8 +76,8 @@ export const getApiClient = () => {
 
         // If this is a retry attempt that failed, logout
         // if (originalRequest._retry) {
-          handleLogout();
-          return Promise.reject(error);
+        handleLogout();
+        return Promise.reject(error);
         // }
 
         // If we're already refreshing, queue this request

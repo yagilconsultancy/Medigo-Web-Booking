@@ -1,6 +1,10 @@
 import { toast } from 'sonner';
 import { useBaseFareEstimate, useFareEstimate } from '../../mutation';
-import type { ApiBaseFareEstimateRequest, ApiBaseFareEstimateResponse, ApiFareEstimateRequest } from '../../../../types';
+import type {
+  ApiBaseFareEstimateRequest,
+  ApiBaseFareEstimateResponse,
+  ApiFareEstimateRequest,
+} from '../../../../types';
 import { extractResponseErrors, tryExecute } from '../../../../utils';
 
 export const useFareEstimateApi = () => {
@@ -21,7 +25,7 @@ export const useFareEstimateApi = () => {
         if (responseData.success) {
           data = responseData;
           success = true;
-        //   toast.success('');
+          //   toast.success('');
         } else {
           toast.error(extractResponseErrors(responseData));
         }
@@ -44,7 +48,7 @@ export const useFareEstimateApi = () => {
 
         if (responseData.success) {
           result = responseData;
-        //   toast.success('Base fare estimate created successfully');
+          //   toast.success('Base fare estimate created successfully');
         } else {
           toast.error(extractResponseErrors(responseData));
         }

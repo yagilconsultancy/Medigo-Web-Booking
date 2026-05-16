@@ -88,9 +88,7 @@ export function SupportCard({
         <AppButton
           variant="text"
           onClick={onAction}
-          endIcon={
-            <Image src={buttonIcon} alt="" width={14} height={14} />
-          }
+          endIcon={<Image src={buttonIcon} alt="" width={14} height={14} />}
           sx={{
             width: 'fit-content',
             textTransform: 'none',

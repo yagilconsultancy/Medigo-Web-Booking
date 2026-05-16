@@ -82,8 +82,16 @@ export function ScheduledRideList({
             />
 
             <Box sx={{ px: pxToRem(24), py: pxToRem(18) }}>
-              <RowStack justifyContent="space-between" alignItems="flex-start" gap={2}>
-                <RowStack alignItems="flex-start" gap={pxToRem(20)} sx={{ minWidth: 0 }}>
+              <RowStack
+                justifyContent="space-between"
+                alignItems="flex-start"
+                gap={2}
+              >
+                <RowStack
+                  alignItems="flex-start"
+                  gap={pxToRem(20)}
+                  sx={{ minWidth: 0 }}
+                >
                   <Box
                     sx={{
                       width: pxToRem(40),
@@ -111,7 +119,10 @@ export function ScheduledRideList({
                   </Box>
 
                   <Stack spacing={1.25} sx={{ minWidth: 0 }}>
-                    <RowStack spacing={1.25} sx={{ minWidth: 0, flexWrap: 'wrap' }}>
+                    <RowStack
+                      spacing={1.25}
+                      sx={{ minWidth: 0, flexWrap: 'wrap' }}
+                    >
                       <Typography
                         sx={{
                           color: '#0F172A',
@@ -270,14 +281,21 @@ export function ScheduledRideList({
                             fontWeight: 500,
                           }}
                         >
-                          Driver assigned — <Box component="span" sx={{ fontWeight: 700 }}>{ride.driverAssigned}</Box>
+                          Driver assigned —{' '}
+                          <Box component="span" sx={{ fontWeight: 700 }}>
+                            {ride.driverAssigned}
+                          </Box>
                         </Typography>
                       </RowStack>
                     ) : null}
                   </Stack>
                 </RowStack>
 
-                <Stack spacing={1} alignItems="flex-end" sx={{ pt: pxToRem(2) }}>
+                <Stack
+                  spacing={1}
+                  alignItems="flex-end"
+                  sx={{ pt: pxToRem(2) }}
+                >
                   <ButtonBase
                     onClick={() => onEdit(ride)}
                     sx={{ borderRadius: pxToRem(10) }}
@@ -340,4 +358,3 @@ export function ScheduledRideList({
     </Stack>
   );
 }
-

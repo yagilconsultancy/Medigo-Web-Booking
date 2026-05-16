@@ -16,10 +16,9 @@ export function CancelScheduledRideModal({
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   ride: ScheduledRideItem | null;
 }) {
-  const message =
-    ride
-      ? `Your ride on ${ride.dateLabel} at ${ride.timeLabel} will be cancelled. A confirmation will be sent to your email.`
-      : '';
+  const message = ride
+    ? `Your ride on ${ride.dateLabel} at ${ride.timeLabel} will be cancelled. A confirmation will be sent to your email.`
+    : '';
 
   return (
     <AppModal
@@ -37,7 +36,14 @@ export function CancelScheduledRideModal({
       }}
     >
       <Box sx={{ width: '100%' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: pxToRem(20), pt: pxToRem(20) }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            px: pxToRem(20),
+            pt: pxToRem(20),
+          }}
+        >
           <IconButton
             onClick={() => setOpen(false)}
             sx={{
@@ -48,11 +54,17 @@ export function CancelScheduledRideModal({
             }}
             aria-label="Close cancel ride"
           >
-            <CloseRoundedIcon sx={{ fontSize: pxToRem(16), color: '#0F172A' }} />
+            <CloseRoundedIcon
+              sx={{ fontSize: pxToRem(16), color: '#0F172A' }}
+            />
           </IconButton>
         </Box>
 
-        <Stack spacing={pxToRem(12)} alignItems="center" sx={{ px: pxToRem(32), pb: pxToRem(18) }}>
+        <Stack
+          spacing={pxToRem(12)}
+          alignItems="center"
+          sx={{ px: pxToRem(32), pb: pxToRem(18) }}
+        >
           <Box
             sx={{
               width: pxToRem(64),
@@ -64,7 +76,9 @@ export function CancelScheduledRideModal({
               justifyContent: 'center',
             }}
           >
-            <PriorityHighRoundedIcon sx={{ fontSize: pxToRem(28), color: '#FB2C36' }} />
+            <PriorityHighRoundedIcon
+              sx={{ fontSize: pxToRem(28), color: '#FB2C36' }}
+            />
           </Box>
 
           <Typography
@@ -93,7 +107,10 @@ export function CancelScheduledRideModal({
         </Stack>
 
         <Stack spacing={pxToRem(10)} sx={{ px: pxToRem(24), pb: pxToRem(24) }}>
-          <ButtonBase onClick={() => setOpen(false)} sx={{ borderRadius: pxToRem(12) }}>
+          <ButtonBase
+            onClick={() => setOpen(false)}
+            sx={{ borderRadius: pxToRem(12) }}
+          >
             <Box
               sx={{
                 width: '100%',
@@ -103,13 +120,23 @@ export function CancelScheduledRideModal({
                 boxShadow: '0px 2px 5px rgba(239,68,68,0.3)',
               }}
             >
-              <Typography sx={{ color: '#FFFFFF', fontSize: pxToRem(14), fontWeight: 700, textAlign: 'center' }}>
+              <Typography
+                sx={{
+                  color: '#FFFFFF',
+                  fontSize: pxToRem(14),
+                  fontWeight: 700,
+                  textAlign: 'center',
+                }}
+              >
                 Yes, Cancel Ride
               </Typography>
             </Box>
           </ButtonBase>
 
-          <ButtonBase onClick={() => setOpen(false)} sx={{ borderRadius: pxToRem(12) }}>
+          <ButtonBase
+            onClick={() => setOpen(false)}
+            sx={{ borderRadius: pxToRem(12) }}
+          >
             <Box
               sx={{
                 width: '100%',
@@ -118,7 +145,14 @@ export function CancelScheduledRideModal({
                 py: pxToRem(12),
               }}
             >
-              <Typography sx={{ color: '#64748B', fontSize: pxToRem(14), fontWeight: 600, textAlign: 'center' }}>
+              <Typography
+                sx={{
+                  color: '#64748B',
+                  fontSize: pxToRem(14),
+                  fontWeight: 600,
+                  textAlign: 'center',
+                }}
+              >
                 Keep Ride
               </Typography>
             </Box>
@@ -128,4 +162,3 @@ export function CancelScheduledRideModal({
     </AppModal>
   );
 }
-

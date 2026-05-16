@@ -42,4 +42,3 @@ export function IOSSwitch(props: React.ComponentProps<typeof Switch>) {
     />
   );
 }
-

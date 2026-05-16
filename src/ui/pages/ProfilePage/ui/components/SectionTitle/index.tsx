@@ -47,4 +47,3 @@ export function SectionTitle({ label, iconSrc, bgSection }: SectionTitleProps) {
     </RowStack>
   );
 }
-

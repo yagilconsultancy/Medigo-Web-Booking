@@ -57,7 +57,9 @@ export function LogoutModal({ open, setOpen, onConfirm }: LogoutModalProps) {
     >
       <Box>
         {/* Close Button */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: pxToRem(16) }}>
+        <Box
+          sx={{ display: 'flex', justifyContent: 'flex-end', p: pxToRem(16) }}
+        >
           <IconButton
             onClick={() => setOpen(false)}
             sx={{
@@ -113,8 +115,8 @@ export function LogoutModal({ open, setOpen, onConfirm }: LogoutModalProps) {
               maxWidth: 320,
             }}
           >
-            You're about to log out of your MediGO account. Any unsaved changes
-            will be lost. You can always log back in anytime.
+            You&apos;re about to log out of your MediGO account. Any unsaved
+            changes will be lost. You can always log back in anytime.
           </Typography>
         </Stack>
 

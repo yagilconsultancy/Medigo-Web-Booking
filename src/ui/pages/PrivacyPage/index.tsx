@@ -2,13 +2,7 @@
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
-import {
-  Box,
-  Button,
-  Paper,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Paper, Stack, Typography } from '@mui/material';
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -51,8 +45,7 @@ const privacySections = [
       'Emergency contact information',
       'Medical facility destinations',
     ],
-    note:
-      'We collect only the minimum health information necessary to provide safe transportation. We do NOT collect detailed medical diagnoses or treatment records.',
+    note: 'We collect only the minimum health information necessary to provide safe transportation. We do NOT collect detailed medical diagnoses or treatment records.',
   },
 
   {
@@ -89,8 +82,7 @@ const privacySections = [
       'Billing address',
       'Transaction history',
     ],
-    note:
-      'MediGo does not store your full credit card number. Payment processing is handled by PCI-compliant third-party providers.',
+    note: 'MediGo does not store your full credit card number. Payment processing is handled by PCI-compliant third-party providers.',
   },
 
   {
@@ -115,14 +107,12 @@ const informationUsageItems = [
 
   {
     label: 'Customer Support',
-    value:
-      'Respond to inquiries, resolve issues, process refunds',
+    value: 'Respond to inquiries, resolve issues, process refunds',
   },
 
   {
     label: 'Communication',
-    value:
-      'Send booking confirmations, ride updates, service announcements',
+    value: 'Send booking confirmations, ride updates, service announcements',
   },
 
   {
@@ -133,14 +123,12 @@ const informationUsageItems = [
 
   {
     label: 'Legal Compliance',
-    value:
-      'Meet regulatory requirements, respond to legal requests',
+    value: 'Meet regulatory requirements, respond to legal requests',
   },
 
   {
     label: 'Marketing',
-    value:
-      'Send promotional offers (you may opt-out anytime)',
+    value: 'Send promotional offers (you may opt-out anytime)',
   },
 ];
 
@@ -188,20 +176,17 @@ const retentionItems = [
 
   {
     label: 'Trip Records',
-    value:
-      'Retained for up to 7 years (tax and legal requirements)',
+    value: 'Retained for up to 7 years (tax and legal requirements)',
   },
 
   {
     label: 'Financial Records',
-    value:
-      'Retained for up to 7 years (accounting compliance)',
+    value: 'Retained for up to 7 years (accounting compliance)',
   },
 
   {
     label: 'Communications',
-    value:
-      'Retained for 2 years or as needed for support',
+    value: 'Retained for 2 years or as needed for support',
   },
 ];
 
@@ -213,32 +198,27 @@ const rightsItems = [
 
   {
     label: 'Correction',
-    value:
-      'Request correction of inaccurate information',
+    value: 'Request correction of inaccurate information',
   },
 
   {
     label: 'Deletion',
-    value:
-      'Request deletion of your account and data',
+    value: 'Request deletion of your account and data',
   },
 
   {
     label: 'Portability',
-    value:
-      'Request transfer of your data to another service',
+    value: 'Request transfer of your data to another service',
   },
 
   {
     label: 'Opt-Out',
-    value:
-      'Unsubscribe from marketing communications',
+    value: 'Unsubscribe from marketing communications',
   },
 
   {
     label: 'Withdraw Consent',
-    value:
-      'Withdraw consent for data processing (may limit services)',
+    value: 'Withdraw consent for data processing (may limit services)',
   },
 ];
 
@@ -333,9 +313,7 @@ type LabelValueListProps = {
   }[];
 };
 
-function LabelValueList({
-  items,
-}: LabelValueListProps) {
+function LabelValueList({ items }: LabelValueListProps) {
   return (
     <Stack
       component="ul"
@@ -407,9 +385,7 @@ export function PrivacyPage() {
     <AppLayout
       headerProps={{
         showRightContent: true,
-        rightContent: (
-          <HeaderHelpUser />
-        ),
+        rightContent: <HeaderHelpUser />,
       }}
     >
       <Box
@@ -491,10 +467,7 @@ export function PrivacyPage() {
                   }}
                 >
                   Effective Date:{' '}
-                  <Box
-                    component="span"
-                    sx={{ fontWeight: 400 }}
-                  >
+                  <Box component="span" sx={{ fontWeight: 400 }}>
                     February 26, 2026
                   </Box>
                 </Typography>
@@ -507,10 +480,7 @@ export function PrivacyPage() {
                   }}
                 >
                   Last Updated:{' '}
-                  <Box
-                    component="span"
-                    sx={{ fontWeight: 400 }}
-                  >
+                  <Box component="span" sx={{ fontWeight: 400 }}>
                     February 26, 2026
                   </Box>
                 </Typography>
@@ -620,9 +590,7 @@ export function PrivacyPage() {
                   3. How We Use Your Information
                 </Typography>
 
-                <LabelValueList
-                  items={informationUsageItems}
-                />
+                <LabelValueList items={informationUsageItems} />
               </Stack>
 
               {/* 4. HOW WE SHARE YOUR INFORMATION */}
@@ -668,10 +636,9 @@ export function PrivacyPage() {
                     lineHeight: pxToRem(24),
                   }}
                 >
-                  MediGo operates in Canada. Your information may
-                  be processed and stored on servers located in
-                  Canada and the United States. By using our
-                  services, you consent to this transfer and
+                  MediGo operates in Canada. Your information may be processed
+                  and stored on servers located in Canada and the United States.
+                  By using our services, you consent to this transfer and
                   processing.
                 </Typography>
 
@@ -682,9 +649,9 @@ export function PrivacyPage() {
                     lineHeight: pxToRem(24),
                   }}
                 >
-                  We implement appropriate safeguards to protect
-                  your information in accordance with applicable
-                  data protection laws.
+                  We implement appropriate safeguards to protect your
+                  information in accordance with applicable data protection
+                  laws.
                 </Typography>
               </Stack>
 
@@ -710,8 +677,8 @@ export function PrivacyPage() {
                     lineHeight: pxToRem(24),
                   }}
                 >
-                  You may request deletion of your account at any
-                  time, subject to legal retention requirements.
+                  You may request deletion of your account at any time, subject
+                  to legal retention requirements.
                 </Typography>
               </Stack>
 
@@ -735,8 +702,8 @@ export function PrivacyPage() {
                     lineHeight: pxToRem(24),
                   }}
                 >
-                  We implement industry-standard security
-                  measures to protect your information:
+                  We implement industry-standard security measures to protect
+                  your information:
                 </Typography>
 
                 <Stack
@@ -776,9 +743,9 @@ export function PrivacyPage() {
                     fontStyle: 'italic',
                   }}
                 >
-                  While we strive to protect your information,
-                  no method of transmission over the internet or
-                  electronic storage is 100% secure.
+                  While we strive to protect your information, no method of
+                  transmission over the internet or electronic storage is 100%
+                  secure.
                 </Typography>
               </Stack>
 
@@ -802,8 +769,8 @@ export function PrivacyPage() {
                     lineHeight: pxToRem(24),
                   }}
                 >
-                  You have the following rights regarding your
-                  personal information:
+                  You have the following rights regarding your personal
+                  information:
                 </Typography>
 
                 <LabelValueList items={rightsItems} />
@@ -815,8 +782,7 @@ export function PrivacyPage() {
                     lineHeight: pxToRem(24),
                   }}
                 >
-                  To exercise these rights, contact our Privacy
-                  Officer at{' '}
+                  To exercise these rights, contact our Privacy Officer at{' '}
                   <Box
                     component="span"
                     sx={{
@@ -848,8 +814,8 @@ export function PrivacyPage() {
                     lineHeight: pxToRem(24),
                   }}
                 >
-                  MediGo services are not directed to individuals
-                  under 18 years of age.
+                  MediGo services are not directed to individuals under 18 years
+                  of age.
                 </Typography>
 
                 <Typography
@@ -859,10 +825,9 @@ export function PrivacyPage() {
                     lineHeight: pxToRem(24),
                   }}
                 >
-                  If you are a parent or guardian booking rides
-                  for a minor, you are responsible for providing
-                  consent and ensuring appropriate supervision
-                  during transport.
+                  If you are a parent or guardian booking rides for a minor, you
+                  are responsible for providing consent and ensuring appropriate
+                  supervision during transport.
                 </Typography>
               </Stack>
 
@@ -886,9 +851,8 @@ export function PrivacyPage() {
                     lineHeight: pxToRem(24),
                   }}
                 >
-                  We may update this Privacy Policy from time to
-                  time. We will notify you of material changes
-                  by:
+                  We may update this Privacy Policy from time to time. We will
+                  notify you of material changes by:
                 </Typography>
 
                 <Stack
@@ -925,8 +889,8 @@ export function PrivacyPage() {
                     lineHeight: pxToRem(24),
                   }}
                 >
-                  Continued use of MediGo after changes indicates
-                  acceptance of the updated policy.
+                  Continued use of MediGo after changes indicates acceptance of
+                  the updated policy.
                 </Typography>
               </Stack>
 
@@ -994,8 +958,8 @@ export function PrivacyPage() {
                         fontSize: pxToRem(14),
                       }}
                     >
-                      Address: 123 Healthcare Drive, Suite 400,
-                      Toronto, ON M5H 2N2, Canada
+                      Address: 123 Healthcare Drive, Suite 400, Toronto, ON M5H
+                      2N2, Canada
                     </Typography>
                   </Stack>
                 </Box>
@@ -1022,8 +986,8 @@ export function PrivacyPage() {
                       lineHeight: pxToRem(18),
                     }}
                   >
-                    This page reflects the content provided in
-                    the product design.
+                    This page reflects the content provided in the product
+                    design.
                   </Typography>
                 </Box>
               </Stack>

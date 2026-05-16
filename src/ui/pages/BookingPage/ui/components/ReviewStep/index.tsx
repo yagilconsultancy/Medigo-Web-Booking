@@ -188,7 +188,7 @@ export function ReviewStep({ accountType, onEditStep }: ReviewStepProps) {
       | 'trip'
       | 'recurring'
   ) => {
-    const size = pxToRem(28);
+    // const size = pxToRem(28);
     const iconSx = { width: pxToRem(14), height: pxToRem(14) };
 
     if (type === 'addresses') {

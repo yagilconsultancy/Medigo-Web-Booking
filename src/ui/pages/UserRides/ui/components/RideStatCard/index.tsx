@@ -1,6 +1,12 @@
 'use client';
 
-import { Paper, Stack, Typography, type SxProps, type Theme } from '@mui/material';
+import {
+  Paper,
+  Stack,
+  Typography,
+  type SxProps,
+  type Theme,
+} from '@mui/material';
 import type { ReactNode } from 'react';
 import { pxToRem } from '@/common';
 

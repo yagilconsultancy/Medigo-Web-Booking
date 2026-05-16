@@ -14,7 +14,12 @@ import {
 } from '../../modules/components';
 import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
-import { pxToRem, useAccountStore, useAuthApi } from '../../../common';
+import {
+  AccountType,
+  pxToRem,
+  useAccountStore,
+  useAuthApi,
+} from '../../../common';
 import blueFacilityBookingIcon from './ui/assets/icons/blue-facility-booking-icon.svg';
 import blueIndividualBookingIcon from './ui/assets/icons/blue-individual-booking-icon.svg';
 
@@ -123,7 +128,13 @@ export function LoginPage() {
                 },
               }}
               renderValue={(value) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(8) }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: pxToRem(8),
+                  }}
+                >
                   <StyledImage
                     src={accountMeta[value].icon}
                     alt=""
@@ -146,7 +157,13 @@ export function LoginPage() {
               )}
             >
               <MenuItem value="individual">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(8) }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: pxToRem(8),
+                  }}
+                >
                   <StyledImage
                     src={blueIndividualBookingIcon}
                     alt=""
@@ -166,7 +183,13 @@ export function LoginPage() {
                 </Box>
               </MenuItem>
               <MenuItem value="facility">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(8) }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: pxToRem(8),
+                  }}
+                >
                   <StyledImage
                     src={blueFacilityBookingIcon}
                     alt=""

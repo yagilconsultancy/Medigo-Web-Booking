@@ -8,11 +8,7 @@ import { useMemo } from 'react';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
 
-import {
-  pxToRem,
-  useGetRideDetail,
-  useResolvedApiQuery,
-} from '@/common';
+import { pxToRem, useGetRideDetail, useResolvedApiQuery } from '@/common';
 import { AppFooter, AppLayout } from '@/ui/modules/partials';
 import { HeaderHelpUser } from '@/ui/modules/partials/AppHeader/ui/components';
 import { AppButton, RowStack } from '@/ui/modules/components';
@@ -68,7 +64,9 @@ export function BookingSuccessPage() {
 
   const rideId = searchParams.get('ride_id') || '';
 
-  const { data: rideResponse, isLoading } = useGetRideDetail(rideId || undefined);
+  const { data: rideResponse, isLoading } = useGetRideDetail(
+    rideId || undefined
+  );
   // const {} = useResolvedApiQuery(
   //   useGetRideDetail,
   //   null,
@@ -76,9 +74,7 @@ export function BookingSuccessPage() {
   // )
   const rideDetail = rideResponse?.success ? rideResponse.data : null;
 
-  const bookingRef = rideId
-    ? `${rideId}`
-    : '';
+  const bookingRef = rideId ? `${rideId}` : '';
 
   const patientName = rideDetail
     ? `${rideDetail.passenger_first_name ?? ''} ${rideDetail.passenger_last_name ?? ''}`.trim()
@@ -93,9 +89,10 @@ export function BookingSuccessPage() {
     : '';
   const vehicleType = rideDetail?.ride_type ?? '';
   const serviceType = rideDetail?.trip_type ?? '';
-  const totalPaid = rideDetail?.estimated_fare != null
-    ? `$${rideDetail.estimated_fare.toFixed(2)}`
-    : '$0.00';
+  const totalPaid =
+    rideDetail?.estimated_fare != null
+      ? `CAD ${rideDetail.estimated_fare.toFixed(2)}`
+      : 'CAD 0.00';
 
   const details: DetailRow[] = useMemo(
     () => [
@@ -133,7 +130,10 @@ export function BookingSuccessPage() {
   if (isLoading) {
     return (
       <AppLayout
-        headerProps={{ showRightContent: true, rightContent: <HeaderHelpUser /> }}
+        headerProps={{
+          showRightContent: true,
+          rightContent: <HeaderHelpUser />,
+        }}
       >
         <Box
           sx={{
@@ -146,9 +146,22 @@ export function BookingSuccessPage() {
           }}
         >
           <Box sx={{ width: '100%', maxWidth: 580 }}>
-            <Skeleton variant="circular" width={72} height={72} sx={{ mx: 'auto', mb: pxToRem(20) }} />
-            <Skeleton variant="text" width={200} sx={{ mx: 'auto', mb: pxToRem(8) }} />
-            <Skeleton variant="rounded" height={300} sx={{ borderRadius: pxToRem(16) }} />
+            <Skeleton
+              variant="circular"
+              width={72}
+              height={72}
+              sx={{ mx: 'auto', mb: pxToRem(20) }}
+            />
+            <Skeleton
+              variant="text"
+              width={200}
+              sx={{ mx: 'auto', mb: pxToRem(8) }}
+            />
+            <Skeleton
+              variant="rounded"
+              height={300}
+              sx={{ borderRadius: pxToRem(16) }}
+            />
           </Box>
         </Box>
       </AppLayout>
@@ -312,7 +325,9 @@ export function BookingSuccessPage() {
                   variant="text"
                   onClick={handleCopyRef}
                   startIcon={
-                    <ContentCopyRoundedIcon sx={{ fontSize: 14, color: '#16A34A' }} />
+                    <ContentCopyRoundedIcon
+                      sx={{ fontSize: 14, color: '#16A34A' }}
+                    />
                   }
                   sx={{
                     bgcolor: 'rgba(255, 255, 255, 0.7)',
@@ -364,12 +379,7 @@ export function BookingSuccessPage() {
                       flexShrink: 0,
                     }}
                   >
-                    <Image
-                      src={detail.icon}
-                      alt=""
-                      width={16}
-                      height={16}
-                    />
+                    <Image src={detail.icon} alt="" width={16} height={16} />
                   </Box>
 
                   <Box sx={{ minWidth: 0, flex: 1 }}>
@@ -585,12 +595,7 @@ export function BookingSuccessPage() {
                         flexShrink: 0,
                       }}
                     >
-                      <Image
-                        src={step.icon}
-                        alt=""
-                        width={16}
-                        height={16}
-                      />
+                      <Image src={step.icon} alt="" width={16} height={16} />
                     </Box>
                     {step.showConnector ? (
                       <Box
@@ -647,7 +652,10 @@ export function BookingSuccessPage() {
                 fontWeight: 600,
                 boxShadow:
                   '0px 4px 12px 0px rgba(0, 122, 255, 0.18), 0px 1px 3px 0px rgba(0, 122, 255, 0.25)',
-                '&:hover': { bgcolor: '#2F6FED !important', background: '#2F6FED !important' },
+                '&:hover': {
+                  bgcolor: '#2F6FED !important',
+                  background: '#2F6FED !important',
+                },
               }}
             >
               Track Trip
@@ -665,7 +673,9 @@ export function BookingSuccessPage() {
                 fontSize: pxToRem(14),
                 fontWeight: 500,
                 background: 'transparent',
-                '&:hover': { background: 'rgba(47, 111, 237, 0.04) !important' },
+                '&:hover': {
+                  background: 'rgba(47, 111, 237, 0.04) !important',
+                },
               }}
             >
               Book Another Trip

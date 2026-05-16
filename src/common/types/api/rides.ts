@@ -103,24 +103,24 @@ export type ApiRide = {
 };
 export type ApiRideOverview = {
   summary: {
-    total_rides: number,
-    completed_rides: number,
-    cancelled_rides: number,
-    miles_traveled: number
-  },
+    total_rides: number;
+    completed_rides: number;
+    cancelled_rides: number;
+    miles_traveled: number;
+  };
   stats: {
-    total_rides: number,
-    miles_traveled: number,
-    average_rating_given: number,
-    member_since: string
-  },
+    total_rides: number;
+    miles_traveled: number;
+    average_rating_given: number;
+    member_since: string;
+  };
   rides: ApiRide[];
-    filtered_total: number,
-    page: number;
-    limit: number,
-    total_pages: number,
-    status_filter: string
-}
+  filtered_total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+  status_filter: string;
+};
 
 export type ApiStatusLog = {
   id: string;

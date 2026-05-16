@@ -14,7 +14,12 @@ import {
 } from '../../modules/components';
 import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
-import { pxToRem, useAccountStore, useAuthFlowsApi } from '../../../common';
+import {
+  AccountType,
+  pxToRem,
+  useAccountStore,
+  useAuthFlowsApi,
+} from '../../../common';
 import blueFacilityBookingIcon from '../LoginPage/ui/assets/icons/blue-facility-booking-icon.svg';
 import blueIndividualBookingIcon from '../LoginPage/ui/assets/icons/blue-individual-booking-icon.svg';
 
@@ -174,7 +179,13 @@ export function SignUpPage() {
                 },
               }}
               renderValue={(value) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(8) }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: pxToRem(8),
+                  }}
+                >
                   <StyledImage
                     src={accountMeta[value].icon}
                     alt=""
@@ -197,7 +208,13 @@ export function SignUpPage() {
               )}
             >
               <MenuItem value="individual">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(8) }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: pxToRem(8),
+                  }}
+                >
                   <StyledImage
                     src={blueIndividualBookingIcon}
                     alt=""
@@ -217,7 +234,13 @@ export function SignUpPage() {
                 </Box>
               </MenuItem>
               <MenuItem value="facility">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(8) }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: pxToRem(8),
+                  }}
+                >
                   <StyledImage
                     src={blueFacilityBookingIcon}
                     alt=""

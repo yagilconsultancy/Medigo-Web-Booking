@@ -8,7 +8,7 @@ export * from './ResetPasswordPage';
 export * from './BookingPage';
 export * from './CheckoutPage';
 export * from './ProfilePage';
-export * from "./UserRides";
+export * from './UserRides';
 export * from './ScheduledRides';
 export * from './PrivacyPage';
 export * from './HelpPage';

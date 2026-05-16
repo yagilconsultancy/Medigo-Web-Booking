@@ -22,7 +22,12 @@ import { useRouter } from 'next/navigation';
 import { pxToRem } from '@/common';
 import { AppFooter, AppLayout } from '@/ui/modules/partials';
 import { HeaderHelpUser } from '@/ui/modules/partials/AppHeader/ui/components';
-import { AppButton, AppTextField, Centered, RowStack } from '@/ui/modules/components';
+import {
+  AppButton,
+  AppTextField,
+  Centered,
+  RowStack,
+} from '@/ui/modules/components';
 import { SupportCard, TopicCard } from './ui/components';
 import type { SupportCardProps } from './ui/components/SupportCard';
 import type { TopicCardProps } from './ui/components/TopicCard';
@@ -177,12 +182,7 @@ export function HelpPage() {
   return (
     <AppLayout
       headerProps={{
-        rightContent: (
-          <HeaderHelpUser
-            helpLabel="Help Center"
-            online
-          />
-        ),
+        rightContent: <HeaderHelpUser helpLabel="Help Center" online />,
       }}
     >
       <Box
@@ -388,7 +388,9 @@ export function HelpPage() {
                       {item.question}
                     </Typography>
                   </AccordionSummary>
-                  <AccordionDetails sx={{ px: pxToRem(16), pb: pxToRem(16), pt: 0 }}>
+                  <AccordionDetails
+                    sx={{ px: pxToRem(16), pb: pxToRem(16), pt: 0 }}
+                  >
                     <Typography
                       sx={{
                         fontSize: pxToRem(13),
@@ -479,7 +481,7 @@ export function HelpPage() {
                 // width: 'fit-content',
               }}
             >
-              <RowStack spacing={1} width={"100%"}>
+              <RowStack spacing={1} width={'100%'}>
                 <Box
                   sx={{
                     width: 8,

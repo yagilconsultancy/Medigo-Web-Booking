@@ -6,11 +6,18 @@ import {
   useElements,
   useStripe,
 } from '@stripe/react-stripe-js';
-import { Box, Paper, Typography } from '@mui/material';
+import {
+  Box,
+  Divider,
+  Paper,
+  Skeleton,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import { pxToRem } from '@/common';
+import { pxToRem, useGetRideDetail } from '@/common';
 import { AppButton } from '@/ui/modules/components';
 
 function CheckoutForm({ rideId }: { rideId: string }) {
@@ -69,6 +76,11 @@ export function CheckoutPage() {
   const publishableKeyFromBackend = searchParams.get('pk') ?? '';
   const rideId = searchParams.get('ride_id') ?? '';
 
+  const { data: rideResponse, isLoading } = useGetRideDetail(
+    rideId || undefined
+  );
+  const rideDetail = rideResponse?.success ? rideResponse.data : null;
+
   const stripePromise = useMemo(() => {
     const key =
       publishableKeyFromBackend ||
@@ -110,12 +122,24 @@ export function CheckoutPage() {
     );
   }
 
+  const passengerName = rideDetail
+    ? `${rideDetail.passenger_first_name ?? ''} ${rideDetail.passenger_last_name ?? ''}`.trim()
+    : '';
+  const pickupAddress = rideDetail?.pickup_address ?? '';
+  const dropoffAddress = rideDetail?.destination_address ?? '';
+  const estimatedFare = rideDetail?.estimated_fare
+    ? `CAD ${rideDetail.estimated_fare.toFixed(2)}`
+    : 'CAD 0.00';
+  const estimatedDistance = rideDetail?.estimated_distance_miles
+    ? `${rideDetail.estimated_distance_miles.toFixed(1)} mi`
+    : '-';
+
   return (
     <Box
       sx={{
         bgcolor: '#F8FAFC',
         minHeight: '100vh',
-        px: pxToRem(40),
+        px: { xs: pxToRem(16), md: pxToRem(40) },
         py: pxToRem(28),
       }}
     >
@@ -127,21 +151,185 @@ export function CheckoutPage() {
           borderRadius: pxToRem(12),
           border: '1px solid #E2E8F0',
           bgcolor: '#FFFFFF',
-          p: pxToRem(20),
+          p: { xs: pxToRem(16), md: pxToRem(24) },
         }}
       >
         <Typography
-          sx={{ fontSize: pxToRem(20), fontWeight: 800, color: '#0F172A' }}
+          sx={{ fontSize: pxToRem(20), fontWeight: 700, color: '#0F172A' }}
         >
-          Checkout
+          Complete Payment
         </Typography>
         <Typography
-          sx={{ mt: pxToRem(4), fontSize: pxToRem(12), color: '#64748B' }}
+          sx={{ mt: pxToRem(4), fontSize: pxToRem(13), color: '#64748B' }}
         >
-          Complete your payment securely with Stripe.
+          Review your booking details and complete payment securely.
         </Typography>
 
-        <Box sx={{ mt: pxToRem(16) }}>
+        {/* Booking Details Summary */}
+        {isLoading ? (
+          <Box sx={{ mt: pxToRem(20) }}>
+            <Skeleton
+              variant="rectangular"
+              height={pxToRem(120)}
+              sx={{ borderRadius: pxToRem(8) }}
+            />
+          </Box>
+        ) : rideDetail ? (
+          <Box
+            sx={{
+              mt: pxToRem(20),
+              p: pxToRem(16),
+              bgcolor: '#F8FAFC',
+              borderRadius: pxToRem(8),
+              border: '1px solid #E2E8F0',
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: pxToRem(13),
+                fontWeight: 600,
+                color: '#0F172A',
+                mb: pxToRem(12),
+              }}
+            >
+              Booking Details
+            </Typography>
+
+            <Stack spacing={pxToRem(10)}>
+              {/* Passenger Name */}
+              {passengerName && (
+                <Box>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(11),
+                      fontWeight: 500,
+                      color: '#64748B',
+                      mb: pxToRem(2),
+                    }}
+                  >
+                    Passenger
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(13),
+                      fontWeight: 500,
+                      color: '#0F172A',
+                    }}
+                  >
+                    {passengerName}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Pickup Address */}
+              {pickupAddress && (
+                <Box>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(11),
+                      fontWeight: 500,
+                      color: '#64748B',
+                      mb: pxToRem(2),
+                    }}
+                  >
+                    Pickup Location
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(13),
+                      fontWeight: 400,
+                      color: '#0F172A',
+                    }}
+                  >
+                    {pickupAddress}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Dropoff Address */}
+              {dropoffAddress && (
+                <Box>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(11),
+                      fontWeight: 500,
+                      color: '#64748B',
+                      mb: pxToRem(2),
+                    }}
+                  >
+                    Dropoff Location
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(13),
+                      fontWeight: 400,
+                      color: '#0F172A',
+                    }}
+                  >
+                    {dropoffAddress}
+                  </Typography>
+                </Box>
+              )}
+
+              <Divider sx={{ my: pxToRem(4) }} />
+
+              {/* Distance and Fare */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <Box>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(11),
+                      fontWeight: 500,
+                      color: '#64748B',
+                      mb: pxToRem(2),
+                    }}
+                  >
+                    Estimated Distance
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(13),
+                      fontWeight: 500,
+                      color: '#0F172A',
+                    }}
+                  >
+                    {estimatedDistance}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ textAlign: 'right' }}>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(11),
+                      fontWeight: 500,
+                      color: '#64748B',
+                      mb: pxToRem(2),
+                    }}
+                  >
+                    Total Amount
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(18),
+                      fontWeight: 700,
+                      color: '#007AFF',
+                    }}
+                  >
+                    {estimatedFare}
+                  </Typography>
+                </Box>
+              </Box>
+            </Stack>
+          </Box>
+        ) : null}
+
+        <Box sx={{ mt: pxToRem(20) }}>
           <Elements stripe={stripePromise} options={{ clientSecret }}>
             <CheckoutForm rideId={rideId} />
           </Elements>

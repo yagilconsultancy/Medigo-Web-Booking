@@ -18,7 +18,11 @@ import { useRouter } from 'next/navigation';
 import { pxToRem, useGetMyProfile } from '@/common';
 import { AppFooter, AppLayout } from '@/ui/modules/partials';
 import { HeaderHelpUser } from '@/ui/modules/partials/AppHeader/ui/components';
-import { AppButton, RowStack, VisuallyHiddenInput } from '@/ui/modules/components';
+import {
+  AppButton,
+  RowStack,
+  VisuallyHiddenInput,
+} from '@/ui/modules/components';
 import { NotificationsTab, PersonalTab, SecurityTab } from './ui/components';
 
 type ProfileTabKey = 'personal' | 'security' | 'notifications';
@@ -91,9 +95,7 @@ export function ProfilePage() {
     <AppLayout
       headerProps={{
         showRightContent: true,
-        rightContent: (
-          <HeaderHelpUser />
-        ),
+        rightContent: <HeaderHelpUser />,
       }}
     >
       <Box
@@ -157,7 +159,9 @@ export function ProfilePage() {
                   mt: '-20px',
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: '32px' }}
+                >
                   <Box sx={{ position: 'relative' }}>
                     <Avatar
                       src={snapshot.avatarUrl}
@@ -200,7 +204,10 @@ export function ProfilePage() {
                           }
                           const previewUrl = URL.createObjectURL(file);
                           lastBlobUrlRef.current = previewUrl;
-                          setSnapshot((prev) => ({ ...prev, avatarUrl: previewUrl }));
+                          setSnapshot((prev) => ({
+                            ...prev,
+                            avatarUrl: previewUrl,
+                          }));
                         }}
                       />
                     </IconButton>
@@ -312,7 +319,9 @@ export function ProfilePage() {
                 }}
               />
             ) : null}
-            {activeTab === 'security' ? <SecurityTab phone={snapshot.phone} /> : null}
+            {activeTab === 'security' ? (
+              <SecurityTab phone={snapshot.phone} />
+            ) : null}
             {activeTab === 'notifications' ? <NotificationsTab /> : null}
           </Box>
         </Box>

@@ -55,8 +55,7 @@ export function SecurityTab({ phone }: { phone?: string }) {
     },
   });
 
-  const isButtonDisabled =
-    !formik.isValid || !formik.dirty || isSubmitting;
+  const isButtonDisabled = !formik.isValid || !formik.dirty || isSubmitting;
 
   return (
     <FormikProvider value={formik}>
@@ -143,7 +142,11 @@ export function SecurityTab({ phone }: { phone?: string }) {
                 </Typography>
               </Box>
               <Typography
-                sx={{ fontSize: pxToRem(10), fontWeight: 800, color: '#16A34A' }}
+                sx={{
+                  fontSize: pxToRem(10),
+                  fontWeight: 800,
+                  color: '#16A34A',
+                }}
               >
                 Active
               </Typography>
@@ -168,7 +171,11 @@ export function SecurityTab({ phone }: { phone?: string }) {
                 </Typography>
               </Box>
               <Typography
-                sx={{ fontSize: pxToRem(11), fontWeight: 800, color: '#2563EB' }}
+                sx={{
+                  fontSize: pxToRem(11),
+                  fontWeight: 800,
+                  color: '#2563EB',
+                }}
               >
                 Configure
               </Typography>
