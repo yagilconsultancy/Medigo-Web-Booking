@@ -223,7 +223,7 @@ export function LoginPage() {
                           Password
                         </Typography>
                         <StyledLink
-                          href="#"
+                          href="/forgot-password"
                           sx={{
                             fontSize: pxToRem(12),
                             lineHeight: pxToRem(18),

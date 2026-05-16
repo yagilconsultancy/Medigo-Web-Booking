@@ -3,6 +3,8 @@ export * from './AuthPage';
 export * from './LoginPage';
 export * from './SignUpPage';
 export * from './OtpPage';
+export * from './ForgotPasswordPage';
+export * from './ResetPasswordPage';
 export * from './BookingPage';
 export * from './CheckoutPage';
 export * from './ProfilePage';
