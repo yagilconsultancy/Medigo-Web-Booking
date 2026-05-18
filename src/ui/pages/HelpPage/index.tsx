@@ -39,34 +39,23 @@ const supportCards: Omit<SupportCardProps, 'onAction'>[] = [
     icon: '/help-icons/phone-icon.svg',
     iconBg: '#EFF6FF',
     iconBorder: '#DBEAFE',
-    label: 'Call Us',
-    contact: '1-800-MEDIGO',
+    label: 'Phone',
+    contact: '1-416-521-3116',
     contactColor: '#155DFC',
-    detail: 'Mon–Fri 7am–9pm · Sat–Sun 8am–6pm',
-    buttonText: 'Call Now',
-    buttonIcon: '/help-icons/call-arrow.svg',
-  },
-  {
-    icon: '/help-icons/chat-icon.svg',
-    iconBg: '#ECFDF5',
-    iconBorder: '#A7F3D0',
-    label: 'Live Chat',
-    contact: 'Chat with Support',
-    contactColor: '#047857',
-    detail: 'Avg. wait time under 2 minutes',
-    buttonText: 'Start Chat',
-    buttonIcon: '/help-icons/chat-arrow.svg',
+    detail: 'Mon-Fri 8am-8pm EST',
+    buttonText: '',
+    buttonIcon: '',
   },
   {
     icon: '/help-icons/email-icon.svg',
     iconBg: '#F5F3FF',
     iconBorder: '#DDD6FE',
-    label: 'Email Support',
-    contact: 'support@medigo.com',
+    label: 'Email',
+    contact: 'info@getmedigo.com',
     contactColor: '#6D28D9',
-    detail: 'Response within 24 hours',
-    buttonText: 'Send Email',
-    buttonIcon: '/help-icons/email-arrow.svg',
+    detail: '24-48 hour response time',
+    buttonText: '',
+    buttonIcon: '',
   },
 ];
 
@@ -121,48 +110,32 @@ const topicCards: TopicCardProps[] = [
   },
 ];
 
-type FaqItem = { question: string; answer: string };
+type FaqItem = { id: string; title: string; description: string };
 
 const faqItems: FaqItem[] = [
   {
-    question: 'How do I schedule a ride?',
-    answer:
-      'Go to Booking, enter your pickup and drop-off locations, choose the appointment type, then confirm your ride details. You can schedule rides for the same day or in advance.',
+    id: 'what-is-medigo',
+    title: 'What is MediGo?',
+    description:
+      'MediGo is a platform that helps individuals and families arrange safe, comfortable, non-emergency medical transportation (NEMT). We coordinate with certified providers for appointments, treatments, and non-emergency medical needs with dignity and respect.',
   },
   {
-    question: 'What vehicle types are available?',
-    answer:
-      'We offer sedans, wheelchair-accessible vehicles, stretcher vans, and multi-passenger vehicles depending on your medical transportation needs.',
+    id: 'request-transport',
+    title: 'How do I request transportation?',
+    description:
+      'You can submit a request by providing your pickup location, destination, schedule, and any specific mobility or assistance needs. Our team will coordinate a suitable, trained driver to ensure a smooth, comfortable journey.',
   },
   {
-    question: 'How far in advance should I book?',
-    answer:
-      'We recommend booking at least 24 hours in advance for the best availability. Same-day bookings are available but subject to driver availability.',
+    id: 'transport-types',
+    title: 'What types of transportation are available?',
+    description:
+      'We offer wheelchair-accessible vehicles, ambulatory transport, and specialized vehicles for stretcher transport. All vehicles are equipped for comfort, safety, and dignity.',
   },
   {
-    question: 'Can I cancel or modify a scheduled ride?',
-    answer:
-      'Yes. Open your scheduled ride and select Cancel or Edit. Cancellation policies may apply depending on timing and trip status.',
-  },
-  {
-    question: 'Are my rides covered by Medicaid or Medicare?',
-    answer:
-      'Many non-emergency medical transport rides are covered. Contact your insurance provider or our support team to verify your coverage.',
-  },
-  {
-    question: 'How do I track my driver in real time?',
-    answer:
-      'Once your ride is active, you can view real-time driver location and ETA from the My Rides section.',
-  },
-  {
-    question: "What if my driver doesn't arrive?",
-    answer:
-      "If your driver hasn't arrived within the expected window, contact support immediately via live chat or call. We'll dispatch a replacement as quickly as possible.",
-  },
-  {
-    question: 'How do I set up recurring rides?',
-    answer:
-      'During booking, select the recurring option to schedule repeat trips on specific days and times. You can manage recurring rides from Scheduled Rides.',
+    id: 'emergency-service',
+    title: 'Is this an emergency service?',
+    description:
+      'No. MediGo provides non-emergency medical transportation only. For emergencies, please call 911. We focus on scheduled medical appointments, treatments, and wellness trips that require professional, caring transport.',
   },
 ];
 
@@ -245,10 +218,10 @@ export function HelpPage() {
                 color: '#BEDBFF',
               }}
             >
-              Search our knowledge base or browse by topic below
+              Get the support you need
             </Typography>
 
-            <TextField
+            {/* <TextField
               placeholder="Search FAQs, topics, guides..."
               fullWidth
               size="small"
@@ -270,7 +243,7 @@ export function HelpPage() {
                   '& fieldset': { border: 'none' },
                 },
               }}
-            />
+            /> */}
           </Centered>
 
           {/* ── Support Cards ── */}
@@ -288,7 +261,7 @@ export function HelpPage() {
           </RowStack>
 
           {/* ── Browse by Topic ── */}
-          <Typography
+          {/* <Typography
             sx={{
               fontSize: pxToRem(13),
               fontWeight: 700,
@@ -310,7 +283,7 @@ export function HelpPage() {
             {topicCards.map((topic) => (
               <TopicCard key={topic.title} {...topic} />
             ))}
-          </Box>
+          </Box> */}
 
           {/* ── FAQs ── */}
           <Typography
@@ -326,17 +299,17 @@ export function HelpPage() {
 
           <Stack spacing={1} sx={{ mb: pxToRem(32) }}>
             {faqItems.map((item) => {
-              const expanded = expandedKey === item.question;
+              const expanded = expandedKey === item.id;
 
               return (
                 <Accordion
-                  key={item.question}
+                  key={item.id}
                   disableGutters
                   elevation={0}
                   square
                   expanded={expanded}
                   onChange={(_, nextExpanded) =>
-                    setExpandedKey(nextExpanded ? item.question : false)
+                    setExpandedKey(nextExpanded ? item.id : false)
                   }
                   sx={{
                     '&:before': { display: 'none' },
@@ -385,7 +358,7 @@ export function HelpPage() {
                         lineHeight: pxToRem(19.25),
                       }}
                     >
-                      {item.question}
+                      {item.title}
                     </Typography>
                   </AccordionSummary>
                   <AccordionDetails
@@ -399,7 +372,7 @@ export function HelpPage() {
                         color: '#64748B',
                       }}
                     >
-                      {item.answer}
+                      {item.description}
                     </Typography>
                   </AccordionDetails>
                 </Accordion>
@@ -504,7 +477,7 @@ export function HelpPage() {
           </Paper>
 
           {/* ── Send a Message ── */}
-          <Paper
+          {/* <Paper
             elevation={0}
             sx={{
               borderRadius: pxToRem(16),
@@ -526,7 +499,6 @@ export function HelpPage() {
             </Typography>
 
             <Stack spacing={2.5}>
-              {/* Subject */}
               <Box>
                 <Typography
                   sx={{
@@ -555,7 +527,6 @@ export function HelpPage() {
                 />
               </Box>
 
-              {/* Message */}
               <Box>
                 <Typography
                   sx={{
@@ -596,17 +567,13 @@ export function HelpPage() {
                   py: pxToRem(10),
                   alignSelf: 'flex-end',
                   boxShadow: '0px 2px 8px 0px rgba(21, 93, 252, 0.22)',
-                  // '&:hover': {
-                  //   bgcolor: '#1E40AF !important',
-                  //   background: '#1E40AF !important',
-                  // },
                 }}
                 fullWidth
               >
                 Send Message
               </AppButton>
             </Stack>
-          </Paper>
+          </Paper> */}
 
           <AppFooter />
         </Box>

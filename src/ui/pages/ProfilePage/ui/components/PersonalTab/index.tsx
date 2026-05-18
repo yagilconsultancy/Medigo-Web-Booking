@@ -61,8 +61,9 @@ function getInitialValues(snapshot: ProfileSnapshot): PersonalFormValues {
     homeAddress: snapshot.homeAddress || '',
     emergencyContactName: '',
     emergencyContactPhone: '',
-    avatarFile: null,
-    avatarPreviewUrl: snapshot.avatarUrl ?? null,
+    avatarFile: snapshot.avatarUrl instanceof File ? snapshot.avatarUrl : null,
+    avatarPreviewUrl:
+      typeof snapshot.avatarUrl === 'string' ? snapshot.avatarUrl : null,
   };
 }
 
@@ -75,8 +76,9 @@ export function PersonalTab({
   onSnapshotChange: (next: ProfileSnapshot) => void;
   registerSubmit?: (submit: () => void, isFormValid: boolean) => void;
 }) {
-  const { updateMyProfile, uploadAvatar } = useUsersMeApi();
+  const { updateMyProfile } = useUsersMeApi();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasAvatarChange, setHasAvatarChange] = useState(false);
 
   const formik = useFormik<PersonalFormValues>({
     initialValues: getInitialValues(snapshot),
@@ -86,7 +88,6 @@ export function PersonalTab({
       setIsSubmitting(true);
       setSubmitting(true);
 
-      // Update profile with all fields including avatar file and phone
       const result = await updateMyProfile({
         first_name: values.firstName,
         last_name: values.lastName,
@@ -95,7 +96,6 @@ export function PersonalTab({
         phone: values.phone || undefined,
         avatar_url: values.avatarFile || undefined,
       });
-
       if (result) {
         const name = `${values.firstName} ${values.lastName}`.trim();
         onSnapshotChange({
@@ -103,12 +103,13 @@ export function PersonalTab({
           name,
           email: values.email,
           phone: values.phone,
-          avatarUrl: values.avatarPreviewUrl ?? undefined,
+          avatarUrl: values.avatarPreviewUrl ?? snapshot.avatarUrl,
           homeAddress: values.homeAddress,
         });
 
         // Reset form with updated values to clear dirty state
         resetForm({ values });
+        setHasAvatarChange(false);
       }
 
       setIsSubmitting(false);
@@ -116,11 +117,21 @@ export function PersonalTab({
     },
   });
 
+  // Track avatar changes
   useEffect(() => {
-    registerSubmit?.(() => {
-      void formik.submitForm();
-    }, formik.dirty && !isSubmitting);
-  }, [formik, registerSubmit, formik.dirty, isSubmitting]);
+    if (snapshot.avatarUrl instanceof File) {
+      setHasAvatarChange(true);
+    }
+  }, [snapshot.avatarUrl]);
+
+  useEffect(() => {
+    registerSubmit?.(
+      () => {
+        void formik.submitForm();
+      },
+      (formik.dirty || hasAvatarChange) && !isSubmitting
+    );
+  }, [formik, registerSubmit, formik.dirty, hasAvatarChange, isSubmitting]);
 
   // Address autocomplete
   const [addressInput, setAddressInput] = useState(formik.values.homeAddress);
@@ -212,13 +223,13 @@ export function PersonalTab({
                         size="small"
                       />
                     </Grid>
-                    <Grid size={{ xs: 12 }}>
+                    {/* <Grid size={{ xs: 12 }}>
                       <FormikAppTextField
                         name="phone"
                         placeholder="Phone Number"
                         size="small"
                       />
-                    </Grid>
+                    </Grid> */}
                     <Grid size={{ xs: 12 }}>
                       <Box sx={{ position: 'relative' }}>
                         <FormikAppTextField

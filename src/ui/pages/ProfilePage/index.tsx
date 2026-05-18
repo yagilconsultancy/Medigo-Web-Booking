@@ -33,7 +33,7 @@ export type ProfileSnapshot = {
   name: string;
   email: string;
   phone: string;
-  avatarUrl?: string;
+  avatarUrl?: File | string;
   dateOfBirth?: string;
   gender?: string;
   homeAddress?: string;
@@ -164,7 +164,13 @@ export function ProfilePage() {
                 >
                   <Box sx={{ position: 'relative' }}>
                     <Avatar
-                      src={snapshot.avatarUrl}
+                      src={
+                        snapshot.avatarUrl instanceof File
+                          ? lastBlobUrlRef.current || undefined
+                          : typeof snapshot.avatarUrl === 'string'
+                            ? snapshot.avatarUrl
+                            : undefined
+                      }
                       sx={{
                         width: '120px',
                         height: '120px',
@@ -206,7 +212,7 @@ export function ProfilePage() {
                           lastBlobUrlRef.current = previewUrl;
                           setSnapshot((prev) => ({
                             ...prev,
-                            avatarUrl: previewUrl,
+                            avatarUrl: file,
                           }));
                         }}
                       />

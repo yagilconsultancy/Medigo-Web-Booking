@@ -89,9 +89,6 @@ export const ROUTES_SPEC = {
   getRideTimeline: (rideId: string) =>
     `/${API_VERSION}/rides/${rideId}/timeline`,
 
-  // Tracking
-  getCurrentDriverTracking: `/${API_VERSION}/tracking/driver/current`,
-
   // Rides analytics
   ridesAnalyticsOverview: `/${API_VERSION}/rides/analytics/overview`,
   ridesAnalyticsTripVolume: `/${API_VERSION}/rides/analytics/trip-volume`,

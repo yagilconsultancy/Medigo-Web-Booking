@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Link, Stack, Typography } from '@mui/material';
 import Image from 'next/image';
 import { pxToRem } from '@/common';
 import { AppButton } from '@/ui/modules/components';
@@ -28,6 +28,9 @@ export function SupportCard({
   buttonIcon,
   onAction,
 }: SupportCardProps) {
+  const isEmail = label === 'Email';
+  const contactHref = isEmail ? `mailto:${contact}` : `tel:${contact}`;
+
   return (
     <Box
       sx={{
@@ -65,15 +68,20 @@ export function SupportCard({
           {label}
         </Typography>
 
-        <Typography
+        <Link
+          href={contactHref}
           sx={{
             fontSize: pxToRem(14),
             fontWeight: 700,
             color: contactColor,
+            textDecoration: 'none',
+            '&:hover': {
+              textDecoration: 'underline',
+            },
           }}
         >
           {contact}
-        </Typography>
+        </Link>
 
         <Typography
           sx={{
@@ -85,23 +93,25 @@ export function SupportCard({
           {detail}
         </Typography>
 
-        <AppButton
-          variant="text"
-          onClick={onAction}
-          endIcon={<Image src={buttonIcon} alt="" width={14} height={14} />}
-          sx={{
-            width: 'fit-content',
-            textTransform: 'none',
-            color: contactColor,
-            fontSize: pxToRem(11),
-            fontWeight: 700,
-            px: 0,
-            background: 'transparent',
-            '&:hover': { background: 'transparent !important' },
-          }}
-        >
-          {buttonText}
-        </AppButton>
+        {buttonText && (
+          <AppButton
+            variant="text"
+            onClick={onAction}
+            endIcon={<Image src={buttonIcon} alt="" width={14} height={14} />}
+            sx={{
+              width: 'fit-content',
+              textTransform: 'none',
+              color: contactColor,
+              fontSize: pxToRem(11),
+              fontWeight: 700,
+              px: 0,
+              background: 'transparent',
+              '&:hover': { background: 'transparent !important' },
+            }}
+          >
+            {buttonText}
+          </AppButton>
+        )}
       </Stack>
     </Box>
   );

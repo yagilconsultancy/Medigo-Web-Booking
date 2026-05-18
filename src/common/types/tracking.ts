@@ -33,8 +33,11 @@ export enum SocketEvent {
   CONNECT_ERROR = 'connect_error',
   RECONNECT = 'reconnect',
   RECONNECT_FAILED = 'reconnect_failed',
+  JOIN_RIDE = 'join_ride',
+  LEAVE_RIDE = 'leave_ride',
   JOIN_DISPATCH_CENTER = 'join_dispatch_center',
   LEAVE_DISPATCH_CENTER = 'leave_dispatch_center',
+  LOCATION_UPDATE = 'location_update',
   DISPATCH_LOCATION_UPDATE = 'dispatch_location_update',
   TRACKING_STARTED = 'tracking_started',
   TRACKING_ENDED = 'tracking_ended',
@@ -51,6 +54,24 @@ export type DispatchLocationUpdate = {
   distance_remaining_miles: number;
   status: string;
   timestamp: string;
+};
+
+export type RideLocationUpdate = {
+  ride_id: string;
+  driver_id: string;
+  latitude: number;
+  longitude: number;
+  heading: number;
+  speed: number;
+  eta_minutes: number;
+  distance_remaining_miles: number;
+  timestamp: string;
+};
+
+export type JoinRideResponse = {
+  status: 'joined' | 'error';
+  room?: string;
+  error?: string;
 };
 
 export type TrackingStartedEvent = {

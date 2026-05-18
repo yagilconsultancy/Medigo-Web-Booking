@@ -399,63 +399,122 @@ export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
                   </RowStack>
 
                   <Stack spacing={0.5} alignItems="flex-end">
-                    {ride.status === 'pending' ? (
-                      <AppButton
-                        variant="contained"
-                        size="small"
-                        disabled={isPaying}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePayNow(ride);
-                        }}
-                        sx={{
-                          height: pxToRem(32),
-                          px: pxToRem(16),
-                          borderRadius: pxToRem(8),
-                          fontSize: pxToRem(12),
-                          fontWeight: 600,
-                          bgcolor: '#007AFF',
-                          color: '#FFFFFF',
-                          textTransform: 'none',
-                          boxShadow:
-                            '0px 1px 1.5px rgba(0,122,255,0.25), 0px 4px 8px rgba(0,122,255,0.18)',
-                          '&:hover': {
-                            bgcolor: '#0056CC',
-                          },
-                          '&:disabled': {
+                    <RowStack spacing={1}>
+                      {ride.status === 'pending' ? (
+                        <AppButton
+                          variant="contained"
+                          size="small"
+                          disabled={isPaying}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePayNow(ride);
+                          }}
+                          sx={{
+                            height: pxToRem(32),
+                            px: pxToRem(16),
+                            borderRadius: pxToRem(8),
+                            fontSize: pxToRem(12),
+                            fontWeight: 600,
                             bgcolor: '#007AFF',
-                            opacity: 0.6,
                             color: '#FFFFFF',
-                          },
-                        }}
-                      >
-                        {isPaying ? (
-                          <RowStack spacing={1}>
-                            <CircularProgress
-                              size={14}
-                              sx={{ color: '#FFFFFF' }}
-                            />
-                            <span>Processing...</span>
-                          </RowStack>
-                        ) : (
+                            textTransform: 'none',
+                            boxShadow:
+                              '0px 1px 1.5px rgba(0,122,255,0.25), 0px 4px 8px rgba(0,122,255,0.18)',
+                            '&:hover': {
+                              bgcolor: '#0056CC',
+                            },
+                            '&:disabled': {
+                              bgcolor: '#007AFF',
+                              opacity: 0.6,
+                              color: '#FFFFFF',
+                            },
+                          }}
+                        >
+                          {isPaying ? (
+                            <RowStack spacing={1}>
+                              <CircularProgress
+                                size={14}
+                                sx={{ color: '#FFFFFF' }}
+                              />
+                              <span>Processing...</span>
+                            </RowStack>
+                          ) : (
+                            <RowStack spacing={0.75}>
+                              <PaymentRoundedIcon
+                                sx={{ fontSize: pxToRem(16) }}
+                              />
+                              <span>Pay Now</span>
+                            </RowStack>
+                          )}
+                        </AppButton>
+                      ) : ride.status === 'driver_assigned' ||
+                        ride.status === 'driver_en_route' ||
+                        ride.status === 'driver_arrived' ||
+                        ride.status === 'in_progress' ? (
+                        <AppButton
+                          variant="contained"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(
+                              `/live-track?ride_id=${ride.fullRideId}`
+                            );
+                          }}
+                          sx={{
+                            height: pxToRem(32),
+                            px: pxToRem(16),
+                            borderRadius: pxToRem(8),
+                            fontSize: pxToRem(12),
+                            fontWeight: 600,
+                            bgcolor: '#16A34A',
+                            color: '#FFFFFF',
+                            textTransform: 'none',
+                            boxShadow:
+                              '0px 1px 1.5px rgba(22,163,74,0.25), 0px 4px 8px rgba(22,163,74,0.18)',
+                            '&:hover': {
+                              bgcolor: '#15803D',
+                            },
+                          }}
+                        >
                           <RowStack spacing={0.75}>
-                            <PaymentRoundedIcon
+                            <MyLocationRoundedIcon
                               sx={{ fontSize: pxToRem(16) }}
                             />
-                            <span>Pay Now</span>
+                            <span>Track Driver</span>
                           </RowStack>
-                        )}
-                      </AppButton>
-                    ) : ride.status === 'driver_assigned' ||
-                      ride.status === 'driver_en_route' ||
-                      ride.status === 'driver_arrived' ||
-                      ride.status === 'in_progress' ? (
+                        </AppButton>
+                      ) : (
+                        <Stack spacing={0.5} alignItems="flex-end">
+                          <Typography
+                            sx={{
+                              color: '#0F172A',
+                              fontWeight: 700,
+                              fontSize: pxToRem(12),
+                              lineHeight: pxToRem(18),
+                            }}
+                          >
+                            {ride.dateLabel}
+                          </Typography>
+                          <Typography
+                            sx={{
+                              color: '#94A3B8',
+                              fontWeight: 500,
+                              fontSize: pxToRem(11),
+                              lineHeight: pxToRem(16),
+                            }}
+                          >
+                            {ride.timeLabel}
+                          </Typography>
+                        </Stack>
+                      )}
                       <AppButton
-                        variant="contained"
+                        variant="outlined"
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
-                          router.push(`/live-track?ride_id=${ride.fullRideId}`);
+                          router.push(
+                            `/booking-success?ride_id=${ride.fullRideId}`
+                          );
                         }}
                         sx={{
                           height: pxToRem(32),
@@ -463,47 +522,18 @@ export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
                           borderRadius: pxToRem(8),
                           fontSize: pxToRem(12),
                           fontWeight: 600,
-                          bgcolor: '#16A34A',
-                          color: '#FFFFFF',
+                          border: '1px solid #E5E7EB',
+                          color: '#0F172A',
                           textTransform: 'none',
-                          boxShadow:
-                            '0px 1px 1.5px rgba(22,163,74,0.25), 0px 4px 8px rgba(22,163,74,0.18)',
                           '&:hover': {
-                            bgcolor: '#15803D',
+                            bgcolor: '#F9FAFB',
+                            border: '1px solid #D1D5DB',
                           },
                         }}
                       >
-                        <RowStack spacing={0.75}>
-                          <MyLocationRoundedIcon
-                            sx={{ fontSize: pxToRem(16) }}
-                          />
-                          <span>Track Driver</span>
-                        </RowStack>
+                        View Ride
                       </AppButton>
-                    ) : (
-                      <>
-                        <Typography
-                          sx={{
-                            color: '#0F172A',
-                            fontWeight: 700,
-                            fontSize: pxToRem(12),
-                            lineHeight: pxToRem(18),
-                          }}
-                        >
-                          {ride.dateLabel}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            color: '#94A3B8',
-                            fontWeight: 500,
-                            fontSize: pxToRem(11),
-                            lineHeight: pxToRem(16),
-                          }}
-                        >
-                          {ride.timeLabel}
-                        </Typography>
-                      </>
-                    )}
+                    </RowStack>
                   </Stack>
                 </RowStack>
               </AccordionSummary>

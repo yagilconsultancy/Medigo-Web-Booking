@@ -15,42 +15,24 @@ import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
 import { AppGoogleMapsProvider, AppGoogleMap } from '../../modules/components';
 import type { TruckMarker } from '../../modules/components/AppGoogleMap';
-import {
-  pxToRem,
-  useDispatchSocket,
-  useGetCurrentDriverTracking,
-  useResolvedApiQuery,
-} from '@/common';
-import type { MarkerPosition, DriverTrackingData } from '@/common/types';
+import { pxToRem, useRideTracking } from '@/common';
+import type { MarkerPosition } from '@/common/types';
 
 export function LiveTrackPage() {
   const searchParams = useSearchParams();
   const rideId = searchParams.get('ride_id');
 
-  const { isConnected, isJoined, locationUpdates, error } = useDispatchSocket();
-
-  // Fetch initial tracking data from API to get destination coordinates
-  const trackingQuery = useGetCurrentDriverTracking();
-  const trackingData =
-    trackingQuery.data?.success && trackingQuery.data?.data
-      ? trackingQuery.data.data
-      : null;
+  const { isConnected, isJoined, driverLocation, trackingStarted, error } =
+    useRideTracking(rideId);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
-  // Get current ride location update from socket
-  const socketUpdate = rideId ? locationUpdates.get(rideId) : null;
-
-  // Use socket data for live position, API data for destination
+  // Use socket data for both live position and destination
   const hasCoordinates =
-    (socketUpdate?.current_latitude != null &&
-      socketUpdate?.current_longitude != null &&
-      trackingData?.destination_latitude != null &&
-      trackingData?.destination_longitude != null) ||
-    (trackingData?.current_latitude != null &&
-      trackingData?.current_longitude != null &&
-      trackingData?.destination_latitude != null &&
-      trackingData?.destination_longitude != null);
+    driverLocation?.latitude != null &&
+    driverLocation?.longitude != null &&
+    trackingStarted?.destination_latitude != null &&
+    trackingStarted?.destination_longitude != null;
 
   const computeRoute = useCallback(
     async (input: {
@@ -91,30 +73,33 @@ export function LiveTrackPage() {
     []
   );
 
-  const destinationMarker: MarkerPosition | null = trackingData
+  const destinationMarker: MarkerPosition | null = trackingStarted
     ? {
-        lat: trackingData.destination_latitude,
-        lng: trackingData.destination_longitude,
+        lat: trackingStarted.destination_latitude,
+        lng: trackingStarted.destination_longitude,
       }
     : null;
 
   const truckMarker: TruckMarker | undefined =
-    hasCoordinates && (socketUpdate || trackingData)
+    hasCoordinates && driverLocation
       ? {
           position: {
-            lat:
-              socketUpdate?.current_latitude ?? trackingData!.current_latitude,
-            lng:
-              socketUpdate?.current_longitude ??
-              trackingData!.current_longitude,
+            lat: driverLocation.latitude,
+            lng: driverLocation.longitude,
           },
-          heading:
-            socketUpdate?.current_heading ?? trackingData?.current_heading ?? 0,
+          heading: driverLocation.heading ?? 0,
         }
       : undefined;
 
-  // Display data: prefer socket update for real-time info, fallback to API data
-  const displayData = socketUpdate || trackingData;
+  // Display data from socket only
+  const displayData = driverLocation
+    ? {
+        current_speed: driverLocation.speed,
+        eta_minutes: driverLocation.eta_minutes,
+        distance_remaining_miles: driverLocation.distance_remaining_miles,
+        status: 'in_progress',
+      }
+    : null;
 
   if (!rideId) {
     return (

@@ -253,7 +253,7 @@ export function UserRidesPage() {
 
         details: ride.driver_name
           ? {
-              driver: ride.driver_name,
+              driver: 'Driver Assigned',
               vehicle:
                 ride.driver_vehicle_make && ride.driver_vehicle_model
                   ? `${ride.driver_vehicle_make} ${ride.driver_vehicle_model} — ${formatRideType(ride.ride_type).replace('MediGO ', '')}`

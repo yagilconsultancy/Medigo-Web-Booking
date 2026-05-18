@@ -20,7 +20,7 @@ export function HeaderHelpUser({
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(12) }}>
       <StyledLink
-        href="#"
+        href="/help"
         sx={{
           fontSize: pxToRem(12),
           lineHeight: pxToRem(18),
