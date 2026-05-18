@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { pxToRem, useGetMyRides, useResolvedApiQuery } from '@/common';
+import { pxToRem, useGetMyRides } from '@/common';
 import { AppFooter, AppLayout } from '@/ui/modules/partials';
 import { HeaderHelpUser } from '@/ui/modules/partials/AppHeader/ui/components';
 import { AppButton, RowStack } from '@/ui/modules/components';
@@ -38,110 +38,110 @@ const TAB_LABELS: Record<RideTabKey, string> = {
   cancelled: 'Cancelled',
 };
 
-const RIDES: RideHistoryItem[] = [
-  {
-    id: 'R-10483',
-    status: 'completed',
-    serviceName: 'MediGO Wheelchair',
-    pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
-    dropoffAddress: 'Sunnybrook Health Sciences Centre, Toronto, ON',
-    dateLabel: 'Apr 18, 2026',
-    timeLabel: '9:00 AM',
-    details: {
-      driver: 'James Rivera',
-      vehicle: 'Toyota Sienna — WAV',
-      distance: '6.2 km',
-      duration: '18 min',
-      ratingLabel: 'Rated 5 stars',
-    },
-    cancelled: undefined,
-  },
-  {
-    id: 'R-10391',
-    status: 'completed',
-    serviceName: 'MediGO Standard',
-    pickupAddress: 'Sunnybrook Health Sciences Centre, Toronto, ON',
-    dropoffAddress: '2450 Lawrence Ave E, Toronto, ON',
-    dateLabel: 'Apr 10, 2026',
-    timeLabel: '2:30 PM',
-    details: {
-      driver: 'James Rivera',
-      vehicle: 'Toyota Sienna — Standard',
-      distance: '4.9 km',
-      duration: '14 min',
-      ratingLabel: 'Rated 5 stars',
-    },
-    cancelled: undefined,
-  },
-  {
-    id: 'R-10288',
-    status: 'completed',
-    serviceName: 'MediGO Wheelchair',
-    pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
-    dropoffAddress: 'Toronto Rehab Institute, 550 University Ave',
-    dateLabel: 'Mar 27, 2026',
-    timeLabel: '11:00 AM',
-    details: {
-      driver: 'James Rivera',
-      vehicle: 'Toyota Sienna — WAV',
-      distance: '7.3 km',
-      duration: '22 min',
-      ratingLabel: 'Rated 5 stars',
-    },
-    cancelled: undefined,
-  },
-  {
-    id: 'R-10201',
-    status: 'cancelled',
-    serviceName: 'MediGO Wheelchair',
-    pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
-    dropoffAddress: 'Toronto General Hospital, 200 Elizabeth St',
-    dateLabel: 'Mar 15, 2026',
-    timeLabel: '8:45 AM',
-    details: undefined,
-    cancelled: {
-      requestedVehicleLabel: 'MediGO Wheelchair',
-      cancelledTitle: 'Cancelled by you',
-      reason: 'Reason: Appointment rescheduled',
-      note: 'No driver was assigned before cancellation. Your account was not charged.',
-      chargeLabel: 'No charge',
-    },
-  },
-  {
-    id: 'R-10145',
-    status: 'completed',
-    serviceName: 'MediGO Standard',
-    pickupAddress: 'Toronto General Hospital, 200 Elizabeth St',
-    dropoffAddress: '2450 Lawrence Ave E, Toronto, ON',
-    dateLabel: 'Mar 3, 2026',
-    timeLabel: '3:15 PM',
-    details: {
-      driver: 'James Rivera',
-      vehicle: 'Toyota Sienna — Standard',
-      distance: '5.8 km',
-      duration: '16 min',
-      ratingLabel: 'Rated 5 stars',
-    },
-    cancelled: undefined,
-  },
-  {
-    id: 'R-10088',
-    status: 'completed',
-    serviceName: 'MediGO Stretcher',
-    pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
-    dropoffAddress: 'Princess Margaret Cancer Centre, 610 University Ave',
-    dateLabel: 'Feb 19, 2026',
-    timeLabel: '10:00 AM',
-    details: {
-      driver: 'James Rivera',
-      vehicle: 'Transit — Stretcher',
-      distance: '9.4 km',
-      duration: '28 min',
-      ratingLabel: 'Rated 5 stars',
-    },
-    cancelled: undefined,
-  },
-];
+// const RIDES: RideHistoryItem[] = [
+//   {
+//     id: 'R-10483',
+//     status: 'completed',
+//     serviceName: 'MediGO Wheelchair',
+//     pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
+//     dropoffAddress: 'Sunnybrook Health Sciences Centre, Toronto, ON',
+//     dateLabel: 'Apr 18, 2026',
+//     timeLabel: '9:00 AM',
+//     details: {
+//       driver: 'James Rivera',
+//       vehicle: 'Toyota Sienna — WAV',
+//       distance: '6.2 km',
+//       duration: '18 min',
+//       ratingLabel: 'Rated 5 stars',
+//     },
+//     cancelled: undefined,
+//   },
+//   {
+//     id: 'R-10391',
+//     status: 'completed',
+//     serviceName: 'MediGO Standard',
+//     pickupAddress: 'Sunnybrook Health Sciences Centre, Toronto, ON',
+//     dropoffAddress: '2450 Lawrence Ave E, Toronto, ON',
+//     dateLabel: 'Apr 10, 2026',
+//     timeLabel: '2:30 PM',
+//     details: {
+//       driver: 'James Rivera',
+//       vehicle: 'Toyota Sienna — Standard',
+//       distance: '4.9 km',
+//       duration: '14 min',
+//       ratingLabel: 'Rated 5 stars',
+//     },
+//     cancelled: undefined,
+//   },
+//   {
+//     id: 'R-10288',
+//     status: 'completed',
+//     serviceName: 'MediGO Wheelchair',
+//     pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
+//     dropoffAddress: 'Toronto Rehab Institute, 550 University Ave',
+//     dateLabel: 'Mar 27, 2026',
+//     timeLabel: '11:00 AM',
+//     details: {
+//       driver: 'James Rivera',
+//       vehicle: 'Toyota Sienna — WAV',
+//       distance: '7.3 km',
+//       duration: '22 min',
+//       ratingLabel: 'Rated 5 stars',
+//     },
+//     cancelled: undefined,
+//   },
+//   {
+//     id: 'R-10201',
+//     status: 'cancelled',
+//     serviceName: 'MediGO Wheelchair',
+//     pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
+//     dropoffAddress: 'Toronto General Hospital, 200 Elizabeth St',
+//     dateLabel: 'Mar 15, 2026',
+//     timeLabel: '8:45 AM',
+//     details: undefined,
+//     cancelled: {
+//       requestedVehicleLabel: 'MediGO Wheelchair',
+//       cancelledTitle: 'Cancelled by you',
+//       reason: 'Reason: Appointment rescheduled',
+//       note: 'No driver was assigned before cancellation. Your account was not charged.',
+//       chargeLabel: 'No charge',
+//     },
+//   },
+//   {
+//     id: 'R-10145',
+//     status: 'completed',
+//     serviceName: 'MediGO Standard',
+//     pickupAddress: 'Toronto General Hospital, 200 Elizabeth St',
+//     dropoffAddress: '2450 Lawrence Ave E, Toronto, ON',
+//     dateLabel: 'Mar 3, 2026',
+//     timeLabel: '3:15 PM',
+//     details: {
+//       driver: 'James Rivera',
+//       vehicle: 'Toyota Sienna — Standard',
+//       distance: '5.8 km',
+//       duration: '16 min',
+//       ratingLabel: 'Rated 5 stars',
+//     },
+//     cancelled: undefined,
+//   },
+//   {
+//     id: 'R-10088',
+//     status: 'completed',
+//     serviceName: 'MediGO Stretcher',
+//     pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
+//     dropoffAddress: 'Princess Margaret Cancer Centre, 610 University Ave',
+//     dateLabel: 'Feb 19, 2026',
+//     timeLabel: '10:00 AM',
+//     details: {
+//       driver: 'James Rivera',
+//       vehicle: 'Transit — Stretcher',
+//       distance: '9.4 km',
+//       duration: '28 min',
+//       ratingLabel: 'Rated 5 stars',
+//     },
+//     cancelled: undefined,
+//   },
+// ];
 
 export function UserRidesPage() {
   const router = useRouter();
@@ -156,10 +156,58 @@ export function UserRidesPage() {
   const summary = myRidesData?.summary;
 
   const formatRideStatus = (status: string): RideHistoryItem['status'] => {
-    if (status === 'cancelled') return 'cancelled';
-    if (status === 'completed') return 'completed';
+    // Map all possible backend status values to frontend status types
+    switch (status) {
+      case 'completed':
+        return 'completed';
+      case 'cancelled':
+        return 'cancelled';
+      case 'requested':
+        return 'requested';
+      case 'pending':
+        return 'pending';
+      case 'confirmed':
+        return 'confirmed';
+      case 'driver_assigned':
+        return 'driver_assigned';
+      case 'driver_en_route':
+        return 'driver_en_route';
+      case 'driver_arrived':
+        return 'driver_arrived';
+      case 'in_progress':
+        return 'in_progress';
+      case 'no_show':
+        return 'no_show';
+      default:
+        return 'requested';
+    }
+  };
 
-    return 'requested';
+  const getStatusLabel = (status: RideHistoryItem['status']): string => {
+    switch (status) {
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      case 'requested':
+        return 'Requested';
+      case 'pending':
+        return 'Pending';
+      case 'confirmed':
+        return 'Confirmed';
+      case 'driver_assigned':
+        return 'Driver Assigned';
+      case 'driver_en_route':
+        return 'Driver is in the area';
+      case 'driver_arrived':
+        return 'Driver Arrived';
+      case 'in_progress':
+        return 'In Progress';
+      case 'no_show':
+        return 'No Show';
+      default:
+        return 'Requested';
+    }
   };
 
   const formatRideType = (rideType: string) => {
@@ -178,75 +226,80 @@ export function UserRidesPage() {
   const rides: RideHistoryItem[] = useMemo(() => {
     if (!myRides) return [];
 
-    return myRides.map((ride: any) => ({
-      id: ride.id.slice(0, 8).toUpperCase(),
-      status: formatRideStatus(ride.status),
+    return myRides.map((ride: any) => {
+      const status = formatRideStatus(ride.status);
+      return {
+        id: ride.id.slice(0, 8).toUpperCase(),
+        fullRideId: ride.id,
+        status,
+        statusLabel: getStatusLabel(status),
 
-      serviceName: formatRideType(ride.ride_type),
+        serviceName: formatRideType(ride.ride_type),
 
-      pickupAddress: ride.pickup_address,
+        pickupAddress: ride.pickup_address,
 
-      dropoffAddress: ride.destination_address,
+        dropoffAddress: ride.destination_address,
 
-      dateLabel: new Date(ride.scheduled_at).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      }),
+        dateLabel: new Date(ride.scheduled_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }),
 
-      timeLabel: new Date(ride.scheduled_at).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-      }),
+        timeLabel: new Date(ride.scheduled_at).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+        }),
 
-      details: ride.driver_name
-        ? {
-            driver: ride.driver_name,
-            vehicle:
-              ride.driver_vehicle_make && ride.driver_vehicle_model
-                ? `${ride.driver_vehicle_make} ${ride.driver_vehicle_model} — ${formatRideType(ride.ride_type).replace('MediGO ', '')}`
-                : formatRideType(ride.ride_type),
-            distance: ride.estimated_distance_miles
-              ? `${ride.estimated_distance_miles.toFixed(1)} mi`
-              : '-',
-            duration: ride.estimated_duration_minutes
-              ? `${ride.estimated_duration_minutes} min`
-              : '-',
-            ratingLabel: ride.driver_rating
-              ? `Rated ${ride.driver_rating} stars`
-              : 'Not rated yet',
-          }
-        : ride.status === 'cancelled'
-          ? undefined
-          : {
-              driver: 'Driver not yet assigned',
-              vehicle: formatRideType(ride.ride_type),
+        details: ride.driver_name
+          ? {
+              driver: ride.driver_name,
+              vehicle:
+                ride.driver_vehicle_make && ride.driver_vehicle_model
+                  ? `${ride.driver_vehicle_make} ${ride.driver_vehicle_model} — ${formatRideType(ride.ride_type).replace('MediGO ', '')}`
+                  : formatRideType(ride.ride_type),
               distance: ride.estimated_distance_miles
                 ? `${ride.estimated_distance_miles.toFixed(1)} mi`
                 : '-',
               duration: ride.estimated_duration_minutes
                 ? `${ride.estimated_duration_minutes} min`
                 : '-',
-              ratingLabel: 'Pending',
-            },
-
-      cancelled:
-        ride.status === 'cancelled'
-          ? {
-              requestedVehicleLabel: formatRideType(ride.ride_type),
-
-              cancelledTitle: 'Ride Cancelled',
-
-              reason: ride.special_instructions
-                ? `Reason: ${ride.special_instructions}`
-                : undefined,
-
-              note: 'This ride was cancelled.',
-
-              chargeLabel: 'No charge',
+              ratingLabel: ride.driver_rating
+                ? `Rated ${ride.driver_rating} stars`
+                : 'Not rated yet',
             }
-          : undefined,
-    }));
+          : ride.status === 'cancelled'
+            ? undefined
+            : {
+                driver: 'Driver not yet assigned',
+                vehicle: formatRideType(ride.ride_type),
+                distance: ride.estimated_distance_miles
+                  ? `${ride.estimated_distance_miles.toFixed(1)} mi`
+                  : '-',
+                duration: ride.estimated_duration_minutes
+                  ? `${ride.estimated_duration_minutes} min`
+                  : '-',
+                ratingLabel: 'Pending',
+              },
+
+        cancelled:
+          ride.status === 'cancelled'
+            ? {
+                requestedVehicleLabel: formatRideType(ride.ride_type),
+
+                cancelledTitle: 'Ride Cancelled',
+
+                reason: ride.special_instructions
+                  ? `Reason: ${ride.special_instructions}`
+                  : undefined,
+
+                note: 'This ride was cancelled.',
+
+                chargeLabel: 'No charge',
+              }
+            : undefined,
+      };
+    });
   }, [myRides]);
 
   const filteredRides = useMemo(() => {

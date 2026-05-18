@@ -13,3 +13,4 @@ export * from './ScheduledRides';
 export * from './PrivacyPage';
 export * from './HelpPage';
 export * from './BookingSuccessPage';
+export * from './LiveTrackPage';

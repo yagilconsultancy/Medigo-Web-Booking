@@ -8,6 +8,8 @@ import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import AccessibleForwardRoundedIcon from '@mui/icons-material/AccessibleForwardRounded';
 import RouteRoundedIcon from '@mui/icons-material/RouteRounded';
+import PaymentRoundedIcon from '@mui/icons-material/PaymentRounded';
+import MyLocationRoundedIcon from '@mui/icons-material/MyLocationRounded';
 import {
   Accordion,
   AccordionDetails,
@@ -15,20 +17,39 @@ import {
   Box,
   ButtonBase,
   Chip,
+  CircularProgress,
   Divider,
   Paper,
   Stack,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
-import { pxToRem } from '@/common';
-import { RowStack } from '@/ui/modules/components';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  pxToRem,
+  useAccountStore,
+  useGetRideDetail,
+  usePaymentsApi,
+} from '@/common';
+import { AppButton, RowStack } from '@/ui/modules/components';
 
-export type RideStatus = 'completed' | 'cancelled' | 'requested';
+export type RideStatus =
+  | 'completed'
+  | 'cancelled'
+  | 'requested'
+  | 'pending'
+  | 'confirmed'
+  | 'driver_assigned'
+  | 'driver_en_route'
+  | 'driver_arrived'
+  | 'in_progress'
+  | 'no_show';
 
 export type RideHistoryItem = {
   id: string;
+  fullRideId: string;
   status: RideStatus;
+  statusLabel: string;
   serviceName: string;
   pickupAddress: string;
   dropoffAddress: string;
@@ -51,27 +72,54 @@ export type RideHistoryItem = {
 };
 
 const getStatusChipSx = (status: RideStatus) => {
-  if (status === 'cancelled') {
-    return {
-      bgcolor: '#FEF2F2',
-      borderColor: '#FECACA',
-      color: '#B91C1C',
-    } as const;
-  }
+  switch (status) {
+    case 'cancelled':
+    case 'no_show':
+      return {
+        bgcolor: '#FEF2F2',
+        borderColor: '#FECACA',
+        color: '#B91C1C',
+      } as const;
 
-  if (status === 'requested') {
-    return {
-      bgcolor: '#EFF6FF',
-      borderColor: '#BFDBFE',
-      color: '#155DFC',
-    } as const;
-  }
+    case 'requested':
+    case 'pending':
+      return {
+        bgcolor: '#EFF6FF',
+        borderColor: '#BFDBFE',
+        color: '#155DFC',
+      } as const;
 
-  return {
-    bgcolor: '#ECFDF5',
-    borderColor: '#A7F3D0',
-    color: '#047857',
-  } as const;
+    case 'confirmed':
+    case 'driver_assigned':
+      return {
+        bgcolor: '#FEF9C3',
+        borderColor: '#FDE047',
+        color: '#854D0E',
+      } as const;
+
+    case 'driver_en_route':
+    case 'driver_arrived':
+    case 'in_progress':
+      return {
+        bgcolor: '#FEF3C7',
+        borderColor: '#FCD34D',
+        color: '#92400E',
+      } as const;
+
+    case 'completed':
+      return {
+        bgcolor: '#ECFDF5',
+        borderColor: '#A7F3D0',
+        color: '#047857',
+      } as const;
+
+    default:
+      return {
+        bgcolor: '#EFF6FF',
+        borderColor: '#BFDBFE',
+        color: '#155DFC',
+      } as const;
+  }
 };
 
 const RideTypeIcon = ({ serviceName }: { serviceName: string }) => {
@@ -82,14 +130,92 @@ const RideTypeIcon = ({ serviceName }: { serviceName: string }) => {
   return <DirectionsCarRoundedIcon sx={{ fontSize: pxToRem(20) }} />;
 };
 
+type PendingRidePayment = {
+  rideId: string;
+  rideDetail: any;
+};
+
 export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
   const [expandedId, setExpandedId] = useState<string | false>(false);
+  const [pendingPayment, setPendingPayment] =
+    useState<PendingRidePayment | null>(null);
+  const router = useRouter();
+  const { accountType } = useAccountStore();
+  const { createPaymentIntent, isCreatingPaymentIntent } = usePaymentsApi();
+
+  // Fetch ride detail when we have a pending payment
+  const { data: rideResponse, isLoading: isLoadingRide } = useGetRideDetail(
+    pendingPayment?.rideId
+  );
+
+  const handlePayNow = (ride: RideHistoryItem) => {
+    setPendingPayment({ rideId: ride.fullRideId, rideDetail: null });
+  };
+
+  // Process payment when ride detail is fetched
+  useEffect(() => {
+    const processPayment = async () => {
+      if (
+        !pendingPayment ||
+        !rideResponse?.success ||
+        !rideResponse.data ||
+        isCreatingPaymentIntent ||
+        isLoadingRide
+      ) {
+        return;
+      }
+
+      const rideDetail = rideResponse.data;
+      const amount = Math.round((rideDetail.estimated_fare ?? 0) * 100);
+      // @ts-ignore
+      const currency = rideDetail.currency || 'CAD';
+
+      const paymentResult = await createPaymentIntent({
+        amount,
+        currency,
+        description:
+          rideDetail.special_instructions || 'MediGo booking payment',
+        order_id: pendingPayment.rideId,
+        metadata: {
+          account_type: accountType,
+          service_type: rideDetail.trip_type ?? '',
+          appointment_type: rideDetail.visit_type ?? '',
+          vehicle_type: rideDetail.ride_type ?? '',
+          trip_type: rideDetail.trip_structure ?? '',
+        },
+        setup_future_usage: 'on_session',
+      });
+
+      setPendingPayment(null);
+
+      if (paymentResult) {
+        router.push(
+          `/checkout?ride_id=${encodeURIComponent(pendingPayment.rideId)}&client_secret=${encodeURIComponent(
+            paymentResult.clientSecret
+          )}&pk=${encodeURIComponent(paymentResult.publishableKey)}`
+        );
+      }
+    };
+
+    processPayment();
+  }, [
+    pendingPayment,
+    rideResponse,
+    isCreatingPaymentIntent,
+    isLoadingRide,
+    createPaymentIntent,
+    accountType,
+    router,
+  ]);
 
   return (
     <Stack spacing={2}>
       {items.map((ride) => {
         const expanded = expandedId === ride.id;
         const chipSx = getStatusChipSx(ride.status);
+        const isPaying =
+          pendingPayment?.rideId === ride.fullRideId &&
+          (isLoadingRide || isCreatingPaymentIntent);
 
         return (
           <Paper
@@ -176,27 +302,22 @@ export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
                         </Typography>
                         <Chip
                           icon={
-                            ride.status === 'cancelled' ? (
+                            ride.status === 'cancelled' ||
+                            ride.status === 'no_show' ? (
                               <CloseRoundedIcon
                                 sx={{ fontSize: pxToRem(14) }}
                               />
-                            ) : ride.status === 'requested' ? (
-                              <RouteRoundedIcon
+                            ) : ride.status === 'completed' ? (
+                              <CheckCircleRoundedIcon
                                 sx={{ fontSize: pxToRem(14) }}
                               />
                             ) : (
-                              <CheckCircleRoundedIcon
+                              <RouteRoundedIcon
                                 sx={{ fontSize: pxToRem(14) }}
                               />
                             )
                           }
-                          label={
-                            ride.status === 'cancelled'
-                              ? 'Cancelled'
-                              : ride.status === 'requested'
-                                ? 'Requested'
-                                : 'Completed'
-                          }
+                          label={ride.statusLabel}
                           variant="outlined"
                           size="small"
                           sx={{
@@ -278,26 +399,111 @@ export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
                   </RowStack>
 
                   <Stack spacing={0.5} alignItems="flex-end">
-                    <Typography
-                      sx={{
-                        color: '#0F172A',
-                        fontWeight: 700,
-                        fontSize: pxToRem(12),
-                        lineHeight: pxToRem(18),
-                      }}
-                    >
-                      {ride.dateLabel}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        color: '#94A3B8',
-                        fontWeight: 500,
-                        fontSize: pxToRem(11),
-                        lineHeight: pxToRem(16),
-                      }}
-                    >
-                      {ride.timeLabel}
-                    </Typography>
+                    {ride.status === 'pending' ? (
+                      <AppButton
+                        variant="contained"
+                        size="small"
+                        disabled={isPaying}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePayNow(ride);
+                        }}
+                        sx={{
+                          height: pxToRem(32),
+                          px: pxToRem(16),
+                          borderRadius: pxToRem(8),
+                          fontSize: pxToRem(12),
+                          fontWeight: 600,
+                          bgcolor: '#007AFF',
+                          color: '#FFFFFF',
+                          textTransform: 'none',
+                          boxShadow:
+                            '0px 1px 1.5px rgba(0,122,255,0.25), 0px 4px 8px rgba(0,122,255,0.18)',
+                          '&:hover': {
+                            bgcolor: '#0056CC',
+                          },
+                          '&:disabled': {
+                            bgcolor: '#007AFF',
+                            opacity: 0.6,
+                            color: '#FFFFFF',
+                          },
+                        }}
+                      >
+                        {isPaying ? (
+                          <RowStack spacing={1}>
+                            <CircularProgress
+                              size={14}
+                              sx={{ color: '#FFFFFF' }}
+                            />
+                            <span>Processing...</span>
+                          </RowStack>
+                        ) : (
+                          <RowStack spacing={0.75}>
+                            <PaymentRoundedIcon
+                              sx={{ fontSize: pxToRem(16) }}
+                            />
+                            <span>Pay Now</span>
+                          </RowStack>
+                        )}
+                      </AppButton>
+                    ) : ride.status === 'driver_assigned' ||
+                      ride.status === 'driver_en_route' ||
+                      ride.status === 'driver_arrived' ||
+                      ride.status === 'in_progress' ? (
+                      <AppButton
+                        variant="contained"
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/live-track?ride_id=${ride.fullRideId}`);
+                        }}
+                        sx={{
+                          height: pxToRem(32),
+                          px: pxToRem(16),
+                          borderRadius: pxToRem(8),
+                          fontSize: pxToRem(12),
+                          fontWeight: 600,
+                          bgcolor: '#16A34A',
+                          color: '#FFFFFF',
+                          textTransform: 'none',
+                          boxShadow:
+                            '0px 1px 1.5px rgba(22,163,74,0.25), 0px 4px 8px rgba(22,163,74,0.18)',
+                          '&:hover': {
+                            bgcolor: '#15803D',
+                          },
+                        }}
+                      >
+                        <RowStack spacing={0.75}>
+                          <MyLocationRoundedIcon
+                            sx={{ fontSize: pxToRem(16) }}
+                          />
+                          <span>Track Driver</span>
+                        </RowStack>
+                      </AppButton>
+                    ) : (
+                      <>
+                        <Typography
+                          sx={{
+                            color: '#0F172A',
+                            fontWeight: 700,
+                            fontSize: pxToRem(12),
+                            lineHeight: pxToRem(18),
+                          }}
+                        >
+                          {ride.dateLabel}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            color: '#94A3B8',
+                            fontWeight: 500,
+                            fontSize: pxToRem(11),
+                            lineHeight: pxToRem(16),
+                          }}
+                        >
+                          {ride.timeLabel}
+                        </Typography>
+                      </>
+                    )}
                   </Stack>
                 </RowStack>
               </AccordionSummary>

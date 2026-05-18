@@ -640,7 +640,7 @@ export function BookingSuccessPage() {
 
           {/* ── Action Buttons ── */}
           <Stack spacing={pxToRem(17)}>
-            <AppButton
+            {/* <AppButton
               fullWidth
               onClick={() => router.push('/my-rides')}
               sx={{
@@ -659,7 +659,7 @@ export function BookingSuccessPage() {
               }}
             >
               Track Trip
-            </AppButton>
+            </AppButton> */}
 
             <AppButton
               fullWidth
@@ -681,7 +681,7 @@ export function BookingSuccessPage() {
               Book Another Trip
             </AppButton>
 
-            <AppButton
+            {/* <AppButton
               fullWidth
               variant="text"
               startIcon={
@@ -705,7 +705,7 @@ export function BookingSuccessPage() {
               }}
             >
               Download Receipt
-            </AppButton>
+            </AppButton> */}
           </Stack>
 
           <AppFooter sx={{ mt: pxToRem(40) }} />

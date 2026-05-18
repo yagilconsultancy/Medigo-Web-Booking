@@ -3,7 +3,7 @@ import { getAuthToken } from '../utils';
 
 // Socket.IO connection configuration
 const SOCKET_URL =
-  process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8000';
+  process.env.NEXT_PUBLIC_SOCKET_URL || 'https://staging.getmedigo.com';
 const TRACKING_NAMESPACE = '/tracking';
 
 let socket: Socket | null = null;
