@@ -15,8 +15,13 @@ import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
 import { AppGoogleMapsProvider, AppGoogleMap } from '../../modules/components';
 import type { TruckMarker } from '../../modules/components/AppGoogleMap';
-import { pxToRem, useDispatchSocket } from '@/common';
-import type { MarkerPosition } from '@/common/types';
+import {
+  pxToRem,
+  useDispatchSocket,
+  useGetCurrentDriverTracking,
+  useResolvedApiQuery,
+} from '@/common';
+import type { MarkerPosition, DriverTrackingData } from '@/common/types';
 
 export function LiveTrackPage() {
   const searchParams = useSearchParams();
@@ -24,16 +29,28 @@ export function LiveTrackPage() {
 
   const { isConnected, isJoined, locationUpdates, error } = useDispatchSocket();
 
+  // Fetch initial tracking data from API to get destination coordinates
+  const trackingQuery = useGetCurrentDriverTracking();
+  const trackingData =
+    trackingQuery.data?.success && trackingQuery.data?.data
+      ? trackingQuery.data.data
+      : null;
+
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
-  // Get current ride location update
-  const currentUpdate = rideId ? locationUpdates.get(rideId) : null;
+  // Get current ride location update from socket
+  const socketUpdate = rideId ? locationUpdates.get(rideId) : null;
 
+  // Use socket data for live position, API data for destination
   const hasCoordinates =
-    currentUpdate?.current_latitude != null &&
-    currentUpdate?.current_longitude != null &&
-    currentUpdate?.destination_latitude != null &&
-    currentUpdate?.destination_longitude != null;
+    (socketUpdate?.current_latitude != null &&
+      socketUpdate?.current_longitude != null &&
+      trackingData?.destination_latitude != null &&
+      trackingData?.destination_longitude != null) ||
+    (trackingData?.current_latitude != null &&
+      trackingData?.current_longitude != null &&
+      trackingData?.destination_latitude != null &&
+      trackingData?.destination_longitude != null);
 
   const computeRoute = useCallback(
     async (input: {
@@ -74,23 +91,30 @@ export function LiveTrackPage() {
     []
   );
 
-  const destinationMarker: MarkerPosition | null = currentUpdate
+  const destinationMarker: MarkerPosition | null = trackingData
     ? {
-        lat: currentUpdate.destination_latitude,
-        lng: currentUpdate.destination_longitude,
+        lat: trackingData.destination_latitude,
+        lng: trackingData.destination_longitude,
       }
     : null;
 
   const truckMarker: TruckMarker | undefined =
-    currentUpdate && hasCoordinates
+    hasCoordinates && (socketUpdate || trackingData)
       ? {
           position: {
-            lat: currentUpdate.current_latitude,
-            lng: currentUpdate.current_longitude,
+            lat:
+              socketUpdate?.current_latitude ?? trackingData!.current_latitude,
+            lng:
+              socketUpdate?.current_longitude ??
+              trackingData!.current_longitude,
           },
-          heading: currentUpdate.current_heading || 0,
+          heading:
+            socketUpdate?.current_heading ?? trackingData?.current_heading ?? 0,
         }
       : undefined;
+
+  // Display data: prefer socket update for real-time info, fallback to API data
+  const displayData = socketUpdate || trackingData;
 
   if (!rideId) {
     return (
@@ -173,7 +197,7 @@ export function LiveTrackPage() {
         )}
 
         {/* Status Card */}
-        {currentUpdate && (
+        {displayData && (
           <Paper
             elevation={3}
             sx={{
@@ -212,7 +236,7 @@ export function LiveTrackPage() {
                   </Typography>
                 </Box>
                 <Chip
-                  label={`${currentUpdate.current_speed.toFixed(0)} mph`}
+                  label={`${displayData.current_speed.toFixed(0)} mph`}
                   sx={{
                     height: pxToRem(24),
                     bgcolor: 'rgba(15,23,42,0.82)',
@@ -251,7 +275,7 @@ export function LiveTrackPage() {
                       color: '#2563EB',
                     }}
                   >
-                    {currentUpdate.eta_minutes} min
+                    {displayData.eta_minutes} min
                   </Typography>
                 </Box>
                 <Box
@@ -278,7 +302,7 @@ export function LiveTrackPage() {
                       color: '#2563EB',
                     }}
                   >
-                    {currentUpdate.distance_remaining_miles.toFixed(1)} mi
+                    {displayData.distance_remaining_miles.toFixed(1)} mi
                   </Typography>
                 </Box>
               </Box>
@@ -301,11 +325,11 @@ export function LiveTrackPage() {
                     color: '#16A34A',
                   }}
                 >
-                  {currentUpdate.status === 'driver_en_route'
+                  {displayData.status === 'driver_en_route'
                     ? 'Driver en route'
-                    : currentUpdate.status === 'driver_arrived'
+                    : displayData.status === 'driver_arrived'
                       ? 'Driver arrived'
-                      : currentUpdate.status === 'in_progress'
+                      : displayData.status === 'in_progress'
                         ? 'In progress'
                         : 'Driver assigned'}
                 </Typography>
