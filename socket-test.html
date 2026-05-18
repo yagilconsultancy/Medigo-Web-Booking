@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediGo Socket.IO Connection Test</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #007AFF;
+      margin-top: 0;
+    }
+    .status {
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+      font-weight: 600;
+    }
+    .status.disconnected {
+      background: #fee;
+      color: #c33;
+      border: 1px solid #fcc;
+    }
+    .status.connected {
+      background: #efe;
+      color: #3c3;
+      border: 1px solid #cfc;
+    }
+    .status.connecting {
+      background: #ffc;
+      color: #cc6;
+      border: 1px solid #fec;
+    }
+    .controls {
+      margin: 20px 0;
+    }
+    button {
+      background: #007AFF;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 300px;
+      margin-right: 10px;
+    }
+    .log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 6px;
+      height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      margin-top: 20px;
+    }
+    .log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 3px solid transparent;
+    }
+    .log-entry.info {
+      border-left-color: #007AFF;
+    }
+    .log-entry.success {
+      border-left-color: #16A34A;
+    }
+    .log-entry.error {
+      border-left-color: #DC2626;
+    }
+    .log-entry.event {
+      border-left-color: #F59E0B;
+    }
+    .timestamp {
+      color: #888;
+      font-size: 11px;
+      margin-right: 10px;
+    }
+    .config {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+      font-size: 13px;
+    }
+    .config-item {
+      margin: 5px 0;
+    }
+    .config-label {
+      font-weight: 600;
+      color: #555;
+      display: inline-block;
+      width: 120px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MediGo Socket.IO Connection Test</h1>
+
+    <div class="config">
+      <div class="config-item">
+        <span class="config-label">Server:</span>
+        <span>https://staging.getmedigo.com</span>
+      </div>
+      <div class="config-item">
+        <span class="config-label">Namespace:</span>
+        <span>/tracking</span>
+      </div>
+      <div class="config-item">
+        <span class="config-label">Path:</span>
+        <span>/api/v1/ws/socket.io</span>
+      </div>
+    </div>
+
+    <div id="status" class="status disconnected">
+      Status: Disconnected
+    </div>
+
+    <div class="controls">
+      <button id="connectBtn" onclick="connect()">Connect</button>
+      <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+      <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="rideIdInput" placeholder="Enter Ride ID to join" value="test-ride-123">
+      <button id="joinBtn" onclick="joinRide()" disabled>Join Ride</button>
+    </div>
+
+    <div class="log" id="log"></div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    let socket = null;
+    const logEl = document.getElementById('log');
+    const statusEl = document.getElementById('status');
+    const connectBtn = document.getElementById('connectBtn');
+    const disconnectBtn = document.getElementById('disconnectBtn');
+    const joinBtn = document.getElementById('joinBtn');
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.innerHTML = `<span class="timestamp">[${timestamp}]</span>${message}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+      console.log(`[${timestamp}] ${message}`);
+    }
+
+    function updateStatus(status, className) {
+      statusEl.textContent = `Status: ${status}`;
+      statusEl.className = `status ${className}`;
+    }
+
+    function connect() {
+      if (socket && socket.connected) {
+        log('Already connected', 'info');
+        return;
+      }
+
+      log('Attempting to connect...', 'info');
+      updateStatus('Connecting...', 'connecting');
+      connectBtn.disabled = true;
+
+      try {
+        socket = io('https://staging.getmedigo.com/tracking', {
+          path: '/api/v1/ws/socket.io',
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          timeout: 10000,
+        });
+
+        socket.on('connect', () => {
+          log(`✓ Connected successfully! Socket ID: ${socket.id}`, 'success');
+          updateStatus('Connected', 'connected');
+          disconnectBtn.disabled = false;
+          joinBtn.disabled = false;
+        });
+
+        socket.on('disconnect', (reason) => {
+          log(`✗ Disconnected. Reason: ${reason}`, 'error');
+          updateStatus('Disconnected', 'disconnected');
+          connectBtn.disabled = false;
+          disconnectBtn.disabled = true;
+          joinBtn.disabled = true;
+        });
+
+        socket.on('connect_error', (error) => {
+          log(`✗ Connection error: ${error.message}`, 'error');
+          log(`Error details: ${JSON.stringify(error)}`, 'error');
+          updateStatus('Connection Failed', 'disconnected');
+          connectBtn.disabled = false;
+        });
+
+        socket.on('error', (error) => {
+          log(`✗ Socket error: ${error}`, 'error');
+        });
+
+        // Listen for tracking events
+        socket.on('location_update', (data) => {
+          log(`📍 Location Update: ${JSON.stringify(data, null, 2)}`, 'event');
+        });
+
+        socket.on('tracking_started', (data) => {
+          log(`🚀 Tracking Started: ${JSON.stringify(data, null, 2)}`, 'event');
+        });
+
+        socket.on('tracking_ended', (data) => {
+          log(`🏁 Tracking Ended: ${JSON.stringify(data, null, 2)}`, 'event');
+        });
+
+        socket.on('driver_assigned', (data) => {
+          log(`👤 Driver Assigned: ${JSON.stringify(data, null, 2)}`, 'event');
+        });
+
+        socket.on('ride_status_update', (data) => {
+          log(`📊 Ride Status Update: ${JSON.stringify(data, null, 2)}`, 'event');
+        });
+
+        // Catch-all for any other events
+        socket.onAny((eventName, ...args) => {
+          if (!['connect', 'disconnect', 'connect_error', 'error', 'location_update', 'tracking_started', 'tracking_ended', 'driver_assigned', 'ride_status_update'].includes(eventName)) {
+            log(`📨 Event "${eventName}": ${JSON.stringify(args, null, 2)}`, 'event');
+          }
+        });
+
+      } catch (error) {
+        log(`✗ Exception during connection: ${error.message}`, 'error');
+        updateStatus('Connection Failed', 'disconnected');
+        connectBtn.disabled = false;
+      }
+    }
+
+    function disconnect() {
+      if (!socket) {
+        log('No socket to disconnect', 'info');
+        return;
+      }
+
+      log('Disconnecting...', 'info');
+      socket.disconnect();
+      socket = null;
+      updateStatus('Disconnected', 'disconnected');
+      connectBtn.disabled = false;
+      disconnectBtn.disabled = true;
+      joinBtn.disabled = true;
+    }
+
+    function joinRide() {
+      if (!socket || !socket.connected) {
+        log('✗ Cannot join ride: Not connected', 'error');
+        return;
+      }
+
+      const rideId = document.getElementById('rideIdInput').value.trim();
+      if (!rideId) {
+        log('✗ Please enter a ride ID', 'error');
+        return;
+      }
+
+      log(`Attempting to join ride: ${rideId}`, 'info');
+
+      socket.emit('join_ride', { ride_id: rideId }, (response) => {
+        if (response) {
+          log(`✓ Join ride response: ${JSON.stringify(response, null, 2)}`, 'success');
+        }
+      });
+
+      log(`Sent join_ride event for ride_id: ${rideId}`, 'info');
+    }
+
+    function clearLog() {
+      logEl.innerHTML = '';
+    }
+
+    // Auto-connect on load
+    window.addEventListener('load', () => {
+      log('Test page loaded. Click Connect to start.', 'info');
+    });
+  </script>
+</body>
+</html>

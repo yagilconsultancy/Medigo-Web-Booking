@@ -49,7 +49,7 @@ export const updateMyProfile = async (payload: ApiUpdateMyProfilePayload) => {
     formData.append('gender', payload.gender);
   }
   if (payload.avatar_url !== undefined && payload.avatar_url instanceof File) {
-    formData.append('avatar_url', payload.avatar_url);
+    formData.append('avatar', payload.avatar_url);
   }
   if (payload.home_address !== undefined) {
     formData.append('home_address', payload.home_address);
