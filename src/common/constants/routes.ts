@@ -58,6 +58,7 @@ export const ROUTES_SPEC = {
     `/${API_VERSION}/users/me/passengers/${passengerId}`,
 
   uploadAvatar: `/${API_VERSION}/users/me/avatar`,
+  getAvatar: `/${API_VERSION}/users/me/avatar`,
 
   getSettings: `/${API_VERSION}/users/me/settings`,
   updateNotificationSettings: `/${API_VERSION}/users/me/settings/notifications`,

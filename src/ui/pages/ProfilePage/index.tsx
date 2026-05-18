@@ -59,6 +59,7 @@ export function ProfilePage() {
   const [isPersonalFormValid, setIsPersonalFormValid] = useState(false);
   const lastBlobUrlRef = useRef<string | null>(null);
   const hasInitialized = useRef(false);
+  console.log('Profile response:', profile);
 
   useEffect(() => {
     if (profile && !hasInitialized.current) {
@@ -67,7 +68,7 @@ export function ProfilePage() {
         name: `${profile.first_name} ${profile.last_name}`.trim(),
         email: profile.email || '',
         phone: profile.phone || '',
-        avatarUrl: profile.avatar_url || undefined,
+        avatarUrl: profile.avatar_url,
         dateOfBirth: profile.date_of_birth || undefined,
         gender: profile.gender || undefined,
         homeAddress: profile.home_address || undefined,
@@ -169,7 +170,7 @@ export function ProfilePage() {
                           ? lastBlobUrlRef.current || undefined
                           : typeof snapshot.avatarUrl === 'string'
                             ? snapshot.avatarUrl
-                            : undefined
+                            : profile?.avatar_url ?? undefined
                       }
                       sx={{
                         width: '120px',
