@@ -170,7 +170,7 @@ export function ProfilePage() {
                           ? lastBlobUrlRef.current || undefined
                           : typeof snapshot.avatarUrl === 'string'
                             ? snapshot.avatarUrl
-                            : profile?.avatar_url ?? undefined
+                            : (profile?.avatar_url ?? undefined)
                       }
                       sx={{
                         width: '120px',

@@ -3,6 +3,7 @@ import './globals.css';
 import { ReactNode } from 'react';
 import { Header } from './header';
 import { Providers } from './providers';
+import { TawkToWidget } from '@/ui/modules/components/TawkToWidget';
 
 export const metadata: Metadata = {
   title: 'MediGo | On-Demand Healthcare Transportation',
@@ -52,6 +53,7 @@ export default function RootLayout({
       <Header />
       <body>
         <Providers>{children}</Providers>
+        <TawkToWidget />
       </body>
     </html>
   );

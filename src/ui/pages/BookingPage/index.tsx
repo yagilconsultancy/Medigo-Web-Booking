@@ -52,9 +52,18 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
 
   const canContinue = useMemo(() => {
     if (activeStep === 0) {
+      const pickupOk =
+        booking.address.pickupCoordinates?.lat != null &&
+        booking.address.pickupCoordinates?.lng != null;
+      const dropoffOk =
+        booking.address.dropoffCoordinates?.lat != null &&
+        booking.address.dropoffCoordinates?.lng != null;
+
       return (
         booking.address.pickupAddress.trim().length > 0 &&
         booking.address.dropoffAddress.trim().length > 0 &&
+        pickupOk &&
+        dropoffOk &&
         booking.patient.firstName.trim().length > 0 &&
         booking.patient.lastName.trim().length > 0 &&
         booking.patient.phoneNumber.trim().length > 0

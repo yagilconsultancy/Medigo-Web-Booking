@@ -2,13 +2,13 @@
 
 import { Box, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import * as yup from 'yup';
 import { toast } from 'sonner';
 import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
-import { AppButton, AppOtpInput, StyledLink } from '../../modules/components';
+import { AppButton, AppOtpInput } from '../../modules/components';
 import {
   pxToRem,
   REGISTER_ACCOUNT_KEY,

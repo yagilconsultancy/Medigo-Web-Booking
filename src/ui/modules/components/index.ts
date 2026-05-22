@@ -10,6 +10,7 @@ export * from './AppLogo';
 export * from './HeroLabel';
 export * from './HeroDescription';
 export * from './AppModal';
+export * from './TawkToWidget';
 export * from './DashboardTitle';
 export * from './AuthTitleAndDesc';
 export * from './VisuallyHiddenInput';

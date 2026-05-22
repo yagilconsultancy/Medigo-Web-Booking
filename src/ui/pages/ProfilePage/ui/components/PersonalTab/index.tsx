@@ -125,9 +125,12 @@ export function PersonalTab({
   }, [snapshot.avatarUrl]);
 
   useEffect(() => {
-    registerSubmit?.(() => {
-      void formik.submitForm();
-    }, (formik.dirty || hasAvatarChange) && !isSubmitting);
+    registerSubmit?.(
+      () => {
+        void formik.submitForm();
+      },
+      (formik.dirty || hasAvatarChange) && !isSubmitting
+    );
   }, [formik, registerSubmit, formik.dirty, hasAvatarChange, isSubmitting]);
 
   // Address autocomplete
