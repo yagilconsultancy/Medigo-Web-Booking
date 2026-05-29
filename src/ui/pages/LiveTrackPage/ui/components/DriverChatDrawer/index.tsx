@@ -41,20 +41,7 @@ export function DriverChatDrawer({
   const endRef = useRef<HTMLDivElement | null>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>(
-    initialMessages ?? [
-      {
-        id: 'm1',
-        from: 'driver',
-        text: "Hello! I'm on my way to your pickup location.",
-        timeLabel: '05:48 AM',
-      },
-      {
-        id: 'm2',
-        from: 'driver',
-        text: "I'll be there in about 8 minutes. Please be ready.",
-        timeLabel: '05:49 AM',
-      },
-    ]
+    initialMessages ?? []
   );
 
   const driverInitials = useMemo(() => {

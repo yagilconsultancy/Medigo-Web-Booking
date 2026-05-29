@@ -1,95 +1,77 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Box, CircularProgress, Paper, Typography } from '@mui/material';
 import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
 import { AppGoogleMapsProvider, AppGoogleMap } from '../../modules/components';
 import type { TruckMarker } from '../../modules/components/AppGoogleMap';
-import { pxToRem, useRideTracking } from '@/common';
+import { pxToRem, useLiveTrackStore, useRideTracking } from '@/common';
 import type { MarkerPosition } from '@/common/types';
-import { AppButton } from '@/ui/modules/components';
-import {
-  DriverChatDrawer,
-  DriverTrackingCard,
-  RateDriverModal,
-  RideCompletedModal,
-} from './ui/components';
-
-type RideStatus =
-  | 'requested'
-  | 'confirmed'
-  | 'driver_assigned'
-  | 'driver_en_route'
-  | 'driver_arrived'
-  | 'in_progress'
-  | 'completed'
-  | 'cancelled'
-  | 'no_show';
+import { DriverChatDrawer, DriverTrackingCard } from './ui/components';
 
 export function LiveTrackPage() {
   const searchParams = useSearchParams();
   const rideId = searchParams.get('ride_id');
+  const { driverId: storedDriverId, rideId: storedRideId } =
+    useLiveTrackStore();
 
-  const simulationEnabled = searchParams.get('simulate') === '1';
+  const effectiveDriverId =
+    storedRideId && rideId && storedRideId === rideId ? storedDriverId : null;
 
   const { isConnected, driverLocation, trackingStarted, error } =
-    useRideTracking(simulationEnabled ? null : rideId);
+    useRideTracking(
+      effectiveDriverId ? { driverId: effectiveDriverId, rideId } : { rideId }
+    );
+
+  useEffect(() => {
+    if (!rideId) return;
+    // eslint-disable-next-line no-console
+    console.log('[LiveTrackPage] socket status:', {
+      rideId,
+      isConnected,
+      hasDriverLocation: Boolean(driverLocation),
+      hasTrackingStarted: Boolean(trackingStarted),
+      error,
+    });
+  }, [rideId, isConnected, driverLocation, trackingStarted, error]);
+
+  useEffect(() => {
+    if (!rideId || !driverLocation) return;
+    // eslint-disable-next-line no-console
+    console.log('[LiveTrackPage] location_update:', driverLocation);
+  }, [rideId, driverLocation]);
+
+  useEffect(() => {
+    if (!rideId || !trackingStarted) return;
+    // eslint-disable-next-line no-console
+    console.log('[LiveTrackPage] tracking_started:', trackingStarted);
+  }, [rideId, trackingStarted]);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
-  const [rideStatus, setRideStatus] = useState<RideStatus>(
-    simulationEnabled ? 'driver_arrived' : 'in_progress'
-  );
   const [chatOpen, setChatOpen] = useState(false);
-  const [rateDriverOpen, setRateDriverOpen] = useState(false);
-  const [rideCompletedOpen, setRideCompletedOpen] = useState(false);
+  const driverId = trackingStarted?.driver_id ?? driverLocation?.driver_id ?? '';
+  const riderId = trackingStarted?.rider_id ?? '';
 
-  useEffect(() => {
-    const statusFromQuery = searchParams.get('status') as RideStatus | null;
-    if (!simulationEnabled) return;
-    if (statusFromQuery) setRideStatus(statusFromQuery);
-  }, [searchParams, simulationEnabled]);
+  const destinationMarker: MarkerPosition | null = trackingStarted
+    ? {
+        lat: trackingStarted.destination_latitude,
+        lng: trackingStarted.destination_longitude,
+      }
+    : null;
 
-  const simulatedTrackingStarted = useMemo(() => {
-    if (!simulationEnabled) return null;
-    return {
-      ride_id: rideId ?? 'SIM-RIDE',
-      driver_id: 'SIM-DRIVER',
-      rider_id: 'SIM-RIDER',
-      pickup_latitude: 6.5244,
-      pickup_longitude: 3.3792,
-      destination_latitude: 6.5212,
-      destination_longitude: 3.3676,
-      started_at: new Date().toISOString(),
-    };
-  }, [rideId, simulationEnabled]);
+  const destinationLabel =
+    destinationMarker != null
+      ? `Destination (${destinationMarker.lat.toFixed(
+          5
+        )}, ${destinationMarker.lng.toFixed(5)})`
+      : 'Destination pending';
 
-  const simulatedDriverLocation = useMemo(() => {
-    if (!simulationEnabled) return null;
-    return {
-      ride_id: rideId ?? 'SIM-RIDE',
-      driver_id: 'SIM-DRIVER',
-      latitude: 6.5232,
-      longitude: 3.3758,
-      heading: 215,
-      speed: 28,
-      eta_minutes: 14,
-      distance_remaining_miles: 8.3,
-      timestamp: new Date().toISOString(),
-    };
-  }, [rideId, simulationEnabled]);
-
-  const effectiveTrackingStarted = trackingStarted ?? simulatedTrackingStarted;
-  const effectiveDriverLocation = driverLocation ?? simulatedDriverLocation;
-
-  // Use socket data for both live position and destination
+  // Use socket data for live position.
   const hasCoordinates =
-    effectiveDriverLocation?.latitude != null &&
-    effectiveDriverLocation?.longitude != null &&
-    effectiveTrackingStarted?.destination_latitude != null &&
-    effectiveTrackingStarted?.destination_longitude != null;
+    driverLocation?.latitude != null && driverLocation?.longitude != null;
 
   const computeRoute = useCallback(
     async (input: {
@@ -130,31 +112,30 @@ export function LiveTrackPage() {
     []
   );
 
-  const destinationMarker: MarkerPosition | null = effectiveTrackingStarted
+  const pickupMarker: MarkerPosition | null = trackingStarted
     ? {
-        lat: effectiveTrackingStarted.destination_latitude,
-        lng: effectiveTrackingStarted.destination_longitude,
+        lat: trackingStarted.pickup_latitude,
+        lng: trackingStarted.pickup_longitude,
       }
     : null;
 
   const truckMarker: TruckMarker | undefined =
-    hasCoordinates && effectiveDriverLocation
+    hasCoordinates && driverLocation
       ? {
           position: {
-            lat: effectiveDriverLocation.latitude,
-            lng: effectiveDriverLocation.longitude,
+            lat: driverLocation.latitude,
+            lng: driverLocation.longitude,
           },
-          heading: effectiveDriverLocation.heading ?? 0,
+          heading: driverLocation.heading ?? 0,
         }
       : undefined;
 
   // Display data from socket only
-  const displayData = effectiveDriverLocation
+  const displayData = driverLocation
     ? {
-        current_speed: effectiveDriverLocation.speed,
-        eta_minutes: effectiveDriverLocation.eta_minutes,
-        distance_remaining_miles:
-          effectiveDriverLocation.distance_remaining_miles,
+        current_speed: driverLocation.speed,
+        eta_minutes: driverLocation.eta_minutes,
+        distance_remaining_miles: driverLocation.distance_remaining_miles,
       }
     : null;
 
@@ -182,43 +163,16 @@ export function LiveTrackPage() {
     );
   }
 
-  const statusLabel =
-    rideStatus === 'driver_arrived'
-      ? 'Driver Arrived at Pickup...'
-      : rideStatus === 'driver_en_route'
-        ? 'Driver En Route...'
-        : rideStatus === 'in_progress'
-          ? 'Trip In Progress...'
-          : rideStatus === 'completed'
-            ? 'Trip Completed'
-            : 'Tracking...';
+  const statusLabel = trackingStarted
+    ? 'Tracking live driver location'
+    : 'Waiting for tracking to start...';
 
-  const ctaConfig: {
-    label: string;
-    disabled?: boolean;
-    onClick: () => void;
-  } =
-    rideStatus === 'driver_arrived'
-      ? {
-          label: "I'm at the Car — Start Ride",
-          onClick: () => setRideStatus('in_progress'),
-        }
-      : rideStatus === 'in_progress'
-        ? {
-            label: 'End Trip',
-            onClick: () => setRateDriverOpen(true),
-          }
-        : rideStatus === 'completed'
-          ? {
-              label: 'Trip Completed',
-              disabled: true,
-              onClick: () => {},
-            }
-          : {
-              label: 'Waiting for driver updates…',
-              disabled: true,
-              onClick: () => {},
-            };
+  const driverSubtitleParts = [
+    driverId ? `Driver: ${driverId}` : null,
+    riderId ? `Rider: ${riderId}` : null,
+  ].filter(Boolean);
+  const driverSubtitle =
+    driverSubtitleParts.length > 0 ? driverSubtitleParts.join(' · ') : '—';
 
   return (
     <AppLayout
@@ -236,16 +190,24 @@ export function LiveTrackPage() {
         }}
       >
         {/* Map */}
-        {apiKey && hasCoordinates && destinationMarker ? (
+        {apiKey && hasCoordinates ? (
           <AppGoogleMapsProvider apiKey={apiKey}>
             <AppGoogleMap
-              markerPositions={[destinationMarker]}
+              markerPositions={
+                destinationMarker && pickupMarker
+                  ? [pickupMarker, destinationMarker]
+                  : destinationMarker
+                    ? [destinationMarker]
+                    : pickupMarker
+                      ? [pickupMarker]
+                      : []
+              }
               truckMarker={truckMarker}
               mapContainerStyle={{
                 width: '100%',
                 height: 'calc(100vh - 64px)',
               }}
-              showDirections={true}
+              showDirections={Boolean(destinationMarker)}
               computeRoute={computeRoute}
             />
           </AppGoogleMapsProvider>
@@ -276,8 +238,8 @@ export function LiveTrackPage() {
           </Box>
         )}
 
-        {/* Driver Tracking UI (sim-ready) */}
-        {displayData && (
+        {/* Driver Tracking UI (socket-only) */}
+        {displayData && driverId && (
           <Box
             sx={{
               position: 'absolute',
@@ -291,140 +253,18 @@ export function LiveTrackPage() {
           >
             <DriverTrackingCard
               statusLabel={statusLabel}
-              driverName="John Driver"
-              driverSubtitle="MediGo Verified Driver · 3,241 trips"
+              driverName={driverId}
+              driverSubtitle={driverSubtitle}
               etaMinutes={displayData.eta_minutes}
-              destinationLabel="Springfield General Hospital"
+              destinationLabel={destinationLabel}
               metaLabel={`${displayData.current_speed.toFixed(0)} km/h · ${displayData.distance_remaining_miles.toFixed(1)} km remaining`}
               onMessageDriver={() => setChatOpen(true)}
             />
           </Box>
         )}
 
-        {/* Simulator controls (no backend yet) */}
-        {simulationEnabled && (
-          <Paper
-            elevation={3}
-            sx={{
-              position: 'absolute',
-              top: pxToRem(16),
-              right: pxToRem(16),
-              zIndex: 3,
-              p: pxToRem(12),
-              borderRadius: pxToRem(14),
-              width: pxToRem(240),
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: pxToRem(12),
-                fontWeight: 800,
-                color: '#0F172A',
-                mb: pxToRem(8),
-              }}
-            >
-              Tracking simulator
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: pxToRem(8) }}>
-              {(
-                [
-                  'driver_en_route',
-                  'driver_arrived',
-                  'in_progress',
-                  'completed',
-                ] as RideStatus[]
-              ).map((s) => (
-                <AppButton
-                  key={s}
-                  variant={rideStatus === s ? 'contained' : 'outlined'}
-                  onClick={() => setRideStatus(s)}
-                  sx={{
-                    height: pxToRem(30),
-                    borderRadius: pxToRem(10),
-                    px: pxToRem(10),
-                    minWidth: 'unset',
-                    fontSize: pxToRem(11),
-                    fontWeight: 800,
-                    textTransform: 'none',
-                    ...(rideStatus === s
-                      ? {
-                          bgcolor: '#2563EB',
-                          '&:hover': { bgcolor: '#1D4ED8' },
-                        }
-                      : {
-                          borderColor: '#E2E8F0',
-                          color: '#0F172A',
-                          '&:hover': {
-                            borderColor: '#CBD5E1',
-                            bgcolor: '#F8FAFC',
-                          },
-                        }),
-                  }}
-                >
-                  {s}
-                </AppButton>
-              ))}
-            </Box>
-          </Paper>
-        )}
-
-        {/* Bottom CTA */}
-        {displayData && (
-          <Box
-            sx={{
-              position: 'absolute',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              bottom: pxToRem(16),
-              width: '92%',
-              maxWidth: pxToRem(920),
-              zIndex: 2,
-            }}
-          >
-            <AppButton
-              variant="contained"
-              fullWidth
-              disabled={ctaConfig.disabled}
-              onClick={ctaConfig.onClick}
-              sx={{
-                height: pxToRem(56),
-                borderRadius: pxToRem(14),
-                bgcolor: '#2563EB',
-                fontSize: pxToRem(16),
-                fontWeight: 800,
-                textTransform: 'none',
-                '&:hover': { bgcolor: '#1D4ED8' },
-                '&.Mui-disabled': {
-                  bgcolor: '#94A3B8',
-                  color: '#FFFFFF',
-                },
-              }}
-            >
-              {ctaConfig.label}
-            </AppButton>
-
-            <Typography
-              sx={{
-                mt: pxToRem(10),
-                textAlign: 'center',
-                fontSize: pxToRem(12),
-                fontWeight: 700,
-                color: '#2563EB',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                // Placeholder for support chat (already exists elsewhere)
-                // Keeping this as a quick affordance in the simulated UI.
-                setChatOpen(true);
-              }}
-            >
-              Need a help? Chat with us
-            </Typography>
-          </Box>
-        )}
-
         {/* Connection Status */}
-        {!simulationEnabled && !isConnected && (
+        {!isConnected && (
           <Paper
             elevation={2}
             sx={{
@@ -446,7 +286,7 @@ export function LiveTrackPage() {
           </Paper>
         )}
 
-        {!simulationEnabled && error && (
+        {error && (
           <Paper
             elevation={2}
             sx={{
@@ -466,34 +306,13 @@ export function LiveTrackPage() {
           </Paper>
         )}
 
-        {/* Chat + Modals */}
+        {/* Chat */}
         <DriverChatDrawer
           open={chatOpen}
           onClose={() => setChatOpen(false)}
-          driverName="John Driver"
-        />
-
-        <RateDriverModal
-          open={rateDriverOpen}
-          setOpen={setRateDriverOpen}
-          driverName="John Driver"
-          tripDuration="18 mins"
-          onSubmit={() => {
-            setRateDriverOpen(false);
-            setRideStatus('completed');
-            setRideCompletedOpen(true);
-          }}
-        />
-
-        <RideCompletedModal
-          open={rideCompletedOpen}
-          setOpen={setRideCompletedOpen}
-          onCompleteSurvey={() => {
-            setRideCompletedOpen(false);
-          }}
-          onBackToHome={() => {
-            setRideCompletedOpen(false);
-          }}
+          driverName={driverId || 'Driver'}
+          driverOnlineLabel={isConnected ? 'Online' : 'Offline'}
+          initialMessages={[]}
         />
       </Box>
     </AppLayout>

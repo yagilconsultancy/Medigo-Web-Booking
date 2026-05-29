@@ -5,6 +5,8 @@ import { getAuthToken } from '../utils';
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL || 'https://staging.getmedigo.com';
 const TRACKING_NAMESPACE = '/tracking';
+const SOCKET_PATH =
+  process.env.NEXT_PUBLIC_SOCKET_PATH || '/api/v1/ws/socket.io';
 
 let socket: Socket | null = null;
 
@@ -19,6 +21,7 @@ export const getTrackingSocket = (): Socket => {
   const token = getAuthToken();
 
   socket = io(`${SOCKET_URL}${TRACKING_NAMESPACE}`, {
+    path: SOCKET_PATH,
     auth: {
       token: token,
     },

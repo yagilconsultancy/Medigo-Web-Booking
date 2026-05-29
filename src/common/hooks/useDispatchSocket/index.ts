@@ -48,7 +48,12 @@ export const useDispatchSocket = (): UseDispatchSocketReturn => {
         // Join dispatch center room
         socket.emit(
           SocketEvent.JOIN_DISPATCH_CENTER,
-          (response: JoinDispatchCenterResponse) => {
+          (response?: JoinDispatchCenterResponse) => {
+            if (!response) {
+              console.warn('[Socket] Join dispatch ack missing');
+              return;
+            }
+
             if (response.status === 'joined') {
               console.log(
                 `[Socket] Joined dispatch center room: ${response.room}`

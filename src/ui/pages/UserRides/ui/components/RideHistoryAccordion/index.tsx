@@ -30,6 +30,8 @@ import {
   useAccountStore,
   useGetRideDetail,
   usePaymentsApi,
+  useLiveTrackStore,
+  getRideDetail,
 } from '@/common';
 import { AppButton, RowStack } from '@/ui/modules/components';
 
@@ -139,9 +141,11 @@ export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
   const [expandedId, setExpandedId] = useState<string | false>(false);
   const [pendingPayment, setPendingPayment] =
     useState<PendingRidePayment | null>(null);
+  const [isTracking, setIsTracking] = useState(false);
   const router = useRouter();
   const { accountType } = useAccountStore();
   const { createPaymentIntent, isCreatingPaymentIntent } = usePaymentsApi();
+  const { setLiveTrackContext } = useLiveTrackStore();
 
   // Fetch ride detail when we have a pending payment
   const { data: rideResponse, isLoading: isLoadingRide } = useGetRideDetail(
@@ -454,11 +458,30 @@ export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
                         <AppButton
                           variant="contained"
                           size="small"
-                          onClick={(e) => {
+                          disabled={isTracking}
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            router.push(
-                              `/live-track?ride_id=${ride.fullRideId}`
-                            );
+                            try {
+                              setIsTracking(true);
+                              const res = await getRideDetail(ride.fullRideId);
+                              const body = res.data;
+                              const driverId =
+                                'data' in body && body.data
+                                  ? body.data.driver_id
+                                  : null;
+                              setLiveTrackContext({
+                                rideId: ride.fullRideId,
+                                driverId,
+                              });
+                            } catch {
+                              setLiveTrackContext({
+                                rideId: ride.fullRideId,
+                                driverId: null,
+                              });
+                            } finally {
+                              setIsTracking(false);
+                              router.push(`/live-track?ride_id=${ride.fullRideId}`);
+                            }
                           }}
                           sx={{
                             height: pxToRem(32),
