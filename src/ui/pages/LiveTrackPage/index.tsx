@@ -1,57 +1,154 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Box, CircularProgress, Paper, Typography } from '@mui/material';
+import { io, Socket } from 'socket.io-client';
 import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
 import { AppGoogleMapsProvider, AppGoogleMap } from '../../modules/components';
 import type { TruckMarker } from '../../modules/components/AppGoogleMap';
-import { pxToRem, useLiveTrackStore, useRideTracking } from '@/common';
+import { pxToRem, getAuthToken } from '@/common';
 import type { MarkerPosition } from '@/common/types';
 import { DriverChatDrawer, DriverTrackingCard } from './ui/components';
+
+type RideLocationUpdate = {
+  ride_id: string;
+  driver_id: string;
+  latitude: number;
+  longitude: number;
+  heading: number;
+  speed: number;
+  eta_minutes: number;
+  distance_remaining_miles: number;
+  timestamp: string;
+};
+
+type TrackingStartedEvent = {
+  ride_id: string;
+  driver_id: string;
+  rider_id: string;
+  pickup_latitude: number;
+  pickup_longitude: number;
+  destination_latitude: number;
+  destination_longitude: number;
+  started_at: string;
+};
 
 export function LiveTrackPage() {
   const searchParams = useSearchParams();
   const rideId = searchParams.get('ride_id');
-  const { driverId: storedDriverId, rideId: storedRideId } =
-    useLiveTrackStore();
 
-  const effectiveDriverId =
-    storedRideId && rideId && storedRideId === rideId ? storedDriverId : null;
+  const [isConnected, setIsConnected] = useState(false);
+  const [driverLocation, setDriverLocation] =
+    useState<RideLocationUpdate | null>(null);
+  const [trackingStarted, setTrackingStarted] =
+    useState<TrackingStartedEvent | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const { isConnected, driverLocation, trackingStarted, error } =
-    useRideTracking(
-      effectiveDriverId ? { driverId: effectiveDriverId, rideId } : { rideId }
-    );
+  const socketRef = useRef<Socket | null>(null);
+  const hasJoinedRef = useRef(false);
 
+  // Socket.IO connection - runs once on mount
   useEffect(() => {
-    if (!rideId) return;
-    // eslint-disable-next-line no-console
-    console.log('[LiveTrackPage] socket status:', {
-      rideId,
-      isConnected,
-      hasDriverLocation: Boolean(driverLocation),
-      hasTrackingStarted: Boolean(trackingStarted),
-      error,
+    if (!rideId) {
+      setError('No ride ID provided');
+      return;
+    }
+
+    console.log('[LiveTrack] Connecting to Socket.IO for ride:', rideId);
+
+    const token = getAuthToken();
+    const serverUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://staging.getmedigo.com';
+    const socketPath = process.env.NEXT_PUBLIC_SOCKET_PATH || '/api/v1/ws/socket.io';
+
+    const socket = io(`${serverUrl}/tracking`, {
+      path: socketPath,
+      auth: { token },
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 10,
+      timeout: 10000,
     });
-  }, [rideId, isConnected, driverLocation, trackingStarted, error]);
 
-  useEffect(() => {
-    if (!rideId || !driverLocation) return;
-    // eslint-disable-next-line no-console
-    console.log('[LiveTrackPage] location_update:', driverLocation);
-  }, [rideId, driverLocation]);
+    socketRef.current = socket;
 
-  useEffect(() => {
-    if (!rideId || !trackingStarted) return;
-    // eslint-disable-next-line no-console
-    console.log('[LiveTrackPage] tracking_started:', trackingStarted);
-  }, [rideId, trackingStarted]);
+    // Connection handlers
+    socket.on('connect', () => {
+      console.log('[LiveTrack] Connected, socket ID:', socket.id);
+      setIsConnected(true);
+      setError(null);
+
+      // Join ride room only once
+      if (!hasJoinedRef.current) {
+        console.log('[LiveTrack] Joining ride room:', rideId);
+        socket.emit('join_ride', { ride_id: rideId }, (response: any) => {
+          if (response?.error) {
+            console.error('[LiveTrack] Join error:', response.error);
+            setError(response.error);
+          } else {
+            console.log('[LiveTrack] Joined room:', response?.room || 'OK');
+            hasJoinedRef.current = true;
+          }
+        });
+      }
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('[LiveTrack] Disconnected:', reason);
+      setIsConnected(false);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('[LiveTrack] Connection error:', err.message);
+      setError(`Connection error: ${err.message}`);
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log('[LiveTrack] Reconnected after', attemptNumber, 'attempts');
+      // Re-join room after reconnect
+      socket.emit('join_ride', { ride_id: rideId });
+    });
+
+    // Tracking event handlers
+    socket.on('location_update', (data: RideLocationUpdate) => {
+      console.log('[LiveTrack] 🚗 Location update received:', data);
+      setDriverLocation(data);
+    });
+
+    socket.on('tracking_started', (data: TrackingStartedEvent) => {
+      console.log('[LiveTrack] 🟢 Tracking started:', data);
+      setTrackingStarted(data);
+    });
+
+    socket.on('tracking_ended', (data: any) => {
+      console.log('[LiveTrack] 🔴 Tracking ended:', data);
+      setDriverLocation(null);
+      setTrackingStarted(null);
+    });
+
+    // Debug: log ALL events
+    socket.onAny((eventName, ...args) => {
+      console.log('[LiveTrack] 📡 Event received:', eventName, args);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      console.log('[LiveTrack] Component unmounting, cleaning up socket');
+      if (hasJoinedRef.current) {
+        socket.emit('leave_ride', { ride_id: rideId });
+      }
+      socket.disconnect();
+      hasJoinedRef.current = false;
+      socketRef.current = null;
+    };
+  }, [rideId]); // Only re-run if rideId changes
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-
   const [chatOpen, setChatOpen] = useState(false);
+
   const driverId = trackingStarted?.driver_id ?? driverLocation?.driver_id ?? '';
   const riderId = trackingStarted?.rider_id ?? '';
 
@@ -129,6 +226,15 @@ export function LiveTrackPage() {
           heading: driverLocation.heading ?? 0,
         }
       : undefined;
+
+  // Debug: log truck marker data
+  useEffect(() => {
+    console.log('[LiveTrack] 🚚 Truck marker data:', {
+      hasCoordinates,
+      driverLocation,
+      truckMarker,
+    });
+  }, [hasCoordinates, driverLocation, truckMarker]);
 
   // Display data from socket only
   const displayData = driverLocation

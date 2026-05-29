@@ -1,18 +1,25 @@
 #!/usr/bin/env node
 /**
- * Driver location simulator for the Socket.IO tracking service.
+ * MediGo Driver Location Simulator (TEST UTILITY ONLY)
  *
- * This emits `update_location` events (driver-side) so the rider web app can
- * receive `location_update` after joining the ride room.
+ * This script simulates a driver sending location updates via Socket.IO.
+ * It is used for TESTING the rider tracking feature in the booking app.
+ *
+ * The rider app (this project) ONLY LISTENS to location updates via the
+ * `location_update` event after joining a ride room. It does NOT send
+ * location updates - that is done by the driver mobile app.
+ *
+ * How it works:
+ * 1. Driver (this script) connects as driver role and emits `update_location`
+ * 2. Server broadcasts `location_update` to the ride room
+ * 3. Rider app receives `location_update` and displays driver on map
  *
  * Usage:
- *   DRIVER_TOKEN=... RIDE_ID=... node scripts/simulate-driver-location.mjs
+ *   node scripts/simulate-driver-location.mjs
  *
- * Optional:
- *   DRIVER_ID=driver-uuid
- *   INTERVAL_MS=5000
- *   ROUTE_FILE=./scripts/sample-route.json
- *   LOOP=1
+ * Configuration:
+ *   - Update RIDE_ID and TOKEN constants below
+ *   - Ensure the rider app is open on /live-track?ride_id=<RIDE_ID>
  */
 
 import fs from 'node:fs';
@@ -25,7 +32,7 @@ const SERVER_URL = process.env.SOCKET_URL || 'https://staging.getmedigo.com/trac
 const SOCKET_PATH = process.env.SOCKET_PATH || '/api/v1/ws/socket.io';
 
 const rideId = "17626a2b-56f9-4b12-bc7e-02dff370712b";
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNDY1NjcyZS1kNmRjLTRiOWQtYTFhYy1iMWY1YjM2YzhiZDciLCJyb2xlIjoiZHJpdmVyIiwiYnVzaW5lc3NfaWQiOiIyMGNmNzJmZC1kYjU4LTQ4NTUtYjM1ZC01YWMzYjFiODU1NmQiLCJlbWFpbCI6ImdhZmFyYWRldHVuamk0NzErZHJpdmVyQGdtYWlsLmNvbSIsImp0aSI6IjgxM2VjNWQ1LTNkOTItNGZjMi1hODZjLTJmODNhM2NjMWZiZSIsImlhdCI6MTc3OTczMDM3MSwiZXhwIjoxNzc5NzQ4MzcxLCJ0eXBlIjoiYWNjZXNzIn0.10n9mLqvrs7SDw5AIC_QrcVXO-xpBni619pJHQhzjF0";
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNDY1NjcyZS1kNmRjLTRiOWQtYTFhYy1iMWY1YjM2YzhiZDciLCJyb2xlIjoiZHJpdmVyIiwiYnVzaW5lc3NfaWQiOiIyMGNmNzJmZC1kYjU4LTQ4NTUtYjM1ZC01YWMzYjFiODU1NmQiLCJlbWFpbCI6ImdhZmFyYWRldHVuamk0NzErZHJpdmVyQGdtYWlsLmNvbSIsImp0aSI6ImQ3YTc2MmYxLTAzNmUtNGM0MS1hZGI3LTc4MzNiODNkYWQyNCIsImlhdCI6MTc4MDA2OTY5MCwiZXhwIjoxNzgwMDg3NjkwLCJ0eXBlIjoiYWNjZXNzIn0.gP-n4r_df4jtOd-qfhHCBNiFp2otk4l8j4ox2W0Iy68";
 const driverId = "a465672e-d6dc-4b9d-a1ac-b1f5b36c8bd7";
 const intervalMs = Number(process.env.INTERVAL_MS || 5000);
 const loop = process.env.LOOP === '1';

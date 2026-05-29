@@ -15,12 +15,20 @@ let socket: Socket | null = null;
  */
 export const getTrackingSocket = (): Socket => {
   if (socket && socket.connected) {
+    console.log('[SocketClient] Reusing existing connected socket:', socket.id);
     return socket;
   }
 
   const token = getAuthToken();
+  const fullUrl = `${SOCKET_URL}${TRACKING_NAMESPACE}`;
 
-  socket = io(`${SOCKET_URL}${TRACKING_NAMESPACE}`, {
+  console.log('[SocketClient] Creating new socket connection:', {
+    url: fullUrl,
+    path: SOCKET_PATH,
+    hasToken: Boolean(token),
+  });
+
+  socket = io(fullUrl, {
     path: SOCKET_PATH,
     auth: {
       token: token,
@@ -28,7 +36,8 @@ export const getTrackingSocket = (): Socket => {
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
-    reconnectionAttempts: 5,
+    reconnectionAttempts: 10,
+    timeout: 10000,
     transports: ['websocket', 'polling'], // Prefer WebSocket, fallback to polling
   });
 

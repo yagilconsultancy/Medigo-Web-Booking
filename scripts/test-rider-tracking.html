@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediGo - Rider Tracking Test</title>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      margin-bottom: 10px;
+      color: #1a1a1a;
+    }
+
+    .header p {
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .config {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .config label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .config input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: monospace;
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .status-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+
+    .status-indicator.connected {
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    }
+
+    .status-indicator.joined {
+      background: #3b82f6;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+    }
+
+    .status-text {
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: #2563eb;
+    }
+
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .btn.danger {
+      background: #ef4444;
+    }
+
+    .btn.danger:hover {
+      background: #dc2626;
+    }
+
+    .split-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .panel h2 {
+      margin-bottom: 15px;
+      color: #1a1a1a;
+      font-size: 18px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 10px;
+    }
+
+    .log-container {
+      height: 500px;
+      overflow-y: auto;
+      background: #1a1a1a;
+      border-radius: 4px;
+      padding: 15px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .log-entry {
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .log-timestamp {
+      color: #666;
+      margin-right: 8px;
+    }
+
+    .log-type {
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    .log-type.connect { color: #22c55e; }
+    .log-type.disconnect { color: #ef4444; }
+    .log-type.join { color: #3b82f6; }
+    .log-type.location { color: #f59e0b; }
+    .log-type.tracking { color: #a855f7; }
+    .log-type.error { color: #ef4444; }
+    .log-type.info { color: #06b6d4; }
+
+    .log-message {
+      color: #d1d5db;
+    }
+
+    .location-data {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .location-data h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .data-row:last-child {
+      border-bottom: none;
+    }
+
+    .data-label {
+      font-weight: 600;
+      color: #666;
+    }
+
+    .data-value {
+      font-family: monospace;
+      color: #1a1a1a;
+    }
+
+    @media (max-width: 768px) {
+      .split-view {
+        grid-template-columns: 1fr;
+      }
+
+      .config-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚗 MediGo Rider Tracking Test</h1>
+      <p>Test Socket.IO connection and real-time driver location updates</p>
+
+      <div class="config-grid">
+        <div class="config">
+          <label>Ride ID</label>
+          <input type="text" id="rideId" value="17626a2b-56f9-4b12-bc7e-02dff370712b">
+        </div>
+        <div class="config">
+          <label>Auth Token (ff_sid cookie value)</label>
+          <input type="text" id="authToken" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+        </div>
+      </div>
+
+      <div class="config">
+        <label>Server URL</label>
+        <input type="text" id="serverUrl" value="https://staging.getmedigo.com">
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button class="btn" id="connectBtn">Connect & Join Ride</button>
+        <button class="btn danger" id="disconnectBtn" disabled>Disconnect</button>
+        <button class="btn" id="clearLogsBtn">Clear Logs</button>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-indicator" id="connectedIndicator"></div>
+      <span class="status-text" id="statusText">Not connected</span>
+      <div style="margin-left: auto; display: flex; gap: 15px;">
+        <span id="socketId" style="color: #666; font-size: 14px;">—</span>
+      </div>
+    </div>
+
+    <div class="split-view">
+      <div class="panel">
+        <h2>📍 Live Location Data</h2>
+
+        <div class="location-data" id="locationData" style="display: none;">
+          <h3>Driver Location</h3>
+          <div class="data-row">
+            <span class="data-label">Latitude</span>
+            <span class="data-value" id="latitude">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Longitude</span>
+            <span class="data-value" id="longitude">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Heading</span>
+            <span class="data-value" id="heading">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Speed</span>
+            <span class="data-value" id="speed">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">ETA (minutes)</span>
+            <span class="data-value" id="eta">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Distance Remaining</span>
+            <span class="data-value" id="distance">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Last Update</span>
+            <span class="data-value" id="timestamp">—</span>
+          </div>
+        </div>
+
+        <div class="location-data" id="trackingData" style="display: none;">
+          <h3>Tracking Session</h3>
+          <div class="data-row">
+            <span class="data-label">Driver ID</span>
+            <span class="data-value" id="driverId">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Rider ID</span>
+            <span class="data-value" id="riderId">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Pickup Location</span>
+            <span class="data-value" id="pickup">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Destination</span>
+            <span class="data-value" id="destination">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Started At</span>
+            <span class="data-value" id="startedAt">—</span>
+          </div>
+        </div>
+
+        <div style="color: #666; text-align: center; padding: 40px 20px;" id="noDataMessage">
+          Waiting for location updates...
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>📋 Event Log</h2>
+        <div class="log-container" id="logContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let socket = null;
+    let updateCount = 0;
+
+    const elements = {
+      rideId: document.getElementById('rideId'),
+      authToken: document.getElementById('authToken'),
+      serverUrl: document.getElementById('serverUrl'),
+      connectBtn: document.getElementById('connectBtn'),
+      disconnectBtn: document.getElementById('disconnectBtn'),
+      clearLogsBtn: document.getElementById('clearLogsBtn'),
+      connectedIndicator: document.getElementById('connectedIndicator'),
+      statusText: document.getElementById('statusText'),
+      socketId: document.getElementById('socketId'),
+      logContainer: document.getElementById('logContainer'),
+      locationData: document.getElementById('locationData'),
+      trackingData: document.getElementById('trackingData'),
+      noDataMessage: document.getElementById('noDataMessage'),
+    };
+
+    function log(type, message, data = null) {
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+
+      let logHtml = `<span class="log-timestamp">[${timestamp}]</span><span class="log-type ${type}">[${type.toUpperCase()}]</span><span class="log-message">${message}</span>`;
+
+      if (data) {
+        logHtml += `<pre style="color: #9ca3af; margin-top: 4px; margin-left: 80px;">${JSON.stringify(data, null, 2)}</pre>`;
+      }
+
+      entry.innerHTML = logHtml;
+      elements.logContainer.appendChild(entry);
+      elements.logContainer.scrollTop = elements.logContainer.scrollHeight;
+    }
+
+    function updateStatus(text, connected = false, joined = false) {
+      elements.statusText.textContent = text;
+
+      if (connected) {
+        elements.connectedIndicator.classList.add('connected');
+      } else {
+        elements.connectedIndicator.classList.remove('connected');
+      }
+
+      if (joined) {
+        elements.connectedIndicator.classList.add('joined');
+      } else {
+        elements.connectedIndicator.classList.remove('joined');
+      }
+    }
+
+    function updateLocationUI(data) {
+      updateCount++;
+      elements.noDataMessage.style.display = 'none';
+      elements.locationData.style.display = 'block';
+
+      document.getElementById('latitude').textContent = data.latitude?.toFixed(6) || '—';
+      document.getElementById('longitude').textContent = data.longitude?.toFixed(6) || '—';
+      document.getElementById('heading').textContent = data.heading ? `${data.heading}°` : '—';
+      document.getElementById('speed').textContent = data.speed ? `${data.speed} km/h` : '—';
+      document.getElementById('eta').textContent = data.eta_minutes ? `${Math.round(data.eta_minutes)} min` : '—';
+      document.getElementById('distance').textContent = data.distance_remaining_miles ? `${data.distance_remaining_miles.toFixed(2)} miles` : '—';
+      document.getElementById('timestamp').textContent = data.timestamp || new Date().toISOString();
+    }
+
+    function updateTrackingUI(data) {
+      elements.trackingData.style.display = 'block';
+
+      document.getElementById('driverId').textContent = data.driver_id || '—';
+      document.getElementById('riderId').textContent = data.rider_id || '—';
+      document.getElementById('pickup').textContent = data.pickup_latitude && data.pickup_longitude
+        ? `${data.pickup_latitude.toFixed(6)}, ${data.pickup_longitude.toFixed(6)}`
+        : '—';
+      document.getElementById('destination').textContent = data.destination_latitude && data.destination_longitude
+        ? `${data.destination_latitude.toFixed(6)}, ${data.destination_longitude.toFixed(6)}`
+        : '—';
+      document.getElementById('startedAt').textContent = data.started_at || '—';
+    }
+
+    function connect() {
+      const rideId = elements.rideId.value.trim();
+      const token = elements.authToken.value.trim();
+      const serverUrl = elements.serverUrl.value.trim();
+
+      if (!rideId) {
+        alert('Please enter a Ride ID');
+        return;
+      }
+
+      if (!token) {
+        alert('Please enter an Auth Token');
+        return;
+      }
+
+      log('info', `Connecting to ${serverUrl}/tracking...`);
+      updateStatus('Connecting...', false, false);
+
+      socket = io(`${serverUrl}/tracking`, {
+        path: '/api/v1/ws/socket.io',
+        auth: { token },
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 10,
+        timeout: 10000,
+      });
+
+      // Connection events
+      socket.on('connect', () => {
+        log('connect', `Connected! Socket ID: ${socket.id}`);
+        elements.socketId.textContent = `Socket: ${socket.id}`;
+        updateStatus('Connected - Joining ride...', true, false);
+        elements.connectBtn.disabled = true;
+        elements.disconnectBtn.disabled = false;
+
+        // Join ride room
+        log('join', `Emitting join_ride for: ${rideId}`);
+        socket.emit('join_ride', { ride_id: rideId }, (response) => {
+          if (response?.error) {
+            log('error', 'Failed to join ride', response);
+            updateStatus('Connected - Join failed', true, false);
+          } else {
+            log('join', 'Successfully joined ride room', response);
+            updateStatus(`Connected & Joined (${updateCount} updates)`, true, true);
+          }
+        });
+      });
+
+      socket.on('disconnect', (reason) => {
+        log('disconnect', `Disconnected: ${reason}`);
+        updateStatus('Disconnected', false, false);
+        elements.socketId.textContent = '—';
+        elements.connectBtn.disabled = false;
+        elements.disconnectBtn.disabled = true;
+      });
+
+      socket.on('connect_error', (error) => {
+        log('error', 'Connection error', { message: error.message });
+        updateStatus('Connection failed', false, false);
+      });
+
+      socket.on('reconnect', (attemptNumber) => {
+        log('connect', `Reconnected after ${attemptNumber} attempts`);
+        updateStatus('Reconnected - Rejoining...', true, false);
+
+        socket.emit('join_ride', { ride_id: rideId }, (response) => {
+          if (response?.error) {
+            log('error', 'Failed to rejoin ride', response);
+          } else {
+            log('join', 'Rejoined ride room', response);
+            updateStatus(`Connected & Joined (${updateCount} updates)`, true, true);
+          }
+        });
+      });
+
+      // Tracking events
+      socket.on('location_update', (data) => {
+        log('location', `Location update #${updateCount + 1}`, data);
+        updateLocationUI(data);
+        updateStatus(`Connected & Joined (${updateCount} updates)`, true, true);
+      });
+
+      socket.on('tracking_started', (data) => {
+        log('tracking', 'Tracking session started', data);
+        updateTrackingUI(data);
+      });
+
+      socket.on('tracking_ended', (data) => {
+        log('tracking', 'Tracking session ended', data);
+      });
+
+      // Debug: log all events
+      socket.onAny((eventName, ...args) => {
+        if (!['connect', 'disconnect', 'location_update', 'tracking_started', 'tracking_ended'].includes(eventName)) {
+          log('info', `Event: ${eventName}`, args);
+        }
+      });
+    }
+
+    function disconnect() {
+      if (socket) {
+        const rideId = elements.rideId.value.trim();
+        log('info', `Leaving ride: ${rideId}`);
+        socket.emit('leave_ride', { ride_id: rideId });
+        socket.disconnect();
+        socket = null;
+        updateStatus('Disconnected', false, false);
+        elements.connectBtn.disabled = false;
+        elements.disconnectBtn.disabled = true;
+        elements.socketId.textContent = '—';
+      }
+    }
+
+    function clearLogs() {
+      elements.logContainer.innerHTML = '';
+      updateCount = 0;
+    }
+
+    elements.connectBtn.addEventListener('click', connect);
+    elements.disconnectBtn.addEventListener('click', disconnect);
+    elements.clearLogsBtn.addEventListener('click', clearLogs);
+
+    // Initial log
+    log('info', 'Rider tracking test page loaded');
+    log('info', 'Enter your ride ID and auth token, then click "Connect & Join Ride"');
+  </script>
+</body>
+</html>
