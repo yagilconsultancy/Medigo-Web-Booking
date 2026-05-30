@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Box, CircularProgress, Paper, Typography } from '@mui/material';
 import { io, Socket } from 'socket.io-client';
@@ -8,7 +8,7 @@ import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
 import { AppGoogleMapsProvider, AppGoogleMap } from '../../modules/components';
 import type { TruckMarker } from '../../modules/components/AppGoogleMap';
-import { pxToRem, getAuthToken } from '@/common';
+import { pxToRem, getAuthToken, useGetRideDetail } from '@/common';
 import type { MarkerPosition } from '@/common/types';
 import { DriverChatDrawer, DriverTrackingCard } from './ui/components';
 
@@ -148,22 +148,36 @@ export function LiveTrackPage() {
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
   const [chatOpen, setChatOpen] = useState(false);
+  const { data: rideResponse } = useGetRideDetail(rideId ?? undefined);
+  const rideDetail = rideResponse?.success ? rideResponse.data : null;
 
   const driverId = trackingStarted?.driver_id ?? driverLocation?.driver_id ?? '';
   const riderId = trackingStarted?.rider_id ?? '';
 
-  const destinationMarker: MarkerPosition | null = trackingStarted
-    ? {
-        lat: trackingStarted.destination_latitude,
-        lng: trackingStarted.destination_longitude,
-      }
-    : null;
+  const destinationMarker = useMemo<MarkerPosition | null>(
+    () =>
+      trackingStarted
+        ? {
+            lat: trackingStarted.destination_latitude,
+            lng: trackingStarted.destination_longitude,
+          }
+        : rideDetail?.destination_latitude != null &&
+            rideDetail?.destination_longitude != null
+          ? {
+              lat: rideDetail.destination_latitude,
+              lng: rideDetail.destination_longitude,
+            }
+        : null,
+    [rideDetail?.destination_latitude, rideDetail?.destination_longitude, trackingStarted]
+  );
 
   const destinationLabel =
-    destinationMarker != null
-      ? `Destination (${destinationMarker.lat.toFixed(
-          5
-        )}, ${destinationMarker.lng.toFixed(5)})`
+    trackingStarted == null && rideDetail?.destination_address
+      ? rideDetail.destination_address
+      : destinationMarker != null
+        ? `Destination (${destinationMarker.lat.toFixed(
+            5
+          )}, ${destinationMarker.lng.toFixed(5)})`
       : 'Destination pending';
 
   // Use socket data for live position.
@@ -177,64 +191,109 @@ export function LiveTrackPage() {
       waypoints?: MarkerPosition[];
     }): Promise<{ polyline: MarkerPosition[] } | null> => {
       try {
-        const routesLib = (await google.maps.importLibrary('routes')) as any;
-        const Route = routesLib.Route;
-
-        const request: Record<string, any> = {
+        const routesLibrary = (await google.maps.importLibrary('routes')) as any;
+        const coordinateResponse = await routesLibrary.Route.computeRoutes({
           origin: input.origin,
           destination: input.destination,
-          travelMode: 'DRIVE',
+          intermediates: input.waypoints?.map((point) => ({
+            location: point,
+          })),
+          travelMode: 'DRIVING',
           fields: ['path'],
-        };
+          polylineQuality: routesLibrary.PolylineQuality?.OVERVIEW,
+        });
 
-        if (input.waypoints?.length) {
-          request.intermediates = input.waypoints;
+        let path = coordinateResponse?.routes?.[0]?.path;
+
+        if (
+          !path?.length &&
+          rideDetail?.pickup_address &&
+          rideDetail?.destination_address
+        ) {
+          const addressResponse = await routesLibrary.Route.computeRoutes({
+            origin: rideDetail.pickup_address,
+            destination: rideDetail.destination_address,
+            travelMode: 'DRIVING',
+            fields: ['path'],
+            polylineQuality: routesLibrary.PolylineQuality?.OVERVIEW,
+          });
+
+          path = addressResponse?.routes?.[0]?.path;
+
+          if (!path?.length) {
+            console.warn('[LiveTrack] Route API returned no path', {
+              coordinateResponse,
+              addressResponse,
+            });
+            return null;
+          }
         }
 
-        const { routes } = await Route.computeRoutes(request);
+        if (!path?.length) {
+          console.warn('[LiveTrack] Route API returned no path', coordinateResponse);
+          return null;
+        }
 
-        const route = routes?.[0];
-        if (!route?.path?.length) return null;
-
-        const polyline: MarkerPosition[] = route.path.map((point: any) => ({
+        const polyline: MarkerPosition[] = path.map((point: any) => ({
           lat: typeof point.lat === 'function' ? point.lat() : point.lat,
           lng: typeof point.lng === 'function' ? point.lng() : point.lng,
         }));
 
         return { polyline };
-      } catch {
+      } catch (routeError) {
+        console.error('[LiveTrack] Failed to compute route', routeError);
         return null;
       }
     },
-    []
+    [rideDetail?.destination_address, rideDetail?.pickup_address]
   );
 
-  const pickupMarker: MarkerPosition | null = trackingStarted
-    ? {
-        lat: trackingStarted.pickup_latitude,
-        lng: trackingStarted.pickup_longitude,
-      }
-    : null;
+  const pickupMarker = useMemo<MarkerPosition | null>(
+    () =>
+      trackingStarted
+        ? {
+            lat: trackingStarted.pickup_latitude,
+            lng: trackingStarted.pickup_longitude,
+          }
+        : rideDetail?.pickup_latitude != null && rideDetail?.pickup_longitude != null
+          ? {
+              lat: rideDetail.pickup_latitude,
+              lng: rideDetail.pickup_longitude,
+            }
+        : null,
+    [rideDetail?.pickup_latitude, rideDetail?.pickup_longitude, trackingStarted]
+  );
 
-  const truckMarker: TruckMarker | undefined =
-    hasCoordinates && driverLocation
-      ? {
-          position: {
-            lat: driverLocation.latitude,
-            lng: driverLocation.longitude,
-          },
-          heading: driverLocation.heading ?? 0,
-        }
-      : undefined;
+  const routeMarkers = useMemo<MarkerPosition[]>(() => {
+    if (pickupMarker && destinationMarker) return [pickupMarker, destinationMarker];
+    if (pickupMarker) return [pickupMarker];
+    if (destinationMarker) return [destinationMarker];
+    return [];
+  }, [destinationMarker, pickupMarker]);
+
+  const truckMarker = useMemo<TruckMarker | undefined>(
+    () =>
+      hasCoordinates && driverLocation
+        ? {
+            position: {
+              lat: driverLocation.latitude,
+              lng: driverLocation.longitude,
+            },
+            heading: driverLocation.heading ?? 0,
+          }
+        : undefined,
+    [driverLocation, hasCoordinates]
+  );
 
   // Debug: log truck marker data
   useEffect(() => {
+    if (!driverLocation) return;
     console.log('[LiveTrack] 🚚 Truck marker data:', {
       hasCoordinates,
       driverLocation,
       truckMarker,
     });
-  }, [hasCoordinates, driverLocation, truckMarker]);
+  }, [driverLocation]);
 
   // Display data from socket only
   const displayData = driverLocation
@@ -299,21 +358,14 @@ export function LiveTrackPage() {
         {apiKey && hasCoordinates ? (
           <AppGoogleMapsProvider apiKey={apiKey}>
             <AppGoogleMap
-              markerPositions={
-                destinationMarker && pickupMarker
-                  ? [pickupMarker, destinationMarker]
-                  : destinationMarker
-                    ? [destinationMarker]
-                    : pickupMarker
-                      ? [pickupMarker]
-                      : []
-              }
+              markerPositions={routeMarkers}
+              routeOrigin={pickupMarker ?? undefined}
               truckMarker={truckMarker}
               mapContainerStyle={{
                 width: '100%',
                 height: 'calc(100vh - 64px)',
               }}
-              showDirections={Boolean(destinationMarker)}
+              showDirections={Boolean(pickupMarker && destinationMarker)}
               computeRoute={computeRoute}
             />
           </AppGoogleMapsProvider>
@@ -364,7 +416,15 @@ export function LiveTrackPage() {
               etaMinutes={displayData.eta_minutes}
               destinationLabel={destinationLabel}
               metaLabel={`${displayData.current_speed.toFixed(0)} km/h · ${displayData.distance_remaining_miles.toFixed(1)} km remaining`}
-              onMessageDriver={() => setChatOpen(true)}
+              onMessageDriver={() => setChatOpen((prev) => !prev)}
+            />
+
+            <DriverChatDrawer
+              open={chatOpen}
+              onClose={() => setChatOpen(false)}
+              driverName={driverId || 'Driver'}
+              driverOnlineLabel={isConnected ? 'Online' : 'Offline'}
+              initialMessages={[]}
             />
           </Box>
         )}
@@ -411,15 +471,6 @@ export function LiveTrackPage() {
             </Typography>
           </Paper>
         )}
-
-        {/* Chat */}
-        <DriverChatDrawer
-          open={chatOpen}
-          onClose={() => setChatOpen(false)}
-          driverName={driverId || 'Driver'}
-          driverOnlineLabel={isConnected ? 'Online' : 'Offline'}
-          initialMessages={[]}
-        />
       </Box>
     </AppLayout>
   );

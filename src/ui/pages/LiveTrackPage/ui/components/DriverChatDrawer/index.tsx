@@ -2,9 +2,10 @@ import { useMemo, useRef, useState } from 'react';
 import {
   Avatar,
   Box,
+  Collapse,
   Divider,
-  Drawer,
   IconButton,
+  Paper,
   Stack,
   TextField,
   Typography,
@@ -76,18 +77,18 @@ export function DriverChatDrawer({
   };
 
   return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      PaperProps={{
-        sx: {
-          width: { xs: '100%', sm: pxToRem(420) },
-          maxWidth: '100vw',
+    <Collapse in={open} timeout={240} unmountOnExit>
+      <Paper
+        elevation={0}
+        sx={{
+          mt: pxToRem(12),
+          borderRadius: pxToRem(18),
+          border: '1px solid #E2E8F0',
+          overflow: 'hidden',
           bgcolor: '#F8FAFC',
-        },
-      }}
-    >
+          boxShadow: '0px 16px 40px rgba(15, 23, 42, 0.12)',
+        }}
+      >
       {/* Header */}
       <Box sx={{ bgcolor: '#FFFFFF' }}>
         <Box
@@ -155,10 +156,9 @@ export function DriverChatDrawer({
       {/* Messages */}
       <Box
         sx={{
-          flex: 1,
           overflowY: 'auto',
           p: pxToRem(16),
-          pb: pxToRem(120),
+          height: { xs: pxToRem(280), sm: pxToRem(320) },
         }}
       >
         <Typography
@@ -250,10 +250,6 @@ export function DriverChatDrawer({
       {/* Composer */}
       <Box
         sx={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
           bgcolor: '#F8FAFC',
           p: pxToRem(16),
           borderTop: '1px solid #E2E8F0',
@@ -310,6 +306,7 @@ export function DriverChatDrawer({
           </IconButton>
         </Box>
       </Box>
-    </Drawer>
+      </Paper>
+    </Collapse>
   );
 }

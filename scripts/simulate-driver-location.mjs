@@ -32,7 +32,7 @@ const SERVER_URL = process.env.SOCKET_URL || 'https://staging.getmedigo.com/trac
 const SOCKET_PATH = process.env.SOCKET_PATH || '/api/v1/ws/socket.io';
 
 const rideId = "17626a2b-56f9-4b12-bc7e-02dff370712b";
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNDY1NjcyZS1kNmRjLTRiOWQtYTFhYy1iMWY1YjM2YzhiZDciLCJyb2xlIjoiZHJpdmVyIiwiYnVzaW5lc3NfaWQiOiIyMGNmNzJmZC1kYjU4LTQ4NTUtYjM1ZC01YWMzYjFiODU1NmQiLCJlbWFpbCI6ImdhZmFyYWRldHVuamk0NzErZHJpdmVyQGdtYWlsLmNvbSIsImp0aSI6ImQ3YTc2MmYxLTAzNmUtNGM0MS1hZGI3LTc4MzNiODNkYWQyNCIsImlhdCI6MTc4MDA2OTY5MCwiZXhwIjoxNzgwMDg3NjkwLCJ0eXBlIjoiYWNjZXNzIn0.gP-n4r_df4jtOd-qfhHCBNiFp2otk4l8j4ox2W0Iy68";
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNDY1NjcyZS1kNmRjLTRiOWQtYTFhYy1iMWY1YjM2YzhiZDciLCJyb2xlIjoiZHJpdmVyIiwiYnVzaW5lc3NfaWQiOiIyMGNmNzJmZC1kYjU4LTQ4NTUtYjM1ZC01YWMzYjFiODU1NmQiLCJlbWFpbCI6ImdhZmFyYWRldHVuamk0NzErZHJpdmVyQGdtYWlsLmNvbSIsImp0aSI6IjgyODA2ZGI4LWNkM2MtNGYzZi05ZDBiLTYwYjA1MDI0MGRiYSIsImlhdCI6MTc4MDE3NTc4OCwiZXhwIjoxNzgwMTkzNzg4LCJ0eXBlIjoiYWNjZXNzIn0.BkxJnUBcAriAwCbDOMRPBmgmuHTLYEx1f-bm82n5tjc";
 const driverId = "a465672e-d6dc-4b9d-a1ac-b1f5b36c8bd7";
 const intervalMs = Number(process.env.INTERVAL_MS || 5000);
 const loop = process.env.LOOP === '1';
@@ -175,8 +175,9 @@ socket.on('connect', () => {
       if (loop) {
         index = 0;
       } else {
-        // Keep emitting the last point until duration is reached (helps keep the map active).
-        index = route.length - 1;
+        console.log('[sim] reached final waypoint; stopping.');
+        stop();
+        return;
       }
     }
     emitLocation(route[index]);

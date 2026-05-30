@@ -1,6 +1,12 @@
 import { useJsApiLoader } from '@react-google-maps/api';
 import React from 'react';
 
+const GOOGLE_MAP_LIBRARIES: ('places' | 'maps' | 'routes')[] = [
+  'places',
+  'maps',
+  'routes',
+];
+
 export function AppGoogleMapsProvider({
   apiKey,
   children,
@@ -10,7 +16,7 @@ export function AppGoogleMapsProvider({
 }) {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: apiKey,
-    libraries: ['places', 'maps', 'routes'], // Added 'routes' for directions
+    libraries: GOOGLE_MAP_LIBRARIES,
     version: 'beta', // Use beta to get access to new Places API
   });
 
