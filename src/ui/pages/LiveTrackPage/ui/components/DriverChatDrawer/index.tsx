@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -15,20 +15,20 @@ import MicNoneIcon from '@mui/icons-material/MicNone';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { pxToRem } from '@/common';
-
-export type ChatMessage = {
-  id: string;
-  from: 'driver' | 'rider';
-  text: string;
-  timeLabel: string;
-};
+import type { ChatMessage } from '@/common/hooks';
 
 export type DriverChatDrawerProps = {
   open: boolean;
   onClose: () => void;
   driverName: string;
   driverOnlineLabel?: string;
-  initialMessages?: ChatMessage[];
+  messages: ChatMessage[];
+  connected?: boolean;
+  currentUserId?: string | null;
+  typingUserId?: string | null;
+  onSendMessage: (content: string) => void;
+  onTypingChange: (isTyping: boolean) => void;
+  onMarkRead: () => void;
 };
 
 export function DriverChatDrawer({
@@ -36,14 +36,16 @@ export function DriverChatDrawer({
   onClose,
   driverName,
   driverOnlineLabel = 'Your driver · Online',
-  initialMessages,
+  messages,
+  connected = false,
+  currentUserId,
+  typingUserId,
+  onSendMessage,
+  onTypingChange,
+  onMarkRead,
 }: DriverChatDrawerProps) {
   const [message, setMessage] = useState('');
   const endRef = useRef<HTMLDivElement | null>(null);
-
-  const [messages, setMessages] = useState<ChatMessage[]>(
-    initialMessages ?? []
-  );
 
   const driverInitials = useMemo(() => {
     const parts = driverName.trim().split(/\s+/).filter(Boolean);
@@ -56,24 +58,24 @@ export function DriverChatDrawer({
     requestAnimationFrame(() => endRef.current?.scrollIntoView());
   };
 
+  useEffect(() => {
+    if (!open) return;
+    scrollToEnd();
+    onMarkRead();
+  }, [messages, onMarkRead, open]);
+
   const handleSend = () => {
     const trimmed = message.trim();
     if (!trimmed) return;
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `rider-${Date.now()}`,
-        from: 'rider',
-        text: trimmed,
-        timeLabel: new Date().toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-      },
-    ]);
+    onSendMessage(trimmed);
     setMessage('');
-    scrollToEnd();
+    onTypingChange(false);
+  };
+
+  const handleMessageChange = (value: string) => {
+    setMessage(value);
+    onTypingChange(Boolean(value.trim()));
   };
 
   return (
@@ -142,7 +144,7 @@ export function DriverChatDrawer({
                 sx={{
                   fontSize: pxToRem(12),
                   fontWeight: 600,
-                  color: '#16A34A',
+                  color: connected ? '#16A34A' : '#64748B',
                 }}
               >
                 {driverOnlineLabel}
@@ -174,10 +176,10 @@ export function DriverChatDrawer({
 
         <Stack spacing={pxToRem(12)}>
           {messages.map((m) => {
-            const isDriver = m.from === 'driver';
+            const isDriver = m.sender_id !== currentUserId;
             return (
               <Box
-                key={m.id}
+                key={m.message_id ?? m.id ?? `${m.sender_id}-${m.created_at}`}
                 sx={{
                   display: 'flex',
                   gap: pxToRem(10),
@@ -226,7 +228,7 @@ export function DriverChatDrawer({
                         lineHeight: pxToRem(20),
                       }}
                     >
-                      {m.text}
+                      {m.content}
                     </Typography>
                   </Box>
                   <Typography
@@ -237,12 +239,25 @@ export function DriverChatDrawer({
                       textAlign: isDriver ? 'left' : 'right',
                     }}
                   >
-                    {m.timeLabel}
+                    {new Date(m.created_at).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </Typography>
                 </Box>
               </Box>
             );
           })}
+          {typingUserId && (
+            <Typography
+              sx={{
+                fontSize: pxToRem(12),
+                color: '#64748B',
+              }}
+            >
+              Driver is typing...
+            </Typography>
+          )}
           <div ref={endRef} />
         </Stack>
       </Box>
@@ -276,7 +291,7 @@ export function DriverChatDrawer({
 
           <TextField
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => handleMessageChange(e.target.value)}
             placeholder="Type a message..."
             fullWidth
             onKeyDown={(e) => {

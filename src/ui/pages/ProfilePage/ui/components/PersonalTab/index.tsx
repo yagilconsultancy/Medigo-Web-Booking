@@ -321,7 +321,7 @@ export function PersonalTab({
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }}>
-              <Centered
+              {/* <Centered
                 sx={{
                   borderRadius: pxToRem(12),
                   border: '1px solid #E2E8F0',
@@ -364,7 +364,7 @@ export function PersonalTab({
                 >
                   Member since January 2024
                 </Button>
-              </Centered>
+              </Centered> */}
 
               <Stack
                 sx={{

@@ -58,6 +58,7 @@ export type RideHistoryItem = {
   dateLabel: string;
   timeLabel: string;
   details?: {
+    driverLabel?: string;
     driver?: string;
     vehicle?: string;
     distance?: string;
@@ -701,7 +702,7 @@ export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
                             letterSpacing: pxToRem(1),
                           }}
                         >
-                          DRIVER
+                          {ride.details?.driverLabel ?? 'DRIVER'}
                         </Typography>
                         <Typography
                           sx={{

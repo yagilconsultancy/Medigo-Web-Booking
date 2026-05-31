@@ -198,7 +198,7 @@ export function UserRidesPage() {
       case 'driver_assigned':
         return 'Driver Assigned';
       case 'driver_en_route':
-        return 'Driver is in the area';
+        return 'Driver is on his way';
       case 'driver_arrived':
         return 'Driver Arrived';
       case 'in_progress':
@@ -228,6 +228,14 @@ export function UserRidesPage() {
 
     return myRides.map((ride: any) => {
       const status = formatRideStatus(ride.status);
+      const passengerName = [
+        ride.passenger_first_name,
+        ride.passenger_last_name,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+
       return {
         id: ride.id.slice(0, 8).toUpperCase(),
         fullRideId: ride.id,
@@ -253,6 +261,7 @@ export function UserRidesPage() {
 
         details: ride.driver_name
           ? {
+              driverLabel: 'DRIVER',
               driver: 'Driver Assigned',
               vehicle:
                 ride.driver_vehicle_make && ride.driver_vehicle_model
@@ -271,7 +280,8 @@ export function UserRidesPage() {
           : ride.status === 'cancelled'
             ? undefined
             : {
-                driver: 'Driver not yet assigned',
+                driverLabel: passengerName ? "PASSENGER'S NAME" : 'DRIVER',
+                driver: passengerName || 'Driver not yet assigned',
                 vehicle: formatRideType(ride.ride_type),
                 distance: ride.estimated_distance_miles
                   ? `${ride.estimated_distance_miles.toFixed(1)} mi`

@@ -8,7 +8,7 @@ import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
 import { AppGoogleMapsProvider, AppGoogleMap } from '../../modules/components';
 import type { TruckMarker } from '../../modules/components/AppGoogleMap';
-import { pxToRem, getAuthToken, useGetRideDetail } from '@/common';
+import { pxToRem, getAuthToken, useChat, useGetRideDetail } from '@/common';
 import type { MarkerPosition } from '@/common/types';
 import { DriverChatDrawer, DriverTrackingCard } from './ui/components';
 
@@ -38,6 +38,7 @@ type TrackingStartedEvent = {
 export function LiveTrackPage() {
   const searchParams = useSearchParams();
   const rideId = searchParams.get('ride_id');
+  const conversationId = searchParams.get('conversation_id') || rideId;
 
   const [isConnected, setIsConnected] = useState(false);
   const [driverLocation, setDriverLocation] =
@@ -150,6 +151,15 @@ export function LiveTrackPage() {
   const [chatOpen, setChatOpen] = useState(false);
   const { data: rideResponse } = useGetRideDetail(rideId ?? undefined);
   const rideDetail = rideResponse?.success ? rideResponse.data : null;
+  const {
+    messages,
+    connected: chatConnected,
+    typing,
+    currentUserId,
+    sendMessage,
+    markRead,
+    sendTyping,
+  } = useChat(conversationId ?? undefined);
 
   const driverId = trackingStarted?.driver_id ?? driverLocation?.driver_id ?? '';
   const riderId = trackingStarted?.rider_id ?? '';
@@ -423,8 +433,14 @@ export function LiveTrackPage() {
               open={chatOpen}
               onClose={() => setChatOpen(false)}
               driverName={driverId || 'Driver'}
-              driverOnlineLabel={isConnected ? 'Online' : 'Offline'}
-              initialMessages={[]}
+              driverOnlineLabel={chatConnected ? 'Online' : 'Offline'}
+              messages={messages}
+              connected={chatConnected}
+              currentUserId={currentUserId}
+              typingUserId={typing}
+              onSendMessage={sendMessage}
+              onTypingChange={sendTyping}
+              onMarkRead={markRead}
             />
           </Box>
         )}

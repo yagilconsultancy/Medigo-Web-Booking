@@ -32,6 +32,7 @@ export const ROUTES_SPEC = {
   // Users (Me)
   getMyProfile: `/${API_VERSION}/users/me`,
   updateMyProfile: `/${API_VERSION}/users/me`,
+  userRideStat: `${API_VERSION}/rides/rider/me/stats`,
 
   listEmergencyContacts: `/${API_VERSION}/users/me/emergency-contacts`,
   createEmergencyContact: `/${API_VERSION}/users/me/emergency-contacts`,
