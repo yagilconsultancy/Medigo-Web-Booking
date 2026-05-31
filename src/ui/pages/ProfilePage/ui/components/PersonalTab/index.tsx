@@ -6,7 +6,12 @@ import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
 import { FormikProvider, useFormik } from 'formik';
 import * as Yup from 'yup';
-import { pxToRem, usePlacesAutocomplete, PlacePrediction } from '@/common';
+import {
+  pxToRem,
+  useGetRiderStats,
+  usePlacesAutocomplete,
+  PlacePrediction,
+} from '@/common';
 import { useUsersMeApi } from '@/common/hooks/api/collection';
 import {
   AppDatePickerPopover,
@@ -77,8 +82,10 @@ export function PersonalTab({
   registerSubmit?: (submit: () => void, isFormValid: boolean) => void;
 }) {
   const { updateMyProfile } = useUsersMeApi();
+  const { data: riderStatsResponse } = useGetRiderStats();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasAvatarChange, setHasAvatarChange] = useState(false);
+  const riderStats = riderStatsResponse?.success ? riderStatsResponse.data : null;
 
   const formik = useFormik<PersonalFormValues>({
     initialValues: getInitialValues(snapshot),
@@ -382,10 +389,30 @@ export function PersonalTab({
                   bgSection="#155DFC"
                 />
                 <Stack spacing={2}>
-                  <StatRow label="Total Rides" value="47" />
-                  <StatRow label="Miles Traveled" value="1,284" />
-                  <StatRow label="Avg. Rating Given" value="4.9" />
-                  <StatRow label="Member Since" value="Jan 2024" />
+                  <StatRow
+                    label="Total Rides"
+                    value={riderStats?.total_rides?.toString() ?? '-'}
+                  />
+                  <StatRow
+                    label="Miles Traveled"
+                    value={
+                      riderStats?.miles_traveled != null
+                        ? riderStats.miles_traveled.toString()
+                        : '-'
+                    }
+                  />
+                  <StatRow
+                    label="Avg. Rating Given"
+                    value={
+                      riderStats?.average_rating_given != null
+                        ? riderStats.average_rating_given.toString()
+                        : '-'
+                    }
+                  />
+                  <StatRow
+                    label="Member Since"
+                    value={riderStats?.member_since ?? '-'}
+                  />
                 </Stack>
               </Stack>
             </Grid>

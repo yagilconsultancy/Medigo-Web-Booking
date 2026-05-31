@@ -122,6 +122,13 @@ export type ApiRideOverview = {
   status_filter: string;
 };
 
+export type ApiRiderStats = {
+  total_rides: number;
+  miles_traveled: number;
+  average_rating_given: number;
+  member_since: string;
+};
+
 export type ApiStatusLog = {
   id: string;
   ride_id: string;
@@ -289,6 +296,7 @@ export type ApiVehicleChecklistsResponse = ApiResponse<ApiVehicleChecklist[]>;
 
 export type ApiMyRidesResponse = ApiResponse<ApiRideOverview>;
 export type ApiMyActiveRideResponse = ApiResponse<ApiRide | null>;
+export type ApiRiderStatsResponse = ApiResponse<ApiRiderStats>;
 
 export type ApiDashboardOverviewResponse = ApiResponse<ApiDashboardKpis>;
 export type ApiTripVolumeTrendResponse = ApiResponse<ApiTripVolumeTrend>;

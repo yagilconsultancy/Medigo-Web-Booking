@@ -42,7 +42,7 @@ export function NotificationsTab() {
       onSubmit={formik.handleSubmit}
       sx={{ display: 'grid', gap: pxToRem(16) }}
     >
-      <Paper
+      {/* <Paper
         elevation={0}
         sx={{
           borderRadius: pxToRem(12),
@@ -101,7 +101,7 @@ export function NotificationsTab() {
             </Box>
           ))}
         </Box>
-      </Paper>
+      </Paper> */}
 
       <Paper
         elevation={0}

@@ -8,6 +8,7 @@ import type {
   ApiMyRidesResponse,
   ApiPublicBookingConfigResponse,
   ApiRecentActivityResponse,
+  ApiRiderStatsResponse,
   ApiRideDetailResponse,
   ApiRideFareResponse,
   ApiRideRatingsResponse,
@@ -154,6 +155,13 @@ export const getMyRides = async (params?: {
     ApiMyRidesResponse,
     AxiosResponse<ApiMyRidesResponse>
   >(resolveRoute(ROUTES.getRideOverview), { params });
+};
+
+export const getRiderStats = async () => {
+  return await getApiClient().get<
+    ApiRiderStatsResponse,
+    AxiosResponse<ApiRiderStatsResponse>
+  >(resolveRoute(ROUTES.userRideStat));
 };
 
 export const getMyActiveRide = async () => {

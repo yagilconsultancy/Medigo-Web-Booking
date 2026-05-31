@@ -109,7 +109,7 @@ export function SecurityTab({ phone }: { phone?: string }) {
           </Box>
         </Paper>
 
-        <Paper
+        {/* <Paper
           elevation={0}
           sx={{
             borderRadius: pxToRem(12),
@@ -181,7 +181,7 @@ export function SecurityTab({ phone }: { phone?: string }) {
               </Typography>
             </Box>
           </Box>
-        </Paper>
+        </Paper> */}
       </Box>
     </FormikProvider>
   );

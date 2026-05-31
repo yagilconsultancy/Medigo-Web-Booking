@@ -59,7 +59,7 @@ export function ProfilePage() {
   const [isPersonalFormValid, setIsPersonalFormValid] = useState(false);
   const lastBlobUrlRef = useRef<string | null>(null);
   const hasInitialized = useRef(false);
-  console.log('Profile response:', profile);
+  // console.log('Profile response:', profile);
 
   useEffect(() => {
     if (profile && !hasInitialized.current) {
@@ -236,7 +236,7 @@ export function ProfilePage() {
                     </Box>
 
                     <RowStack sx={{ mt: pxToRem(4) }} spacing={2}>
-                      <Chip
+                      {/* <Chip
                         size="small"
                         label="Premium Member"
                         sx={{
@@ -247,7 +247,7 @@ export function ProfilePage() {
                           color: '#2563EB',
                           '& .MuiChip-label': { px: pxToRem(8) },
                         }}
-                      />
+                      /> */}
                       <RowStack spacing={1}>
                         <Box
                           sx={{

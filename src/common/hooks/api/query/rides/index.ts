@@ -16,6 +16,7 @@ export * from './useGetGuestSession';
 export * from './useGetGuestBooking';
 export * from './useListRecurringRides';
 export * from './useGetMyRides';
+export * from './useGetRiderStats';
 export * from './useGetMyActiveRide';
 export * from './useListSafetyReports';
 export * from './useGetVehicleChecklists';
