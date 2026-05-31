@@ -1,22 +1,22 @@
 [
-  { "lat": 43.64260, "lng": -79.38710, "heading": 90, "speed": 0 },
+  { "lat": 43.6426, "lng": -79.3871, "heading": 90, "speed": 0 },
   { "lat": 43.64259, "lng": -79.38704, "heading": 90, "speed": 4 },
   { "lat": 43.64258, "lng": -79.38698, "heading": 91, "speed": 7 },
   { "lat": 43.64257, "lng": -79.38692, "heading": 91, "speed": 10 },
   { "lat": 43.64256, "lng": -79.38686, "heading": 92, "speed": 12 },
-  { "lat": 43.64255, "lng": -79.38680, "heading": 92, "speed": 14 },
+  { "lat": 43.64255, "lng": -79.3868, "heading": 92, "speed": 14 },
   { "lat": 43.64254, "lng": -79.38674, "heading": 93, "speed": 15 },
   { "lat": 43.64253, "lng": -79.38668, "heading": 93, "speed": 15 },
   { "lat": 43.64252, "lng": -79.38662, "heading": 94, "speed": 15 },
   { "lat": 43.64251, "lng": -79.38656, "heading": 94, "speed": 15 },
-  { "lat": 43.64250, "lng": -79.38650, "heading": 95, "speed": 15 },
+  { "lat": 43.6425, "lng": -79.3865, "heading": 95, "speed": 15 },
   { "lat": 43.64249, "lng": -79.38644, "heading": 95, "speed": 14 },
   { "lat": 43.64248, "lng": -79.38638, "heading": 96, "speed": 13 },
   { "lat": 43.64247, "lng": -79.38632, "heading": 96, "speed": 12 },
   { "lat": 43.64246, "lng": -79.38626, "heading": 97, "speed": 10 },
-  { "lat": 43.64245, "lng": -79.38620, "heading": 97, "speed": 8 },
+  { "lat": 43.64245, "lng": -79.3862, "heading": 97, "speed": 8 },
   { "lat": 43.64244, "lng": -79.38615, "heading": 98, "speed": 6 },
-  { "lat": 43.64243, "lng": -79.38610, "heading": 98, "speed": 4 },
+  { "lat": 43.64243, "lng": -79.3861, "heading": 98, "speed": 4 },
   { "lat": 43.64242, "lng": -79.38605, "heading": 99, "speed": 2 },
-  { "lat": 43.64240, "lng": -79.38600, "heading": 100, "speed": 0 }
+  { "lat": 43.6424, "lng": -79.386, "heading": 100, "speed": 0 }
 ]

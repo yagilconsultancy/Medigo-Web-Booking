@@ -25,4 +25,3 @@ export const useLiveTrackStore = create<LiveTrackStore>()(
     }
   )
 );
-

@@ -481,7 +481,9 @@ export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
                               });
                             } finally {
                               setIsTracking(false);
-                              router.push(`/live-track?ride_id=${ride.fullRideId}`);
+                              router.push(
+                                `/live-track?ride_id=${ride.fullRideId}`
+                              );
                             }
                           }}
                           sx={{

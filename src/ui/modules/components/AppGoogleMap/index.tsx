@@ -4,7 +4,13 @@ import {
   OverlayView,
   Polyline,
 } from '@react-google-maps/api';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Box, Typography } from '@mui/material';
 import worldMap from './ui/assets/images/world-map.png';
 import { StyledImage } from '../StyledImage';
@@ -46,7 +52,9 @@ function getDistanceSquared(a: MarkerPosition, b: MarkerPosition) {
 
 function isSamePosition(a?: MarkerPosition | null, b?: MarkerPosition | null) {
   if (!a || !b) return false;
-  return Math.abs(a.lat - b.lat) < 0.000001 && Math.abs(a.lng - b.lng) < 0.000001;
+  return (
+    Math.abs(a.lat - b.lat) < 0.000001 && Math.abs(a.lng - b.lng) < 0.000001
+  );
 }
 
 function projectPointToSegment(
@@ -56,7 +64,8 @@ function projectPointToSegment(
 ) {
   const segmentLat = segmentEnd.lat - segmentStart.lat;
   const segmentLng = segmentEnd.lng - segmentStart.lng;
-  const segmentLengthSquared = segmentLat * segmentLat + segmentLng * segmentLng;
+  const segmentLengthSquared =
+    segmentLat * segmentLat + segmentLng * segmentLng;
 
   if (segmentLengthSquared === 0) return segmentStart;
 
@@ -85,7 +94,11 @@ function findNearestPointOnPolyline(
   for (let index = 0; index < polyline.length - 1; index += 1) {
     const segmentStart = polyline[index]!;
     const segmentEnd = polyline[index + 1]!;
-    const projectedPoint = projectPointToSegment(point, segmentStart, segmentEnd);
+    const projectedPoint = projectPointToSegment(
+      point,
+      segmentStart,
+      segmentEnd
+    );
     const projectedDistance = getDistanceSquared(point, projectedPoint);
 
     if (projectedDistance < nearestDistance) {
@@ -122,7 +135,11 @@ function findNearestSegmentHeading(
   for (let index = 0; index < polyline.length - 1; index += 1) {
     const segmentStart = polyline[index]!;
     const segmentEnd = polyline[index + 1]!;
-    const projectedPoint = projectPointToSegment(point, segmentStart, segmentEnd);
+    const projectedPoint = projectPointToSegment(
+      point,
+      segmentStart,
+      segmentEnd
+    );
     const projectedDistance = getDistanceSquared(point, projectedPoint);
 
     if (projectedDistance < nearestDistance) {
@@ -208,9 +225,8 @@ export function AppGoogleMap({
 }: AppGoogleMapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [routePath, setRoutePath] = useState<MarkerPosition[] | null>(null);
-  const [animatedTruckPosition, setAnimatedTruckPosition] = useState<MarkerPosition | null>(
-    truckMarker?.position ?? null
-  );
+  const [animatedTruckPosition, setAnimatedTruckPosition] =
+    useState<MarkerPosition | null>(truckMarker?.position ?? null);
   const animationFrameRef = useRef<number | null>(null);
   const hasFittedRouteRef = useRef(false);
 
@@ -218,7 +234,10 @@ export function AppGoogleMap({
 
   const allPositions = useMemo<MarkerPosition[]>(() => {
     const points = [...markerPositions];
-    if (routeOrigin && !markerPositions.some((point) => isSamePosition(point, routeOrigin))) {
+    if (
+      routeOrigin &&
+      !markerPositions.some((point) => isSamePosition(point, routeOrigin))
+    ) {
       points.unshift(routeOrigin);
     }
     if (truckMarker) points.push(truckMarker.position);
@@ -252,12 +271,19 @@ export function AppGoogleMap({
     }
 
     const animate = (timestamp: number) => {
-      const progress = Math.min((timestamp - animationStart) / animationDuration, 1);
+      const progress = Math.min(
+        (timestamp - animationStart) / animationDuration,
+        1
+      );
       const easedProgress = 1 - Math.pow(1 - progress, 3);
 
       setAnimatedTruckPosition({
-        lat: startPosition.lat + (nextPosition.lat - startPosition.lat) * easedProgress,
-        lng: startPosition.lng + (nextPosition.lng - startPosition.lng) * easedProgress,
+        lat:
+          startPosition.lat +
+          (nextPosition.lat - startPosition.lat) * easedProgress,
+        lng:
+          startPosition.lng +
+          (nextPosition.lng - startPosition.lng) * easedProgress,
       });
 
       if (progress < 1) {
@@ -282,8 +308,13 @@ export function AppGoogleMap({
 
   const renderedTruckHeading = useMemo(() => {
     if (!truckMarker) return 0;
-    if (!renderedTruckPosition || !routePath?.length) return truckMarker.heading ?? 0;
-    return findNearestSegmentHeading(renderedTruckPosition, routePath) ?? truckMarker.heading ?? 0;
+    if (!renderedTruckPosition || !routePath?.length)
+      return truckMarker.heading ?? 0;
+    return (
+      findNearestSegmentHeading(renderedTruckPosition, routePath) ??
+      truckMarker.heading ??
+      0
+    );
   }, [renderedTruckPosition, routePath, truckMarker]);
 
   useEffect(() => {
@@ -308,7 +339,12 @@ export function AppGoogleMap({
     }
 
     const routePoints: MarkerPosition[] = routeOrigin
-      ? [routeOrigin, ...markerPositions.filter((point) => !isSamePosition(point, routeOrigin))]
+      ? [
+          routeOrigin,
+          ...markerPositions.filter(
+            (point) => !isSamePosition(point, routeOrigin)
+          ),
+        ]
       : markerPositions;
 
     const [origin, ...rest] = routePoints;

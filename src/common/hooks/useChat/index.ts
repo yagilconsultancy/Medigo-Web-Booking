@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Socket } from 'socket.io-client';
-import { disconnectChatSocket, getChatSocket } from '../../lib/chat-socket-manager';
+import {
+  disconnectChatSocket,
+  getChatSocket,
+} from '../../lib/chat-socket-manager';
 import { getAuthToken } from '../../utils';
 
 export type ChatMessage = {

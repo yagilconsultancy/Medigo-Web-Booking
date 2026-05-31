@@ -3,17 +3,20 @@
 ## Architecture Overview
 
 ### Rider App (This Project) - LISTEN ONLY
+
 - **Role:** Facility/Rider - watches driver location
 - **Action:** Joins ride room via `join_ride` event
 - **Receives:** `location_update` events from server
 - **Does NOT:** Send location updates (that's the driver's job)
 
 ### Driver App (Mobile) - SEND ONLY
+
 - **Role:** Driver - sends their GPS location
 - **Action:** Emits `update_location` events
 - **Server broadcasts:** `location_update` to ride room
 
 ### Test Script - Simulates Driver
+
 - Located at: `scripts/simulate-driver-location.mjs`
 - Mimics driver mobile app behavior for testing
 - Not part of this project's production code
@@ -23,6 +26,7 @@
 ## How to Test Driver Tracking
 
 ### Step 1: Start the Rider App
+
 ```bash
 npm run dev
 ```
@@ -30,7 +34,9 @@ npm run dev
 Navigate to: `http://localhost:3000/live-track?ride_id=17626a2b-56f9-4b12-bc7e-02dff370712b`
 
 ### Step 2: Open Browser Console
+
 Open DevTools and watch for these logs:
+
 ```
 [SocketClient] Creating new socket connection: { url: '...', path: '...', hasToken: true }
 [RideTracking] Connected to tracking server
@@ -38,11 +44,13 @@ Open DevTools and watch for these logs:
 ```
 
 ### Step 3: Start Driver Simulator (in separate terminal)
+
 ```bash
 node scripts/simulate-driver-location.mjs
 ```
 
 You should see:
+
 ```
 [tracking] connected: <socket-id>
 [join_ride] joined: ride_17626a2b-56f9-4b12-bc7e-02dff370712b
@@ -50,13 +58,16 @@ You should see:
 ```
 
 ### Step 4: Verify Rider Receives Updates
+
 In the browser console, you should now see:
+
 ```
 [RideTracking] event: location_update { ride_id: '...', latitude: ..., longitude: ..., ... }
 [LiveTrackPage] location_update: { ... }
 ```
 
 The map should show:
+
 - Driver truck marker moving along the route
 - Driver speed, ETA, and distance remaining updating in real-time
 
@@ -65,10 +76,13 @@ The map should show:
 ## Troubleshooting
 
 ### No Connection
+
 **Symptom:** "Connecting to tracking server..." never disappears
 
 **Check:**
+
 1. Is `NEXT_PUBLIC_SOCKET_URL` set correctly in `.env.local`?
+
    ```bash
    NEXT_PUBLIC_SOCKET_URL=https://staging.getmedigo.com
    NEXT_PUBLIC_SOCKET_PATH=/api/v1/ws/socket.io
@@ -83,27 +97,33 @@ The map should show:
    - Should return Socket.IO handshake response
 
 ### Connected But No Location Updates
+
 **Symptom:** "Tracking live driver location" shows, but driver doesn't move
 
 **Check:**
+
 1. Is the driver simulator running? (`node scripts/simulate-driver-location.mjs`)
 2. Are both using the same `RIDE_ID`?
 3. Check driver simulator output - does it show `[update_location] ok`?
 4. Check browser console - do you see `[RideTracking] event: location_update`?
 
 ### Map Not Showing
+
 **Symptom:** Gray box with "Waiting for driver location..."
 
 **Check:**
+
 1. Is `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` set in `.env.local`?
 2. Has `tracking_started` event been received?
    - This event includes pickup/destination coordinates
    - Without it, map won't have markers to display
 
 ### Wrong Ride Room
+
 **Symptom:** Driver sends updates but rider doesn't receive them
 
 **Check:**
+
 1. URL parameter: `/live-track?ride_id=<RIDE_ID>`
 2. Simulator `RIDE_ID` constant (line 27 in script)
 3. Both must match exactly
@@ -161,6 +181,7 @@ The map should show:
 ## Configuration Reference
 
 ### Environment Variables
+
 ```bash
 # Socket.IO Connection
 NEXT_PUBLIC_SOCKET_URL=https://staging.getmedigo.com
@@ -174,13 +195,15 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_key_here
 ```
 
 ### Test Data (scripts/simulate-driver-location.mjs)
+
 ```javascript
-const rideId = "17626a2b-56f9-4b12-bc7e-02dff370712b";
-const token = "eyJ..."; // Driver JWT token
-const driverId = "a465672e-d6dc-4b9d-a1ac-b1f5b36c8bd7";
+const rideId = '17626a2b-56f9-4b12-bc7e-02dff370712b';
+const token = 'eyJ...'; // Driver JWT token
+const driverId = 'a465672e-d6dc-4b9d-a1ac-b1f5b36c8bd7';
 ```
 
 ### Socket Connection Options
+
 ```typescript
 {
   path: '/api/v1/ws/socket.io',
@@ -199,12 +222,14 @@ const driverId = "a465672e-d6dc-4b9d-a1ac-b1f5b36c8bd7";
 ## Key Files
 
 ### Rider App (This Project)
+
 - `src/common/lib/socket-client.ts` - Socket.IO client singleton
 - `src/common/hooks/useRideTracking/index.ts` - Tracking hook
 - `src/ui/pages/LiveTrackPage/index.tsx` - Tracking UI
 - `src/common/types/tracking.ts` - Socket event types
 
 ### Test Utilities
+
 - `scripts/simulate-driver-location.mjs` - Driver simulator
 - `scripts/sample-route.json` - Test route waypoints
 
@@ -213,11 +238,13 @@ const driverId = "a465672e-d6dc-4b9d-a1ac-b1f5b36c8bd7";
 ## Production vs Development
 
 ### Development
+
 - Use simulator script to test without real driver
 - Console logs show all socket events (`onAny` listener)
 - React DevTools show state updates
 
 ### Production
+
 - Real driver mobile app sends `update_location`
 - Rider app just listens (same code)
 - Remove verbose console logs

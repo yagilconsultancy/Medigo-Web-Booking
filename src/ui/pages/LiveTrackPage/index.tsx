@@ -60,8 +60,10 @@ export function LiveTrackPage() {
     console.log('[LiveTrack] Connecting to Socket.IO for ride:', rideId);
 
     const token = getAuthToken();
-    const serverUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://staging.getmedigo.com';
-    const socketPath = process.env.NEXT_PUBLIC_SOCKET_PATH || '/api/v1/ws/socket.io';
+    const serverUrl =
+      process.env.NEXT_PUBLIC_SOCKET_URL || 'https://staging.getmedigo.com';
+    const socketPath =
+      process.env.NEXT_PUBLIC_SOCKET_PATH || '/api/v1/ws/socket.io';
 
     const socket = io(`${serverUrl}/tracking`, {
       path: socketPath,
@@ -161,7 +163,8 @@ export function LiveTrackPage() {
     sendTyping,
   } = useChat(conversationId ?? undefined);
 
-  const driverId = trackingStarted?.driver_id ?? driverLocation?.driver_id ?? '';
+  const driverId =
+    trackingStarted?.driver_id ?? driverLocation?.driver_id ?? '';
   const riderId = trackingStarted?.rider_id ?? '';
 
   const destinationMarker = useMemo<MarkerPosition | null>(
@@ -177,8 +180,12 @@ export function LiveTrackPage() {
               lat: rideDetail.destination_latitude,
               lng: rideDetail.destination_longitude,
             }
-        : null,
-    [rideDetail?.destination_latitude, rideDetail?.destination_longitude, trackingStarted]
+          : null,
+    [
+      rideDetail?.destination_latitude,
+      rideDetail?.destination_longitude,
+      trackingStarted,
+    ]
   );
 
   const destinationLabel =
@@ -188,7 +195,7 @@ export function LiveTrackPage() {
         ? `Destination (${destinationMarker.lat.toFixed(
             5
           )}, ${destinationMarker.lng.toFixed(5)})`
-      : 'Destination pending';
+        : 'Destination pending';
 
   // Use socket data for live position.
   const hasCoordinates =
@@ -201,7 +208,9 @@ export function LiveTrackPage() {
       waypoints?: MarkerPosition[];
     }): Promise<{ polyline: MarkerPosition[] } | null> => {
       try {
-        const routesLibrary = (await google.maps.importLibrary('routes')) as any;
+        const routesLibrary = (await google.maps.importLibrary(
+          'routes'
+        )) as any;
         const coordinateResponse = await routesLibrary.Route.computeRoutes({
           origin: input.origin,
           destination: input.destination,
@@ -240,7 +249,10 @@ export function LiveTrackPage() {
         }
 
         if (!path?.length) {
-          console.warn('[LiveTrack] Route API returned no path', coordinateResponse);
+          console.warn(
+            '[LiveTrack] Route API returned no path',
+            coordinateResponse
+          );
           return null;
         }
 
@@ -265,17 +277,19 @@ export function LiveTrackPage() {
             lat: trackingStarted.pickup_latitude,
             lng: trackingStarted.pickup_longitude,
           }
-        : rideDetail?.pickup_latitude != null && rideDetail?.pickup_longitude != null
+        : rideDetail?.pickup_latitude != null &&
+            rideDetail?.pickup_longitude != null
           ? {
               lat: rideDetail.pickup_latitude,
               lng: rideDetail.pickup_longitude,
             }
-        : null,
+          : null,
     [rideDetail?.pickup_latitude, rideDetail?.pickup_longitude, trackingStarted]
   );
 
   const routeMarkers = useMemo<MarkerPosition[]>(() => {
-    if (pickupMarker && destinationMarker) return [pickupMarker, destinationMarker];
+    if (pickupMarker && destinationMarker)
+      return [pickupMarker, destinationMarker];
     if (pickupMarker) return [pickupMarker];
     if (destinationMarker) return [destinationMarker];
     return [];

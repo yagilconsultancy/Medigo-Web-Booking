@@ -85,7 +85,9 @@ export function PersonalTab({
   const { data: riderStatsResponse } = useGetRiderStats();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasAvatarChange, setHasAvatarChange] = useState(false);
-  const riderStats = riderStatsResponse?.success ? riderStatsResponse.data : null;
+  const riderStats = riderStatsResponse?.success
+    ? riderStatsResponse.data
+    : null;
 
   const formik = useFormik<PersonalFormValues>({
     initialValues: getInitialValues(snapshot),

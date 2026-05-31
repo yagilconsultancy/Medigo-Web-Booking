@@ -28,12 +28,14 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { io } from 'socket.io-client';
 
-const SERVER_URL = process.env.SOCKET_URL || 'https://staging.getmedigo.com/tracking';
+const SERVER_URL =
+  process.env.SOCKET_URL || 'https://staging.getmedigo.com/tracking';
 const SOCKET_PATH = process.env.SOCKET_PATH || '/api/v1/ws/socket.io';
 
-const rideId = "17626a2b-56f9-4b12-bc7e-02dff370712b";
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNDY1NjcyZS1kNmRjLTRiOWQtYTFhYy1iMWY1YjM2YzhiZDciLCJyb2xlIjoiZHJpdmVyIiwiYnVzaW5lc3NfaWQiOiIyMGNmNzJmZC1kYjU4LTQ4NTUtYjM1ZC01YWMzYjFiODU1NmQiLCJlbWFpbCI6ImdhZmFyYWRldHVuamk0NzErZHJpdmVyQGdtYWlsLmNvbSIsImp0aSI6IjgyODA2ZGI4LWNkM2MtNGYzZi05ZDBiLTYwYjA1MDI0MGRiYSIsImlhdCI6MTc4MDE3NTc4OCwiZXhwIjoxNzgwMTkzNzg4LCJ0eXBlIjoiYWNjZXNzIn0.BkxJnUBcAriAwCbDOMRPBmgmuHTLYEx1f-bm82n5tjc";
-const driverId = "a465672e-d6dc-4b9d-a1ac-b1f5b36c8bd7";
+const rideId = '17626a2b-56f9-4b12-bc7e-02dff370712b';
+const token =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNDY1NjcyZS1kNmRjLTRiOWQtYTFhYy1iMWY1YjM2YzhiZDciLCJyb2xlIjoiZHJpdmVyIiwiYnVzaW5lc3NfaWQiOiIyMGNmNzJmZC1kYjU4LTQ4NTUtYjM1ZC01YWMzYjFiODU1NmQiLCJlbWFpbCI6ImdhZmFyYWRldHVuamk0NzErZHJpdmVyQGdtYWlsLmNvbSIsImp0aSI6IjgyODA2ZGI4LWNkM2MtNGYzZi05ZDBiLTYwYjA1MDI0MGRiYSIsImlhdCI6MTc4MDE3NTc4OCwiZXhwIjoxNzgwMTkzNzg4LCJ0eXBlIjoiYWNjZXNzIn0.BkxJnUBcAriAwCbDOMRPBmgmuHTLYEx1f-bm82n5tjc';
+const driverId = 'a465672e-d6dc-4b9d-a1ac-b1f5b36c8bd7';
 const intervalMs = Number(process.env.INTERVAL_MS || 5000);
 const loop = process.env.LOOP === '1';
 const routeFile = process.env.ROUTE_FILE || './scripts/sample-route.json';
@@ -162,7 +164,11 @@ socket.on('connect', () => {
   emitLocation(route[index]);
   timer = setInterval(() => {
     const elapsed = Date.now() - startedAtMs;
-    if (Number.isFinite(durationMs) && durationMs > 0 && elapsed >= durationMs) {
+    if (
+      Number.isFinite(durationMs) &&
+      durationMs > 0 &&
+      elapsed >= durationMs
+    ) {
       console.log(
         `[sim] duration reached (${Math.round(elapsed / 1000)}s); stopping.`
       );

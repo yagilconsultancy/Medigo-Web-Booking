@@ -156,14 +156,18 @@ export function DriverChatTestPage() {
     const trimmed = messageInput.trim();
     if (!trimmed) return;
 
-    socketRef.current?.emit('send_message', {
-      conversation_id: conversationId,
-      content: trimmed,
-      message_type: 'text',
-    }, (response?: unknown) => {
-      appendLog(`send_message ack ${JSON.stringify(response ?? null)}`);
-      console.log('[DriverChatTest] send_message ack:', response);
-    });
+    socketRef.current?.emit(
+      'send_message',
+      {
+        conversation_id: conversationId,
+        content: trimmed,
+        message_type: 'text',
+      },
+      (response?: unknown) => {
+        appendLog(`send_message ack ${JSON.stringify(response ?? null)}`);
+        console.log('[DriverChatTest] send_message ack:', response);
+      }
+    );
 
     setMessages((prev) => [
       ...prev,
@@ -250,10 +254,13 @@ export function DriverChatTestPage() {
                       }}
                     >
                       {message.sender_id === DRIVER_ID ? 'Driver' : 'Rider'} •{' '}
-                      {new Date(message.created_at).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {new Date(message.created_at).toLocaleTimeString(
+                        'en-US',
+                        {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }
+                      )}
                     </Typography>
                   </Box>
                 </Box>

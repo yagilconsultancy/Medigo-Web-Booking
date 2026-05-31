@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Socket } from 'socket.io-client';
-import {
-  getTrackingSocket,
-} from '../../lib/socket-client';
+import { getTrackingSocket } from '../../lib/socket-client';
 import type {
   DispatchLocationUpdate,
   RideLocationUpdate,
@@ -53,7 +51,14 @@ export const useRideTracking = (params: {
     currentRideIdRef.current = rideId;
 
     isCleaningUpRef.current = false;
-    console.log('[RideTracking] Initializing for rideId:', rideId, 'driverId:', driverId, 'isSameRide:', isSameRide);
+    console.log(
+      '[RideTracking] Initializing for rideId:',
+      rideId,
+      'driverId:',
+      driverId,
+      'isSameRide:',
+      isSameRide
+    );
 
     let onConnect: (() => void) | undefined;
     let onDisconnect: ((reason: string) => void) | undefined;
@@ -79,7 +84,9 @@ export const useRideTracking = (params: {
 
         // If we already joined this same ride, don't rejoin
         if (isSameRide && currentRideIdRef.current === rideId) {
-          console.log('[RideTracking] Already in room for this ride, skipping join');
+          console.log(
+            '[RideTracking] Already in room for this ride, skipping join'
+          );
           setIsJoined(true);
           return;
         }
@@ -90,7 +97,9 @@ export const useRideTracking = (params: {
           { ride_id: rideId },
           (response?: JoinRideResponse) => {
             if (isCleaningUpRef.current) {
-              console.log('[RideTracking] Join ack received but component is cleaning up, ignoring');
+              console.log(
+                '[RideTracking] Join ack received but component is cleaning up, ignoring'
+              );
               return;
             }
 
@@ -239,12 +248,16 @@ export const useRideTracking = (params: {
 
       // Only emit leave_ride if the ride ID is actually changing
       // Do NOT leave during React Strict Mode double-mount (same rideId)
-      const isRideChanging = currentRideIdRef.current !== null && currentRideIdRef.current !== rideId;
+      const isRideChanging =
+        currentRideIdRef.current !== null &&
+        currentRideIdRef.current !== rideId;
       if (rideId && isRideChanging) {
         console.log('[RideTracking] Ride changing, leaving room:', rideId);
         socket.emit(SocketEvent.LEAVE_RIDE, { ride_id: rideId });
       } else {
-        console.log('[RideTracking] Cleanup but staying in room (Strict Mode or same ride)');
+        console.log(
+          '[RideTracking] Cleanup but staying in room (Strict Mode or same ride)'
+        );
       }
 
       // Important: do not hard-disconnect the shared tracking socket here.
@@ -252,8 +265,7 @@ export const useRideTracking = (params: {
       // disconnecting causes flaky connects and missed acks/updates.
       if (onConnect) socket.off(SocketEvent.CONNECT, onConnect);
       if (onDisconnect) socket.off(SocketEvent.DISCONNECT, onDisconnect);
-      if (onConnectError)
-        socket.off(SocketEvent.CONNECT_ERROR, onConnectError);
+      if (onConnectError) socket.off(SocketEvent.CONNECT_ERROR, onConnectError);
       if (onReconnect) socket.off(SocketEvent.RECONNECT, onReconnect);
       if (onReconnectFailed)
         socket.off(SocketEvent.RECONNECT_FAILED, onReconnectFailed);

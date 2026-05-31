@@ -91,236 +91,240 @@ export function DriverChatDrawer({
           boxShadow: '0px 16px 40px rgba(15, 23, 42, 0.12)',
         }}
       >
-      {/* Header */}
-      <Box sx={{ bgcolor: '#FFFFFF' }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: pxToRem(12),
-            p: `${pxToRem(14)} ${pxToRem(16)}`,
-          }}
-        >
-          <IconButton
-            onClick={onClose}
+        {/* Header */}
+        <Box sx={{ bgcolor: '#FFFFFF' }}>
+          <Box
             sx={{
-              width: pxToRem(36),
-              height: pxToRem(36),
-              bgcolor: '#F1F5F9',
-              '&:hover': { bgcolor: '#E2E8F0' },
+              display: 'flex',
+              alignItems: 'center',
+              gap: pxToRem(12),
+              p: `${pxToRem(14)} ${pxToRem(16)}`,
             }}
           >
-            <ArrowBackIosNewIcon sx={{ fontSize: pxToRem(16) }} />
-          </IconButton>
-
-          <Avatar
-            sx={{
-              width: pxToRem(40),
-              height: pxToRem(40),
-              bgcolor: '#2563EB',
-              fontWeight: 800,
-            }}
-          >
-            {driverInitials}
-          </Avatar>
-
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
+            <IconButton
+              onClick={onClose}
               sx={{
-                fontSize: pxToRem(14),
-                fontWeight: 800,
-                color: '#0F172A',
-                lineHeight: pxToRem(20),
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                width: pxToRem(36),
+                height: pxToRem(36),
+                bgcolor: '#F1F5F9',
+                '&:hover': { bgcolor: '#E2E8F0' },
               }}
             >
-              {driverName}
-            </Typography>
-            <Stack direction="row" spacing={pxToRem(6)} alignItems="center">
-              <VerifiedIcon sx={{ fontSize: pxToRem(14), color: '#2563EB' }} />
+              <ArrowBackIosNewIcon sx={{ fontSize: pxToRem(16) }} />
+            </IconButton>
+
+            <Avatar
+              sx={{
+                width: pxToRem(40),
+                height: pxToRem(40),
+                bgcolor: '#2563EB',
+                fontWeight: 800,
+              }}
+            >
+              {driverInitials}
+            </Avatar>
+
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                sx={{
+                  fontSize: pxToRem(14),
+                  fontWeight: 800,
+                  color: '#0F172A',
+                  lineHeight: pxToRem(20),
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {driverName}
+              </Typography>
+              <Stack direction="row" spacing={pxToRem(6)} alignItems="center">
+                <VerifiedIcon
+                  sx={{ fontSize: pxToRem(14), color: '#2563EB' }}
+                />
+                <Typography
+                  sx={{
+                    fontSize: pxToRem(12),
+                    fontWeight: 600,
+                    color: connected ? '#16A34A' : '#64748B',
+                  }}
+                >
+                  {driverOnlineLabel}
+                </Typography>
+              </Stack>
+            </Box>
+          </Box>
+          <Divider />
+        </Box>
+
+        {/* Messages */}
+        <Box
+          sx={{
+            overflowY: 'auto',
+            p: pxToRem(16),
+            height: { xs: pxToRem(280), sm: pxToRem(320) },
+          }}
+        >
+          <Typography
+            sx={{
+              textAlign: 'center',
+              fontSize: pxToRem(12),
+              color: '#94A3B8',
+              mb: pxToRem(16),
+            }}
+          >
+            Today
+          </Typography>
+
+          <Stack spacing={pxToRem(12)}>
+            {messages.map((m) => {
+              const isDriver = m.sender_id !== currentUserId;
+              return (
+                <Box
+                  key={m.message_id ?? m.id ?? `${m.sender_id}-${m.created_at}`}
+                  sx={{
+                    display: 'flex',
+                    gap: pxToRem(10),
+                    flexDirection: isDriver ? 'row' : 'row-reverse',
+                  }}
+                >
+                  {isDriver ? (
+                    <Avatar
+                      sx={{
+                        width: pxToRem(34),
+                        height: pxToRem(34),
+                        bgcolor: '#2563EB',
+                        fontWeight: 800,
+                      }}
+                    >
+                      {driverInitials}
+                    </Avatar>
+                  ) : (
+                    <Avatar
+                      sx={{
+                        width: pxToRem(34),
+                        height: pxToRem(34),
+                        bgcolor: '#0F172A',
+                        fontWeight: 800,
+                      }}
+                    >
+                      You
+                    </Avatar>
+                  )}
+
+                  <Box sx={{ maxWidth: '78%' }}>
+                    <Box
+                      sx={{
+                        bgcolor: '#FFFFFF',
+                        border: '1px solid #E2E8F0',
+                        borderRadius: pxToRem(14),
+                        px: pxToRem(14),
+                        py: pxToRem(10),
+                        boxShadow: '0px 8px 24px rgba(2,6,23,0.06)',
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: pxToRem(14),
+                          color: '#0F172A',
+                          lineHeight: pxToRem(20),
+                        }}
+                      >
+                        {m.content}
+                      </Typography>
+                    </Box>
+                    <Typography
+                      sx={{
+                        mt: pxToRem(4),
+                        fontSize: pxToRem(11),
+                        color: '#94A3B8',
+                        textAlign: isDriver ? 'left' : 'right',
+                      }}
+                    >
+                      {new Date(m.created_at).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Typography>
+                  </Box>
+                </Box>
+              );
+            })}
+            {typingUserId && (
               <Typography
                 sx={{
                   fontSize: pxToRem(12),
-                  fontWeight: 600,
-                  color: connected ? '#16A34A' : '#64748B',
+                  color: '#64748B',
                 }}
               >
-                {driverOnlineLabel}
+                Driver is typing...
               </Typography>
-            </Stack>
-          </Box>
+            )}
+            <div ref={endRef} />
+          </Stack>
         </Box>
-        <Divider />
-      </Box>
 
-      {/* Messages */}
-      <Box
-        sx={{
-          overflowY: 'auto',
-          p: pxToRem(16),
-          height: { xs: pxToRem(280), sm: pxToRem(320) },
-        }}
-      >
-        <Typography
-          sx={{
-            textAlign: 'center',
-            fontSize: pxToRem(12),
-            color: '#94A3B8',
-            mb: pxToRem(16),
-          }}
-        >
-          Today
-        </Typography>
-
-        <Stack spacing={pxToRem(12)}>
-          {messages.map((m) => {
-            const isDriver = m.sender_id !== currentUserId;
-            return (
-              <Box
-                key={m.message_id ?? m.id ?? `${m.sender_id}-${m.created_at}`}
-                sx={{
-                  display: 'flex',
-                  gap: pxToRem(10),
-                  flexDirection: isDriver ? 'row' : 'row-reverse',
-                }}
-              >
-                {isDriver ? (
-                  <Avatar
-                    sx={{
-                      width: pxToRem(34),
-                      height: pxToRem(34),
-                      bgcolor: '#2563EB',
-                      fontWeight: 800,
-                    }}
-                  >
-                    {driverInitials}
-                  </Avatar>
-                ) : (
-                  <Avatar
-                    sx={{
-                      width: pxToRem(34),
-                      height: pxToRem(34),
-                      bgcolor: '#0F172A',
-                      fontWeight: 800,
-                    }}
-                  >
-                    You
-                  </Avatar>
-                )}
-
-                <Box sx={{ maxWidth: '78%' }}>
-                  <Box
-                    sx={{
-                      bgcolor: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
-                      borderRadius: pxToRem(14),
-                      px: pxToRem(14),
-                      py: pxToRem(10),
-                      boxShadow: '0px 8px 24px rgba(2,6,23,0.06)',
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: pxToRem(14),
-                        color: '#0F172A',
-                        lineHeight: pxToRem(20),
-                      }}
-                    >
-                      {m.content}
-                    </Typography>
-                  </Box>
-                  <Typography
-                    sx={{
-                      mt: pxToRem(4),
-                      fontSize: pxToRem(11),
-                      color: '#94A3B8',
-                      textAlign: isDriver ? 'left' : 'right',
-                    }}
-                  >
-                    {new Date(m.created_at).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </Typography>
-                </Box>
-              </Box>
-            );
-          })}
-          {typingUserId && (
-            <Typography
-              sx={{
-                fontSize: pxToRem(12),
-                color: '#64748B',
-              }}
-            >
-              Driver is typing...
-            </Typography>
-          )}
-          <div ref={endRef} />
-        </Stack>
-      </Box>
-
-      {/* Composer */}
-      <Box
-        sx={{
-          bgcolor: '#F8FAFC',
-          p: pxToRem(16),
-          borderTop: '1px solid #E2E8F0',
-        }}
-      >
+        {/* Composer */}
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: pxToRem(10),
+            bgcolor: '#F8FAFC',
+            p: pxToRem(16),
+            borderTop: '1px solid #E2E8F0',
           }}
         >
-          <IconButton
+          <Box
             sx={{
-              width: pxToRem(44),
-              height: pxToRem(44),
-              bgcolor: '#FFFFFF',
-              border: '1px solid #E2E8F0',
-              '&:hover': { bgcolor: '#F1F5F9' },
+              display: 'flex',
+              alignItems: 'center',
+              gap: pxToRem(10),
             }}
           >
-            <MicNoneIcon sx={{ fontSize: pxToRem(20), color: '#64748B' }} />
-          </IconButton>
-
-          <TextField
-            value={message}
-            onChange={(e) => handleMessageChange(e.target.value)}
-            placeholder="Type a message..."
-            fullWidth
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSend();
-            }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
+            <IconButton
+              sx={{
+                width: pxToRem(44),
+                height: pxToRem(44),
                 bgcolor: '#FFFFFF',
-                borderRadius: pxToRem(14),
-              },
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#E2E8F0',
-              },
-            }}
-          />
+                border: '1px solid #E2E8F0',
+                '&:hover': { bgcolor: '#F1F5F9' },
+              }}
+            >
+              <MicNoneIcon sx={{ fontSize: pxToRem(20), color: '#64748B' }} />
+            </IconButton>
 
-          <IconButton
-            onClick={handleSend}
-            sx={{
-              width: pxToRem(44),
-              height: pxToRem(44),
-              bgcolor: '#A5BDF7',
-              '&:hover': { bgcolor: '#7FA2F4' },
-            }}
-          >
-            <SendRoundedIcon sx={{ fontSize: pxToRem(20), color: '#FFFFFF' }} />
-          </IconButton>
+            <TextField
+              value={message}
+              onChange={(e) => handleMessageChange(e.target.value)}
+              placeholder="Type a message..."
+              fullWidth
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSend();
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: '#FFFFFF',
+                  borderRadius: pxToRem(14),
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#E2E8F0',
+                },
+              }}
+            />
+
+            <IconButton
+              onClick={handleSend}
+              sx={{
+                width: pxToRem(44),
+                height: pxToRem(44),
+                bgcolor: '#A5BDF7',
+                '&:hover': { bgcolor: '#7FA2F4' },
+              }}
+            >
+              <SendRoundedIcon
+                sx={{ fontSize: pxToRem(20), color: '#FFFFFF' }}
+              />
+            </IconButton>
+          </Box>
         </Box>
-      </Box>
       </Paper>
     </Collapse>
   );
