@@ -1,6 +1,7 @@
 export * from './useGetRideDetail';
 export * from './useGetRideFare';
 export * from './useGetRideRatings';
+export * from './useGetDriverContact';
 export * from './useGetRideTimeline';
 export * from './useRidesAnalyticsOverview';
 export * from './useRidesAnalyticsTripVolume';

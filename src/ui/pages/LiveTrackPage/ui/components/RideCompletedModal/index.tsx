@@ -9,14 +9,12 @@ import { AppButton, AppModal, RowStack } from '@/ui/modules/components';
 export type RideCompletedModalProps = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  onCompleteSurvey: () => void;
   onBackToHome: () => void;
 };
 
 export function RideCompletedModal({
   open,
   setOpen,
-  onCompleteSurvey,
   onBackToHome,
 }: RideCompletedModalProps) {
   return (
@@ -24,28 +22,25 @@ export function RideCompletedModal({
       open={open}
       setOpen={setOpen}
       label="ride-completed-modal"
-      padding={`${pxToRem(18)} ${pxToRem(32)} ${pxToRem(32)}`}
+      // padding={`${pxToRem(18)} ${pxToRem(32)} ${pxToRem(32)}`}
     >
       <Box
         sx={{
-          width: '100%',
-          maxWidth: pxToRem(412),
+          width: '540px',
         }}
       >
         <Stack spacing={pxToRem(24)} alignItems="center">
           {/* Success Icon */}
           <Box
             sx={{
-              width: pxToRem(142),
-              height: pxToRem(142),
+              width: '100px',
+              height: '100px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <CheckCircleIcon
-              sx={{ fontSize: pxToRem(142), color: '#A5D6A7' }}
-            />
+            <CheckCircleIcon sx={{ fontSize: '50px', color: '#A5D6A7' }} />
           </Box>
 
           {/* Title */}
@@ -78,7 +73,7 @@ export function RideCompletedModal({
           </Typography>
 
           {/* Complete Survey Button */}
-          <AppButton
+          {/* <AppButton
             variant="contained"
             fullWidth
             onClick={onCompleteSurvey}
@@ -96,7 +91,7 @@ export function RideCompletedModal({
             }}
           >
             Complete Survey
-          </AppButton>
+          </AppButton> */}
 
           {/* Back to Home Button */}
           <AppButton

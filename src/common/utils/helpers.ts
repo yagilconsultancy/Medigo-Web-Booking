@@ -309,7 +309,16 @@ export const setRefreshToken = (token: string) => {
 };
 
 export const getAuthToken = () => {
-  return Cookies.get('medi_auth');
+  const cookieToken = Cookies.get('medi_auth');
+  if (cookieToken) {
+    return cookieToken;
+  }
+
+  if (typeof window !== 'undefined') {
+    return window.localStorage.getItem('access_token') ?? undefined;
+  }
+
+  return undefined;
 };
 
 export const getRefreshToken = () => {

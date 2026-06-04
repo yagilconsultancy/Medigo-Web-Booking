@@ -90,6 +90,8 @@ export const ROUTES_SPEC = {
     `/${API_VERSION}/rides/${rideId}/status`,
   getRideTimeline: (rideId: string) =>
     `/${API_VERSION}/rides/${rideId}/timeline`,
+  getDriverContact: (rideId: string) =>
+    `/${API_VERSION}/rides/${rideId}/driver-contact`,
 
   // Rides analytics
   ridesAnalyticsOverview: `/${API_VERSION}/rides/analytics/overview`,

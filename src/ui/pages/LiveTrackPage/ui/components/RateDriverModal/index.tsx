@@ -1,39 +1,95 @@
 'use client';
 
-import { useState } from 'react';
-import { Box, Stack, Typography, TextField, IconButton } from '@mui/material';
+import { useEffect, useState } from 'react';
+import {
+  Avatar,
+  Box,
+  CircularProgress,
+  IconButton,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CloseIcon from '@mui/icons-material/Close';
 import { pxToRem } from '@/common';
+import { useRidesApi } from '@/common/hooks/api/collection/useRidesApi';
+import { useGetDriverContact } from '@/common/hooks/api/query/rides';
 import { AppButton, AppModal, RowStack } from '@/ui/modules/components';
 
 export type RateDriverModalProps = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  driverName: string;
+  rideId: string;
   tripDuration: string;
-  onSubmit: (rating: number, tip: number, comment: string) => void;
+  onSubmitted: () => void;
 };
 
 export function RateDriverModal({
   open,
   setOpen,
-  driverName,
+  rideId,
   tripDuration,
-  onSubmit,
+  onSubmitted,
 }: RateDriverModalProps) {
+  const { submitRideRating } = useRidesApi();
+  const {
+    data: driverContact,
+    isLoading,
+    isError,
+  } = useGetDriverContact(rideId, { enabled: open && Boolean(rideId) });
+  const driverContactData = driverContact?.success ? driverContact.data : null;
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [tip, setTip] = useState(10);
   const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const tipOptions = [0, 5, 10, 15];
+  useEffect(() => {
+    if (!open) {
+      setRating(0);
+      setHoveredRating(0);
+      setComment('');
+      setSubmitting(false);
+    }
+  }, [open]);
 
-  const handleSubmit = () => {
-    onSubmit(rating, tip, comment);
+  const handleSubmit = async () => {
+    if (rating === 0 || submitting) return;
+
+    setSubmitting(true);
+    const result = await submitRideRating(rideId, {
+      rating_type: 'driver',
+      rating,
+      comment: comment.trim() || null,
+    });
+
+    setSubmitting(false);
+
+    if (result) {
+      setOpen(false);
+      onSubmitted();
+    }
   };
+
+  const driverName = driverContactData
+    ? `${driverContactData.first_name} ${driverContactData.last_name}`.trim()
+    : 'Driver';
+  const driverInitial = driverContactData
+    ? `${driverContactData.first_name?.[0] ?? ''}${driverContactData.last_name?.[0] ?? ''}`.trim() ||
+      'D'
+    : 'D';
+  const vehicleSummary = driverContactData
+    ? [
+        driverContactData.vehicle_color,
+        driverContactData.vehicle_make,
+        driverContactData.vehicle_model,
+      ]
+        .filter(Boolean)
+        .join(' ')
+    : '';
+  const vehiclePlate = driverContactData?.vehicle_plate ?? '';
 
   return (
     <AppModal
@@ -90,52 +146,102 @@ export function RateDriverModal({
               alignItems="center"
               sx={{ width: '100%' }}
             >
-              {/* Driver Avatar */}
-              <Box
-                sx={{
-                  width: pxToRem(106),
-                  height: pxToRem(106),
-                  borderRadius: pxToRem(69),
-                  border: '2.32px solid #FFD415',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: '#2563EB',
-                  color: '#FFFFFF',
-                  fontSize: pxToRem(40),
-                  fontWeight: 700,
-                }}
-              >
-                {driverName.charAt(0)}
-              </Box>
-
-              <Typography
-                sx={{
-                  fontSize: pxToRem(19.68),
-                  fontWeight: 700,
-                  lineHeight: pxToRem(29.52),
-                  color: '#0F172A',
-                }}
-              >
-                {driverName}
-              </Typography>
-
-              <RowStack spacing={pxToRem(6.95)}>
-                <AccessTimeIcon
-                  sx={{ fontSize: pxToRem(16.21), color: '#F59E0B' }}
-                />
+              {isLoading ? (
+                <CircularProgress size={36} />
+              ) : isError ? (
                 <Typography
                   sx={{
-                    fontSize: pxToRem(15.05),
+                    fontSize: pxToRem(15),
                     fontWeight: 600,
-                    lineHeight: pxToRem(22.58),
-                    color: '#F59E0B',
+                    color: '#B91C1C',
                   }}
                 >
-                  {tripDuration}
+                  Driver details unavailable
                 </Typography>
-              </RowStack>
+              ) : (
+                <>
+                  <Avatar
+                    src={driverContactData?.avatar_url ?? undefined}
+                    alt={driverName}
+                    sx={{
+                      width: pxToRem(106),
+                      height: pxToRem(106),
+                      border: '2.32px solid #FFD415',
+                      bgcolor: '#2563EB',
+                      color: '#FFFFFF',
+                      fontSize: pxToRem(40),
+                      fontWeight: 700,
+                    }}
+                  >
+                    {driverInitial}
+                  </Avatar>
+
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(19.68),
+                      fontWeight: 700,
+                      lineHeight: pxToRem(29.52),
+                      color: '#0F172A',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {driverName}
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      fontSize: pxToRem(14),
+                      fontWeight: 500,
+                      color: '#475569',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {driverContactData?.phone ?? 'No phone number'}
+                  </Typography>
+
+                  <RowStack spacing={pxToRem(6.95)}>
+                    <AccessTimeIcon
+                      sx={{ fontSize: pxToRem(16.21), color: '#F59E0B' }}
+                    />
+                    <Typography
+                      sx={{
+                        fontSize: pxToRem(15.05),
+                        fontWeight: 600,
+                        lineHeight: pxToRem(22.58),
+                        color: '#F59E0B',
+                      }}
+                    >
+                      {tripDuration}
+                    </Typography>
+                  </RowStack>
+
+                  {driverContactData?.rating != null && (
+                    <Typography
+                      sx={{
+                        fontSize: pxToRem(14),
+                        fontWeight: 600,
+                        color: '#0F172A',
+                      }}
+                    >
+                      Rating: {driverContactData.rating.toFixed(1)}
+                    </Typography>
+                  )}
+
+                  {vehicleSummary && (
+                    <Typography
+                      sx={{
+                        fontSize: pxToRem(14),
+                        fontWeight: 500,
+                        color: '#475569',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {vehicleSummary}
+                      {vehiclePlate ? ` · ${vehiclePlate}` : ''}
+                    </Typography>
+                  )}
+                </>
+              )}
             </Stack>
 
             {/* Rating Section */}
@@ -178,71 +284,6 @@ export function RateDriverModal({
               </RowStack>
             </Stack>
 
-            {/* Tip Section */}
-            <Stack
-              spacing={pxToRem(12)}
-              sx={{ width: '100%', px: pxToRem(24) }}
-            >
-              <Typography
-                sx={{
-                  fontSize: pxToRem(15),
-                  fontWeight: 600,
-                  lineHeight: pxToRem(22.5),
-                  color: '#475569',
-                  textAlign: 'center',
-                }}
-              >
-                Support the driver
-              </Typography>
-
-              <RowStack spacing={pxToRem(12)} justifyContent="space-between">
-                {tipOptions.map((amount) => (
-                  <AppButton
-                    key={amount}
-                    variant={tip === amount ? 'contained' : 'outlined'}
-                    onClick={() => setTip(amount)}
-                    sx={{
-                      flex: 1,
-                      height: pxToRem(48),
-                      borderRadius: pxToRem(14),
-                      border: tip === amount ? 'none' : '2px solid #E2E8F0',
-                      bgcolor: tip === amount ? '#EFF6FF' : '#FFFFFF',
-                      color: tip === amount ? '#2563EB' : '#475569',
-                      fontSize: pxToRem(16),
-                      fontWeight: 700,
-                      lineHeight: pxToRem(24),
-                      textTransform: 'none',
-                      '&:hover': {
-                        bgcolor: tip === amount ? '#DBEAFE' : '#F8FAFC',
-                        border: tip === amount ? 'none' : '2px solid #E2E8F0',
-                      },
-                    }}
-                  >
-                    ${amount}
-                  </AppButton>
-                ))}
-                <AppButton
-                  variant="outlined"
-                  sx={{
-                    width: pxToRem(92),
-                    height: pxToRem(48),
-                    borderRadius: pxToRem(14),
-                    border: '2px solid #E2E8F0',
-                    fontSize: pxToRem(16),
-                    fontWeight: 600,
-                    color: '#475569',
-                    textTransform: 'none',
-                    '&:hover': {
-                      bgcolor: '#F8FAFC',
-                      border: '2px solid #E2E8F0',
-                    },
-                  }}
-                >
-                  Custom
-                </AppButton>
-              </RowStack>
-            </Stack>
-
             {/* Comment Section */}
             <TextField
               fullWidth
@@ -281,7 +322,7 @@ export function RateDriverModal({
               variant="contained"
               fullWidth
               onClick={handleSubmit}
-              disabled={rating === 0}
+              disabled={rating === 0 || submitting}
               sx={{
                 height: pxToRem(56),
                 borderRadius: pxToRem(16),
@@ -300,7 +341,7 @@ export function RateDriverModal({
                 },
               }}
             >
-              Confirm Destination Arrival
+              {submitting ? 'Submitting...' : 'Confirm Destination Arrival'}
             </AppButton>
           </Stack>
         </Box>

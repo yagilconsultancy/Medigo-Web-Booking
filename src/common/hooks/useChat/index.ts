@@ -32,30 +32,56 @@ const decodeUserIdFromToken = () => {
   }
 };
 
-export function useChat(conversationId?: string | null) {
+type UseChatParams = {
+  conversationId?: string | null;
+};
+
+export function useChat(params?: string | UseChatParams | null) {
+  const conversationIdParam =
+    typeof params === 'string' ? params : (params?.conversationId ?? null);
   const socketRef = useRef<Socket | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [connected, setConnected] = useState(false);
   const [typing, setTyping] = useState<string | null>(null);
+  const [resolvedConversationId, setResolvedConversationId] = useState<
+    string | null
+  >(conversationIdParam);
   const currentUserId = useMemo(() => decodeUserIdFromToken(), []);
 
   useEffect(() => {
-    if (!conversationId) return;
+    setResolvedConversationId(conversationIdParam ?? null);
+  }, [conversationIdParam]);
+
+  useEffect(() => {
+    if (!resolvedConversationId) return;
 
     const socket = getChatSocket();
     socketRef.current = socket;
 
     const handleConnect = () => {
       setConnected(true);
-      socket.emit('join_conversation', { conversation_id: conversationId });
+      console.log('[Chat] connected:', {
+        socketId: socket.id,
+        conversationId: resolvedConversationId,
+        userId: currentUserId,
+      });
+      socket.emit('join_conversation', {
+        conversation_id: resolvedConversationId,
+      });
+      console.log('[Chat] join_conversation emitted:', {
+        conversationId: resolvedConversationId,
+      });
     };
 
     const handleDisconnect = () => {
       setConnected(false);
+      console.log('[Chat] disconnected:', {
+        conversationId: resolvedConversationId,
+      });
     };
 
     const handleNewMessage = (data: ChatMessage) => {
-      if (data.conversation_id !== conversationId) return;
+      if (data.conversation_id !== resolvedConversationId) return;
       setMessages((prev) => [...prev, data]);
     };
 
@@ -64,7 +90,7 @@ export function useChat(conversationId?: string | null) {
       reader_id: string;
       count?: number;
     }) => {
-      if (data.conversation_id !== conversationId) return;
+      if (data.conversation_id !== resolvedConversationId) return;
 
       setMessages((prev) =>
         prev.map((message) =>
@@ -80,7 +106,7 @@ export function useChat(conversationId?: string | null) {
       user_id: string;
       is_typing: boolean;
     }) => {
-      if (data.conversation_id !== conversationId) return;
+      if (data.conversation_id !== resolvedConversationId) return;
       if (data.user_id === currentUserId) return;
       setTyping(data.is_typing ? data.user_id : null);
     };
@@ -110,11 +136,20 @@ export function useChat(conversationId?: string | null) {
     if (socket.connected) {
       handleConnect();
     } else {
+      console.log('[Chat] connecting:', {
+        conversationId: resolvedConversationId,
+        userId: currentUserId,
+      });
       socket.connect();
     }
 
     return () => {
-      socket.emit('leave_conversation', { conversation_id: conversationId });
+      console.log('[Chat] leaving conversation:', {
+        conversationId: resolvedConversationId,
+      });
+      socket.emit('leave_conversation', {
+        conversation_id: resolvedConversationId,
+      });
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
       socket.off('new_message', handleNewMessage);
@@ -124,15 +159,15 @@ export function useChat(conversationId?: string | null) {
       socket.offAny(handleAnyEvent);
       disconnectChatSocket();
     };
-  }, [conversationId, currentUserId]);
+  }, [currentUserId, resolvedConversationId]);
 
   const sendMessage = useCallback(
     (content: string, messageType = 'text') => {
-      if (!conversationId || !currentUserId) return;
+      if (!resolvedConversationId || !currentUserId) return;
 
       const optimisticMessage: ChatMessage = {
         id: `optimistic-${Date.now()}`,
-        conversation_id: conversationId,
+        conversation_id: resolvedConversationId,
         sender_id: currentUserId,
         content,
         message_type: messageType,
@@ -144,7 +179,7 @@ export function useChat(conversationId?: string | null) {
       socketRef.current?.emit(
         'send_message',
         {
-          conversation_id: conversationId,
+          conversation_id: resolvedConversationId,
           content,
           message_type: messageType,
         },
@@ -153,25 +188,25 @@ export function useChat(conversationId?: string | null) {
         }
       );
     },
-    [conversationId, currentUserId]
+    [currentUserId, resolvedConversationId]
   );
 
   const markRead = useCallback(() => {
-    if (!conversationId) return;
+    if (!resolvedConversationId) return;
     socketRef.current?.emit('mark_read', {
-      conversation_id: conversationId,
+      conversation_id: resolvedConversationId,
     });
-  }, [conversationId]);
+  }, [resolvedConversationId]);
 
   const sendTyping = useCallback(
     (isTyping: boolean) => {
-      if (!conversationId) return;
+      if (!resolvedConversationId) return;
       socketRef.current?.emit('typing', {
-        conversation_id: conversationId,
+        conversation_id: resolvedConversationId,
         is_typing: isTyping,
       });
     },
-    [conversationId]
+    [resolvedConversationId]
   );
 
   return {

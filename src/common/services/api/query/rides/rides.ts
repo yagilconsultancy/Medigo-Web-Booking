@@ -3,6 +3,7 @@ import { resolveRoute, ROUTES } from '../../../../constants';
 import { getApiClient } from '../../../../lib';
 import type {
   ApiBookingChannelsResponse,
+  ApiDriverContactResponse,
   ApiDashboardOverviewResponse,
   ApiMyActiveRideResponse,
   ApiMyRidesResponse,
@@ -46,6 +47,13 @@ export const getRideRatings = async (rideId: string) => {
     ApiRideRatingsResponse,
     AxiosResponse<ApiRideRatingsResponse>
   >(resolveRoute(ROUTES.getRideRatings, rideId));
+};
+
+export const getDriverContact = async (rideId: string) => {
+  return await getApiClient().get<
+    ApiDriverContactResponse,
+    AxiosResponse<ApiDriverContactResponse>
+  >(resolveRoute(ROUTES.getDriverContact, rideId));
 };
 
 export const getRideTimeline = async (rideId: string) => {

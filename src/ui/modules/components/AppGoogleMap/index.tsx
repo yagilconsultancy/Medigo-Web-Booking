@@ -28,6 +28,7 @@ export type AppGoogleMapProps = {
   mapContainerStyle?: React.CSSProperties;
   showDirections?: boolean;
   routeOrigin?: MarkerPosition;
+  routePath?: MarkerPosition[];
 
   /**
    * When provided, renders an animated truck SVG at the given position instead
@@ -81,35 +82,6 @@ function projectPointToSegment(
   };
 }
 
-function findNearestPointOnPolyline(
-  point: MarkerPosition,
-  polyline: MarkerPosition[]
-) {
-  if (polyline.length === 0) return point;
-  if (polyline.length === 1) return polyline[0]!;
-
-  let nearestPoint = polyline[0]!;
-  let nearestDistance = getDistanceSquared(point, nearestPoint);
-
-  for (let index = 0; index < polyline.length - 1; index += 1) {
-    const segmentStart = polyline[index]!;
-    const segmentEnd = polyline[index + 1]!;
-    const projectedPoint = projectPointToSegment(
-      point,
-      segmentStart,
-      segmentEnd
-    );
-    const projectedDistance = getDistanceSquared(point, projectedPoint);
-
-    if (projectedDistance < nearestDistance) {
-      nearestDistance = projectedDistance;
-      nearestPoint = projectedPoint;
-    }
-  }
-
-  return nearestPoint;
-}
-
 function getBearingDegrees(from: MarkerPosition, to: MarkerPosition) {
   const lat1 = (from.lat * Math.PI) / 180;
   const lat2 = (to.lat * Math.PI) / 180;
@@ -151,27 +123,50 @@ function findNearestSegmentHeading(
   return nearestHeading;
 }
 
+function projectPointToPolyline(
+  point: MarkerPosition,
+  polyline: MarkerPosition[]
+) {
+  if (polyline.length < 2) return point;
+
+  let nearestPoint = polyline[0]!;
+  let nearestDistance = Number.POSITIVE_INFINITY;
+
+  for (let index = 0; index < polyline.length - 1; index += 1) {
+    const segmentStart = polyline[index]!;
+    const segmentEnd = polyline[index + 1]!;
+    const projectedPoint = projectPointToSegment(
+      point,
+      segmentStart,
+      segmentEnd
+    );
+    const projectedDistance = getDistanceSquared(point, projectedPoint);
+
+    if (projectedDistance < nearestDistance) {
+      nearestDistance = projectedDistance;
+      nearestPoint = projectedPoint;
+    }
+  }
+
+  return nearestPoint;
+}
+
 // ─── SVG truck icon ───────────────────────────────────────────────────────────
 // A simple side-profile cargo truck rendered as an inline SVG string.
 // We use a data URI so it works both as a google.maps.Icon url and as an <img>.
 const TRUCK_SVG = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="64" height="40">
-  <!-- Truck body / cargo box -->
-  <rect x="2" y="4" width="38" height="26" rx="3" ry="3" fill="#2F6FED"/>
-  <!-- Cab -->
-  <rect x="40" y="10" width="20" height="20" rx="3" ry="3" fill="#2F6FED"/>
-  <!-- Windscreen -->
-  <rect x="42" y="12" width="14" height="10" rx="2" ry="2" fill="#BAE6FD" opacity="0.9"/>
-  <!-- Undercarriage -->
-  <rect x="2" y="28" width="58" height="4" rx="1" ry="1" fill="#2F6FED" opacity="0.2"/>
-  <!-- Wheels -->
-  <circle cx="14" cy="34" r="5" fill="#1E293B"/>
-  <circle cx="14" cy="34" r="2.5" fill="#94A3B8"/>
-  <circle cx="48" cy="34" r="5" fill="#1E293B"/>
-  <circle cx="48" cy="34" r="2.5" fill="#94A3B8"/>
-  <!-- Side stripe -->
-  <rect x="4" y="16" width="34" height="3" rx="1.5" ry="1.5" fill="#fff" opacity="0.3"/>
-</svg>
+  <svg width="116" height="114" viewBox="0 0 116 114" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#clip0_948_47804)">
+    <path d="M19.0849 73.3782C16.7716 72.6723 15.3655 70.4104 15.6516 67.8331C16.0982 63.7785 17.3867 56.9564 20.9817 47.3931C24.5768 37.8297 28.1547 31.7062 30.5347 28.2414C32.0459 26.0379 34.6881 25.0112 37.0015 25.717L95.2193 43.4802C99.283 44.7201 101.624 48.8385 100.851 53.3537C100.081 57.849 98.7066 63.8745 96.2672 70.3637C93.8278 76.853 90.8553 82.3908 88.4336 86.3824C86.0016 90.3912 81.3665 92.3812 77.3028 91.1413L19.0849 73.3782Z" fill="#2F6FED"/>
+    <path d="M62.0258 70.133L67.8246 80.0758C67.8246 80.0758 72.261 73.3479 75.7375 64.0998C79.214 54.8517 80.2284 47.0797 80.2284 47.0797L68.9168 51.8018L62.0258 70.133ZM41.5403 43.4489L37.4525 34.0281C37.4525 34.0281 33.6315 39.1191 29.5424 49.9968C25.4533 60.8746 25.0488 67.0243 25.0488 67.0243L34.6493 61.7801L41.5403 43.4489ZM54.8254 74.0662L36.9759 68.6201L29.7755 72.5533L58.8289 81.4179L54.8254 74.0662ZM65.851 44.7363L48.0015 39.2902L44.9357 32.2246L73.989 41.0892L65.851 44.7363Z" fill="#EAEAEA"/>
+    <path d="M78.2056 32.1582L81.6277 33.2023L78.8713 40.5348L75.4493 39.4907L78.2056 32.1582ZM58.9109 83.4856L62.3329 84.5297L59.5766 91.8622L56.1545 90.818L58.9109 83.4856Z" fill="#2F6FED"/>
+    </g>
+    <defs>
+    <clipPath id="clip0_948_47804">
+    <rect width="89.2947" height="90.5821" fill="white" transform="matrix(0.919759 0.280632 -0.365158 0.971381 33.0767 0)"/>
+    </clipPath>
+    </defs>
+  </svg>
 `.trim();
 
 const TRUCK_DATA_URI = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(TRUCK_SVG)}`;
@@ -190,8 +185,11 @@ function TruckOverlay({ position, heading }: TruckOverlayProps) {
   return (
     <OverlayView
       position={position}
-      mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-      getPixelPositionOffset={(w, h) => ({ x: -(w / 2), y: -(h / 2) })}
+      mapPaneName={OverlayView.FLOAT_PANE}
+      getPixelPositionOffset={(w, h) => ({
+        x: -(w / 2),
+        y: -(h * 0.85),
+      })}
     >
       <Box
         sx={{
@@ -201,6 +199,8 @@ function TruckOverlay({ position, heading }: TruckOverlayProps) {
           transition: 'transform 0.8s ease-out',
           filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))',
           pointerEvents: 'none',
+          position: 'relative',
+          zIndex: 1000,
         }}
       >
         <StyledImage
@@ -220,6 +220,7 @@ export function AppGoogleMap({
   mapContainerStyle = { width: '100%', height: '500px' },
   showDirections = true,
   routeOrigin,
+  routePath: routePathProp,
   truckMarker,
   computeRoute,
 }: AppGoogleMapProps) {
@@ -228,6 +229,9 @@ export function AppGoogleMap({
   const [animatedTruckPosition, setAnimatedTruckPosition] =
     useState<MarkerPosition | null>(truckMarker?.position ?? null);
   const animationFrameRef = useRef<number | null>(null);
+  const previousTruckPositionRef = useRef<MarkerPosition | null>(
+    truckMarker?.position ?? null
+  );
   const hasFittedRouteRef = useRef(false);
 
   const onLoad = useCallback((m: google.maps.Map) => setMap(m), []);
@@ -244,6 +248,8 @@ export function AppGoogleMap({
     return points;
   }, [markerPositions, routeOrigin, truckMarker]);
 
+  const renderedRoutePath = routePathProp ?? routePath;
+
   const routeKey = useMemo(
     () =>
       JSON.stringify({
@@ -255,14 +261,21 @@ export function AppGoogleMap({
   );
 
   useEffect(() => {
-    setAnimatedTruckPosition(truckMarker?.position ?? null);
-  }, [truckMarker?.position?.lat, truckMarker?.position?.lng]);
-
-  useEffect(() => {
-    if (!truckMarker?.position) return;
+    if (!truckMarker?.position) {
+      setAnimatedTruckPosition(null);
+      previousTruckPositionRef.current = null;
+      return;
+    }
 
     const nextPosition = truckMarker.position;
-    const startPosition = animatedTruckPosition ?? nextPosition;
+    const startPosition = previousTruckPositionRef.current ?? nextPosition;
+
+    if (isSamePosition(startPosition, nextPosition)) {
+      setAnimatedTruckPosition(nextPosition);
+      previousTruckPositionRef.current = nextPosition;
+      return;
+    }
+
     const animationDuration = 1200;
     const animationStart = performance.now();
 
@@ -288,6 +301,8 @@ export function AppGoogleMap({
 
       if (progress < 1) {
         animationFrameRef.current = requestAnimationFrame(animate);
+      } else {
+        previousTruckPositionRef.current = nextPosition;
       }
     };
 
@@ -302,25 +317,36 @@ export function AppGoogleMap({
 
   const renderedTruckPosition = useMemo(() => {
     if (!animatedTruckPosition) return null;
-    if (!routePath?.length) return animatedTruckPosition;
-    return findNearestPointOnPolyline(animatedTruckPosition, routePath);
-  }, [animatedTruckPosition, routePath]);
+    if (!renderedRoutePath?.length) return animatedTruckPosition;
+    return projectPointToPolyline(animatedTruckPosition, renderedRoutePath);
+  }, [animatedTruckPosition, renderedRoutePath]);
 
   const renderedTruckHeading = useMemo(() => {
     if (!truckMarker) return 0;
-    if (!renderedTruckPosition || !routePath?.length)
-      return truckMarker.heading ?? 0;
-    return (
-      findNearestSegmentHeading(renderedTruckPosition, routePath) ??
-      truckMarker.heading ??
-      0
-    );
-  }, [renderedTruckPosition, routePath, truckMarker]);
+    const routeDestination = renderedRoutePath?.[renderedRoutePath.length - 1];
+    if (renderedTruckPosition && routeDestination) {
+      return getBearingDegrees(renderedTruckPosition, routeDestination);
+    }
+    if (
+      typeof truckMarker.heading === 'number' &&
+      !Number.isNaN(truckMarker.heading)
+    ) {
+      return truckMarker.heading;
+    }
+    if (!renderedTruckPosition || !routePath?.length) return 0;
+    return findNearestSegmentHeading(renderedTruckPosition, routePath) ?? 0;
+  }, [renderedRoutePath, renderedTruckPosition, routePath, truckMarker]);
 
   useEffect(() => {
     if (!map || allPositions.length === 0 || hasFittedRouteRef.current) return;
     const bounds = new google.maps.LatLngBounds();
-    const positionsForBounds = routePath?.length ? routePath : allPositions;
+    const positionsForBounds = renderedRoutePath?.length
+      ? [
+          ...renderedRoutePath,
+          ...markerPositions,
+          ...(renderedTruckPosition ? [renderedTruckPosition] : []),
+        ]
+      : allPositions;
     positionsForBounds.forEach((position) => bounds.extend(position));
     map.fitBounds(bounds, {
       top: 220,
@@ -329,9 +355,21 @@ export function AppGoogleMap({
       left: 80,
     });
     hasFittedRouteRef.current = true;
-  }, [allPositions, map, routePath]);
+  }, [
+    allPositions,
+    map,
+    markerPositions,
+    renderedRoutePath,
+    renderedTruckPosition,
+  ]);
 
   useEffect(() => {
+    if (routePathProp?.length) {
+      setRoutePath(null);
+      hasFittedRouteRef.current = false;
+      return;
+    }
+
     if (!showDirections || !computeRoute) {
       setRoutePath(null);
       hasFittedRouteRef.current = false;
@@ -422,21 +460,25 @@ export function AppGoogleMap({
   return (
     <GoogleMap mapContainerStyle={mapContainerStyle} onLoad={onLoad}>
       {/* Route polyline */}
-      {routePath && (
+      {renderedRoutePath && (
         <Polyline
-          path={routePath}
+          path={renderedRoutePath}
           options={{
             strokeColor: '#2F6FED',
             strokeOpacity: 1,
             strokeWeight: 6,
-            zIndex: 20,
+            zIndex: 1,
           }}
         />
       )}
 
       {/* Static ride markers */}
       {markerPositions.map((pos, i) => (
-        <Marker key={i} position={pos} />
+        <Marker
+          key={i}
+          position={pos}
+          options={{ zIndex: i === 0 ? 30 : 31 }}
+        />
       ))}
 
       {/* Animated truck marker */}

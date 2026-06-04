@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import {
   Avatar,
   Box,
@@ -7,35 +10,56 @@ import {
   Typography,
 } from '@mui/material';
 import MessageRoundedIcon from '@mui/icons-material/MessageRounded';
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { pxToRem } from '@/common';
+import { useRidesApi } from '@/common/hooks/api/collection/useRidesApi';
+import { useGetDriverContact } from '@/common/hooks/api/query/rides';
+import { AppButton } from '@/ui/modules/components';
 
 export type DriverTrackingCardProps = {
+  rideId: string;
   statusLabel: string;
-  driverName: string;
-  driverSubtitle: string;
-  etaMinutes: number;
-  destinationLabel: string;
-  metaLabel: string;
   onMessageDriver: () => void;
 };
 
 export function DriverTrackingCard({
+  rideId,
   statusLabel,
-  driverName,
-  driverSubtitle,
-  etaMinutes,
-  destinationLabel,
-  metaLabel,
   onMessageDriver,
 }: DriverTrackingCardProps) {
-  const initials = driverName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0])
-    .join('')
-    .toUpperCase();
+  const { cancelRide } = useRidesApi();
+  const {
+    data: driverContact,
+    isLoading,
+    isError,
+  } = useGetDriverContact(rideId, { enabled: Boolean(rideId) });
+  const [cancelling, setCancelling] = useState(false);
+  const driverContactData = driverContact?.success ? driverContact.data : null;
+  const driverName = driverContactData
+    ? `${driverContactData.first_name} ${driverContactData.last_name}`.trim()
+    : 'Driver';
+  const driverSubtitle = driverContactData
+    ? [
+        driverContactData.vehicle_type,
+        driverContactData.vehicle_color,
+        driverContactData.vehicle_plate,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : '';
+  const initials = driverContactData
+    ? `${driverContactData.first_name?.[0] ?? ''}${driverContactData.last_name?.[0] ?? ''}`.trim() ||
+      'D'
+    : 'D';
+
+  const handleCancelRide = async () => {
+    if (!rideId || cancelling) return;
+
+    setCancelling(true);
+    await cancelRide(rideId, { ride_id: rideId });
+    setCancelling(false);
+  };
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -71,6 +95,7 @@ export function DriverTrackingCard({
             justifyContent: 'space-between',
             p: pxToRem(18),
             pb: pxToRem(14),
+            gap: pxToRem(12),
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(12) }}>
@@ -82,7 +107,7 @@ export function DriverTrackingCard({
                 fontWeight: 800,
               }}
             >
-              {initials || 'D'}
+              {isLoading ? '...' : initials}
             </Avatar>
             <Box>
               <Typography
@@ -93,7 +118,7 @@ export function DriverTrackingCard({
                   lineHeight: pxToRem(22),
                 }}
               >
-                {driverName}
+                {isError ? 'Driver unavailable' : driverName}
               </Typography>
               <Stack direction="row" spacing={pxToRem(6)} alignItems="center">
                 <VerifiedIcon
@@ -106,26 +131,51 @@ export function DriverTrackingCard({
                     color: '#64748B',
                   }}
                 >
-                  {driverSubtitle}
+                  {driverSubtitle || 'Vehicle details pending'}
                 </Typography>
               </Stack>
             </Box>
           </Box>
 
-          <IconButton
-            onClick={onMessageDriver}
-            sx={{
-              width: pxToRem(44),
-              height: pxToRem(44),
-              bgcolor: '#2563EB',
-              '&:hover': { bgcolor: '#1D4ED8' },
-            }}
-          >
-            <MessageRoundedIcon sx={{ color: '#FFFFFF' }} />
-          </IconButton>
+          <Stack direction="row" spacing={pxToRem(8)} alignItems="center">
+            <AppButton
+              variant="outlined"
+              onClick={handleCancelRide}
+              disabled={cancelling}
+              sx={{
+                height: pxToRem(40),
+                borderRadius: pxToRem(999),
+                borderColor: '#FCA5A5',
+                color: '#B91C1C',
+                textTransform: 'none',
+                fontSize: pxToRem(12),
+                fontWeight: 700,
+                px: pxToRem(14),
+                whiteSpace: 'nowrap',
+                '&:hover': {
+                  borderColor: '#EF4444',
+                  bgcolor: '#FEF2F2',
+                },
+              }}
+            >
+              {cancelling ? 'Cancelling...' : 'Cancel Ride'}
+            </AppButton>
+
+            <IconButton
+              onClick={onMessageDriver}
+              sx={{
+                width: pxToRem(44),
+                height: pxToRem(44),
+                bgcolor: '#2563EB',
+                '&:hover': { bgcolor: '#1D4ED8' },
+              }}
+            >
+              <MessageRoundedIcon sx={{ color: '#FFFFFF' }} />
+            </IconButton>
+          </Stack>
         </Box>
 
-        {/* Arriving section */}
+        {/* Vehicle section */}
         <Box
           sx={{
             mx: pxToRem(18),
@@ -134,75 +184,85 @@ export function DriverTrackingCard({
             bgcolor: '#F0F7FF',
             border: '1px solid #DBEAFE',
             p: pxToRem(16),
-            display: 'flex',
-            alignItems: 'center',
-            gap: pxToRem(14),
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            gap: pxToRem(12),
           }}
         >
-          <Box
-            sx={{
-              width: pxToRem(54),
-              height: pxToRem(54),
-              borderRadius: pxToRem(14),
-              bgcolor: '#FFFFFF',
-              border: '1px solid #DBEAFE',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: pxToRem(18),
-                fontWeight: 900,
-                color: '#2563EB',
-                lineHeight: pxToRem(20),
-              }}
-            >
-              {etaMinutes}
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: pxToRem(10),
-                fontWeight: 700,
-                color: '#64748B',
-              }}
-            >
-              min
-            </Typography>
-          </Box>
-
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              sx={{
-                fontSize: pxToRem(12),
-                fontWeight: 700,
-                color: '#0F172A',
-              }}
-            >
-              Arriving at
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontSize: pxToRem(11), color: '#64748B' }}>
+              Vehicle type
             </Typography>
             <Typography
               sx={{
                 fontSize: pxToRem(14),
-                fontWeight: 900,
-                color: '#2563EB',
+                fontWeight: 800,
+                color: '#0F172A',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}
             >
-              {destinationLabel}
+              {driverContactData?.vehicle_type ?? 'Vehicle pending'}
+            </Typography>
+          </Box>
+
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontSize: pxToRem(11), color: '#64748B' }}>
+              Color
             </Typography>
             <Typography
               sx={{
-                mt: pxToRem(2),
-                fontSize: pxToRem(11),
-                color: '#64748B',
+                fontSize: pxToRem(14),
+                fontWeight: 800,
+                color: '#0F172A',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
             >
-              {metaLabel}
+              {driverContactData?.vehicle_color ?? '—'}
+            </Typography>
+          </Box>
+
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontSize: pxToRem(11), color: '#64748B' }}>
+              Make / model
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: pxToRem(14),
+                fontWeight: 800,
+                color: '#0F172A',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {[
+                driverContactData?.vehicle_make,
+                driverContactData?.vehicle_model,
+              ]
+                .filter(Boolean)
+                .join(' ') || '—'}
+            </Typography>
+          </Box>
+
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontSize: pxToRem(11), color: '#64748B' }}>
+              Plate
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: pxToRem(14),
+                fontWeight: 800,
+                color: '#0F172A',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {driverContactData?.vehicle_plate ?? '—'}
             </Typography>
           </Box>
         </Box>

@@ -1,3 +1,4 @@
+import { Skeleton } from '@mui/material';
 import { useJsApiLoader } from '@react-google-maps/api';
 import React from 'react';
 
@@ -20,7 +21,7 @@ export function AppGoogleMapsProvider({
     version: 'beta', // Use beta to get access to new Places API
   });
 
-  if (!isLoaded) return <div>Loading...</div>;
+  if (!isLoaded) return <Skeleton sx={{ height: '400px', width: '100%' }} />;
 
   return <>{children}</>;
 }

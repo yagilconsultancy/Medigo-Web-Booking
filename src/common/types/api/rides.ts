@@ -148,6 +148,20 @@ export type ApiRating = {
   created_at: string; // ISO
 };
 
+export type ApiDriverContact = {
+  driver_id: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  avatar_url: string | null;
+  rating: number;
+  vehicle_type: string;
+  vehicle_make: string;
+  vehicle_model: string;
+  vehicle_plate: string;
+  vehicle_color: string;
+};
+
 export type ApiRideDetail = {
   id: string;
   rider_id: string;
@@ -202,6 +216,7 @@ export type ApiRideDetail = {
 };
 
 export type ApiCancelRidePayload = {
+  ride_id?: string | null;
   reason?: string | null;
   notes?: string | null;
 };
@@ -277,6 +292,7 @@ export type ApiRideFareResponse = ApiResponse<Record<string, any>>;
 
 export type ApiRideRatingResponse = ApiResponse<ApiRating>;
 export type ApiRideRatingsResponse = ApiResponse<ApiRating[]>;
+export type ApiDriverContactResponse = ApiResponse<ApiDriverContact>;
 export type ApiRideTimelineResponse = ApiResponse<ApiStatusLog[]>;
 
 export type ApiShareRideResponse = ApiResponse<ApiShareRide>;

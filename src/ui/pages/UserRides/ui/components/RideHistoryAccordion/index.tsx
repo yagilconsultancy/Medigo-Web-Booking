@@ -452,8 +452,7 @@ export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
                             </RowStack>
                           )}
                         </AppButton>
-                      ) : ride.status === 'driver_assigned' ||
-                        ride.status === 'driver_en_route' ||
+                      ) : ride.status === 'driver_en_route' ||
                         ride.status === 'driver_arrived' ||
                         ride.status === 'in_progress' ? (
                         <AppButton
