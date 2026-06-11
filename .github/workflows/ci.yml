@@ -56,11 +56,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-            export PATH="/usr/local/bin:/usr/bin:$HOME/.nvm/versions/node/$(nvm current)/bin:$PATH"
+            export PATH="/usr/local/bin:/usr/bin:$PATH"
 
-            cd /home/ubuntu/medigo-booking
+            cd /home/ec2-user/medigo-booking
 
             # Pull latest code
             git pull origin main
@@ -69,7 +67,7 @@ jobs:
             npm ci --production=false
 
             # Create .env file from secrets
-            cat > .env <<'ENVEOF'
+            cat > .env << ENVEOF
             NEXT_PUBLIC_BASE_API_URL=${{ secrets.NEXT_PUBLIC_BASE_API_URL }}
             NEXT_PUBLIC_SOCKET_URL=${{ secrets.NEXT_PUBLIC_SOCKET_URL }}
             NEXT_PUBLIC_SOCKET_PATH=${{ secrets.NEXT_PUBLIC_SOCKET_PATH }}

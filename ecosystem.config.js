@@ -4,7 +4,7 @@ module.exports = {
       name: 'medigo-booking',
       script: 'node_modules/.bin/next',
       args: 'start',
-      cwd: '/home/ubuntu/medigo-booking',
+      cwd: '/home/ec2-user/medigo-booking',
       instances: 'max',
       exec_mode: 'cluster',
       env: {
