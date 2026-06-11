@@ -13,36 +13,75 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Setup Node.js environment
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      # Install dependencies
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
-      # Check TypeScript types
-      # - name: TypeScript Type Check
-      #   run: npm run type-check # Ensure this script is in your package.json
-
-      # Run ESLint for linting
       - name: Lint Code
-        run: npm run lint # Ensure this script is in your package.json
+        run: npm run lint
 
-      # Run tests
-      # - name: Run Tests
-      #   run: npm test # Ensure this script is in your package.json
-
-      # Build the project
       - name: Build Project
-        run: npm run build # Ensure this script is in your package.json
-
+        run: npm run build
         env:
           NODE_ENV: production
+          NEXT_PUBLIC_BASE_API_URL: ${{ secrets.NEXT_PUBLIC_BASE_API_URL }}
+          NEXT_PUBLIC_SOCKET_URL: ${{ secrets.NEXT_PUBLIC_SOCKET_URL }}
+          NEXT_PUBLIC_SOCKET_PATH: ${{ secrets.NEXT_PUBLIC_SOCKET_PATH }}
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_TAWK_CHAT_ID: ${{ secrets.NEXT_PUBLIC_TAWK_CHAT_ID }}
+          NEXT_PUBLIC_CLOUD_FRONT_BASE_URL: ${{ secrets.NEXT_PUBLIC_CLOUD_FRONT_BASE_URL }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            cd /home/ubuntu/medigo-booking
+
+            # Pull latest code
+            git pull origin main
+
+            # Install dependencies
+            npm ci --production=false
+
+            # Create .env file from secrets
+            cat > .env <<'ENVEOF'
+            NEXT_PUBLIC_BASE_API_URL=${{ secrets.NEXT_PUBLIC_BASE_API_URL }}
+            NEXT_PUBLIC_SOCKET_URL=${{ secrets.NEXT_PUBLIC_SOCKET_URL }}
+            NEXT_PUBLIC_SOCKET_PATH=${{ secrets.NEXT_PUBLIC_SOCKET_PATH }}
+            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+            NEXT_PUBLIC_TAWK_CHAT_ID=${{ secrets.NEXT_PUBLIC_TAWK_CHAT_ID }}
+            NEXT_PUBLIC_CLOUD_FRONT_BASE_URL=${{ secrets.NEXT_PUBLIC_CLOUD_FRONT_BASE_URL }}
+            NODE_ENV=production
+            ENVEOF
+
+            # Build the project
+            npm run build
+
+            # Restart with PM2
+            pm2 reload ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
+
+            # Save PM2 process list
+            pm2 save
