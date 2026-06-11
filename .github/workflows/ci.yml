@@ -67,16 +67,14 @@ jobs:
             npm ci --production=false
 
             # Create .env file from secrets
-            cat > .env << ENVEOF
-            NEXT_PUBLIC_BASE_API_URL=${{ secrets.NEXT_PUBLIC_BASE_API_URL }}
-            NEXT_PUBLIC_SOCKET_URL=${{ secrets.NEXT_PUBLIC_SOCKET_URL }}
-            NEXT_PUBLIC_SOCKET_PATH=${{ secrets.NEXT_PUBLIC_SOCKET_PATH }}
-            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
-            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-            NEXT_PUBLIC_TAWK_CHAT_ID=${{ secrets.NEXT_PUBLIC_TAWK_CHAT_ID }}
-            NEXT_PUBLIC_CLOUD_FRONT_BASE_URL=${{ secrets.NEXT_PUBLIC_CLOUD_FRONT_BASE_URL }}
-            NODE_ENV=production
-            ENVEOF
+            echo "NEXT_PUBLIC_BASE_API_URL=${{ secrets.NEXT_PUBLIC_BASE_API_URL }}" > .env
+            echo "NEXT_PUBLIC_SOCKET_URL=${{ secrets.NEXT_PUBLIC_SOCKET_URL }}" >> .env
+            echo "NEXT_PUBLIC_SOCKET_PATH=${{ secrets.NEXT_PUBLIC_SOCKET_PATH }}" >> .env
+            echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}" >> .env
+            echo "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}" >> .env
+            echo "NEXT_PUBLIC_TAWK_CHAT_ID=${{ secrets.NEXT_PUBLIC_TAWK_CHAT_ID }}" >> .env
+            echo "NEXT_PUBLIC_CLOUD_FRONT_BASE_URL=${{ secrets.NEXT_PUBLIC_CLOUD_FRONT_BASE_URL }}" >> .env
+            echo "NODE_ENV=production" >> .env
 
             # Build the project
             npm run build
