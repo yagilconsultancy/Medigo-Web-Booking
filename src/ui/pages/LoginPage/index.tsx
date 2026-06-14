@@ -425,7 +425,7 @@ export function LoginPage() {
                 boxShadow: '0px 1px 1.5px rgba(0,0,0,0.04)',
               },
             }}
-            onClick={() => undefined}
+            onClick={() => router.push('/guest/login')}
           >
             <PersonOutlineOutlinedIcon
               sx={{ fontSize: pxToRem(15), color: '#4A5565' }}

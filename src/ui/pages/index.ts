@@ -14,3 +14,5 @@ export * from './PrivacyPage';
 export * from './HelpPage';
 export * from './BookingSuccessPage';
 export * from './LiveTrackPage';
+export * from './GuestLoginPage';
+export * from './GuestBookingPage';

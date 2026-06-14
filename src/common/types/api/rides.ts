@@ -250,11 +250,42 @@ export type ApiSharedRide = {
 export type ApiCreateRecurringRidePayload = Record<string, any>;
 export type ApiRecurringRide = Record<string, any>;
 
-export type ApiCreateGuestSessionPayload = Record<string, any>;
-export type ApiGuestSession = Record<string, any>;
+export type ApiCreateGuestSessionPayload = {
+  email: string;
+  full_name: string;
+  first_name: string;
+  last_name: string;
+};
 
-export type ApiCreateGuestBookingPayload = Record<string, any>;
-export type ApiGuestBooking = Record<string, any>;
+export type ApiGuestCurrentBooking = {
+  ride: ApiRide;
+  share_token: string;
+  share_url: string;
+};
+
+export type ApiGuestSession = {
+  session_id: string;
+  rider_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  is_guest: boolean;
+  created_at: string;
+  updated_at: string;
+  current_booking: ApiGuestCurrentBooking | null;
+};
+
+export type ApiCreateGuestBookingPayload = ApiCreateRidePayload & {
+  session_id: string;
+};
+
+export type ApiGuestBooking = {
+  session_id: string;
+  rider_id: string;
+  is_guest: boolean;
+  booking: ApiGuestCurrentBooking;
+};
 
 export type ApiCreateSafetyReportPayload = {
   reported_user_id?: string | null;

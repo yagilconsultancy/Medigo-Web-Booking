@@ -1,4 +1,5 @@
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import {
   useCancelRide,
   useCreateGuestBooking,
@@ -25,9 +26,15 @@ import type {
   ApiSubmitRatingPayload,
   ApiSubmitVehicleChecklistPayload,
 } from '../../../../types';
-import { extractResponseErrors, tryExecute } from '../../../../utils';
+import {
+  extractResponseErrors,
+  setAuthToken,
+  setRefreshToken,
+  tryExecute,
+} from '../../../../utils';
 
 export const useRidesApi = () => {
+  const router = useRouter();
   const doCreateRide = useCreateRide();
   const doCancelRide = useCancelRide();
   const doSubmitRideRating = useSubmitRideRating();
@@ -148,7 +155,15 @@ export const useRidesApi = () => {
       () => doCreateGuestSession.mutateAsync(payload),
       async (response) => {
         const responseData = response.data;
-        if (responseData.success) return responseData.data;
+        if (responseData.success) {
+          const token = responseData.data.session_id;
+          setAuthToken(token);
+
+          toast.success(`${responseData.message}`);
+          toast.success(responseData.message || 'Guest session created');
+          router.push('/guest/booking');
+          return responseData.data;
+        }
         toast.error(extractResponseErrors(responseData));
         return null;
       },
@@ -164,7 +179,12 @@ export const useRidesApi = () => {
       () => doCreateGuestBooking.mutateAsync(payload),
       async (response) => {
         const responseData = response.data;
-        if (responseData.success) return responseData.data;
+        if (responseData.success) {
+          if (responseData.message) {
+            toast.success(responseData.message);
+          }
+          return responseData.data;
+        }
         toast.error(extractResponseErrors(responseData));
         return null;
       },
