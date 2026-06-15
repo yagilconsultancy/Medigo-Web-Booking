@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import { pxToRem } from '@/common';
 import { AppFooter, AppLayout } from '@/ui/modules/partials';
 import { HeaderHelpUser } from '@/ui/modules/partials/AppHeader/ui/components';
+import { ProfilePopOverComponent as GuestProfilePopOverComponent } from '@/ui/pages/GuestBookingPage/ui/components';
 import {
   AppButton,
   AppTextField,
@@ -148,14 +149,22 @@ const supportHours = [
 
 /* ─── component ─── */
 
-export function HelpPage() {
+export type HelpPageProps = {
+  isGuest?: boolean;
+};
+
+export function HelpPage({ isGuest = false }: HelpPageProps) {
   const router = useRouter();
   const [expandedKey, setExpandedKey] = useState<string | false>(false);
 
   return (
     <AppLayout
       headerProps={{
-        rightContent: <HeaderHelpUser helpLabel="Help Center" online />,
+        rightContent: isGuest ? (
+          <GuestProfilePopOverComponent />
+        ) : (
+          <HeaderHelpUser helpLabel="Help Center" online />
+        ),
       }}
     >
       <Box
@@ -575,7 +584,7 @@ export function HelpPage() {
             </Stack>
           </Paper> */}
 
-          <AppFooter />
+          <AppFooter helpHref={isGuest ? '/guest/help' : '/help'} />
         </Box>
       </Box>
     </AppLayout>

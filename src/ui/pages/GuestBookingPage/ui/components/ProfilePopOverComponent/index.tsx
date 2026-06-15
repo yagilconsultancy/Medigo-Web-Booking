@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { getAuthToken, pxToRem, useGetGuestSession } from '@/common';
 import { StyledImage } from '@/ui/modules/components';
 import { LogoutModal } from '../LogoutModal';
@@ -40,6 +40,7 @@ export function ProfilePopOverComponent({
   hideTrigger = false,
 }: ProfilePopOverComponentProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const sessionId = getAuthToken();
   const { data: profileResponse } = useGetGuestSession(sessionId);
   const profile = profileResponse?.success ? profileResponse.data : null;
@@ -55,15 +56,19 @@ export function ProfilePopOverComponent({
   const open = openProp ?? Boolean(anchorEl);
   const handleClose = onClose ?? (() => setUncontrolledAnchorEl(null));
 
-  const items = useMemo(
-    () => [
-      {
-        key: 'profile',
-        label: 'Profile',
-        link: '/profile',
-        description: 'Manage your account details',
-        icon: icon13,
-      },
+  const items = useMemo(() => {
+    const menuItems = [
+      ...(!pathname.includes('/guest')
+        ? [
+            {
+              key: 'profile',
+              label: 'Profile',
+              link: '/profile',
+              description: 'Manage your account details',
+              icon: icon13,
+            },
+          ]
+        : []),
       {
         key: 'rides',
         label: 'My rides',
@@ -88,7 +93,7 @@ export function ProfilePopOverComponent({
       {
         key: 'help',
         label: 'Help',
-        link: '/help',
+        link: '/guest/help',
         description: 'Get support and FAQs',
         icon: icon17,
       },
@@ -99,9 +104,10 @@ export function ProfilePopOverComponent({
         icon: icon18,
         danger: true,
       },
-    ],
-    []
-  );
+    ];
+
+    return menuItems;
+  }, [pathname]);
 
   return (
     <>

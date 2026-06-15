@@ -4,9 +4,10 @@ import { RowStack, StyledLink } from '@/ui/modules/components';
 
 export type AppFooterProps = {
   sx?: SxProps<Theme>;
+  helpHref?: string;
 };
 
-export function AppFooter({ sx }: AppFooterProps) {
+export function AppFooter({ sx, helpHref = '/help' }: AppFooterProps) {
   return (
     <Box
       sx={{
@@ -83,7 +84,7 @@ export function AppFooter({ sx }: AppFooterProps) {
             ·
           </Typography>
 
-          <StyledLink href="/help">
+          <StyledLink href={helpHref}>
             <Typography
               sx={{
                 color: '#99A1AF',
