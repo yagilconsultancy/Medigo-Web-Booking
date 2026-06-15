@@ -19,8 +19,6 @@ import { LogoutModal } from '../LogoutModal';
 
 import icon13 from '../../assets/icons/Icon-13.svg';
 import icon14 from '../../assets/icons/Icon-14.svg';
-import icon15 from '../../assets/icons/Icon-15.svg';
-import icon16 from '../../assets/icons/Icon-16.svg';
 import icon17 from '../../assets/icons/Icon-17.svg';
 import icon18 from '../../assets/icons/Icon-18.svg';
 
@@ -72,7 +70,7 @@ export function ProfilePopOverComponent({
       {
         key: 'rides',
         label: 'My rides',
-        link: '/my-rides',
+        link: '/guest/my-rides',
         description: 'View your ride history',
         icon: icon14,
       },

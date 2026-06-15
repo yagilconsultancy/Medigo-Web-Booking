@@ -16,3 +16,6 @@ export * from './BookingSuccessPage';
 export * from './LiveTrackPage';
 export * from './GuestLoginPage';
 export * from './GuestBookingPage';
+export * from './GuestRides';
+export * from './GuestBookingSuccessPage';
+export * from './GuestCheckoutPage';

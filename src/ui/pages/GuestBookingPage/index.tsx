@@ -209,7 +209,7 @@ function GuestBookingFlowShell({ accountType }: { accountType: AccountType }) {
 
       if (paymentResult) {
         router.push(
-          `/checkout?ride_id=${encodeURIComponent(rideResult.id)}&client_secret=${encodeURIComponent(
+          `/guest/checkout?ride_id=${encodeURIComponent(rideResult.id)}&client_secret=${encodeURIComponent(
             paymentResult.clientSecret
           )}&pk=${encodeURIComponent(paymentResult.publishableKey)}`
         );

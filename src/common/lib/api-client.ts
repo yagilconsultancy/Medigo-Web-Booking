@@ -11,23 +11,6 @@ import {
 } from '../utils';
 
 let apiClient: AxiosInstance | null = null;
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value?: unknown) => void;
-  reject: (reason?: unknown) => void;
-}> = [];
-
-const processQueue = (error: AxiosError | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve();
-    }
-  });
-
-  failedQueue = [];
-};
 
 const isLoginRoute = (route?: string) => route && route.includes('/login');
 const isRefreshRoute = (route?: string) => route && route.includes('/refresh');
@@ -76,7 +59,7 @@ export const getApiClient = () => {
 
         // If this is a retry attempt that failed, logout
         // if (originalRequest._retry) {
-        handleLogout();
+        // handleLogout();
         return Promise.reject(error);
         // }
 

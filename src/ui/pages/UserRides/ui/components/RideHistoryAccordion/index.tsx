@@ -138,7 +138,13 @@ type PendingRidePayment = {
   rideDetail: any;
 };
 
-export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
+export function RideHistoryAccordion({
+  items,
+  getRideHref = (rideId) => `/booking-success?ride_id=${rideId}`,
+}: {
+  items: RideHistoryItem[];
+  getRideHref?: (rideId: string) => string;
+}) {
   const [expandedId, setExpandedId] = useState<string | false>(false);
   const [pendingPayment, setPendingPayment] =
     useState<PendingRidePayment | null>(null);
@@ -537,9 +543,7 @@ export function RideHistoryAccordion({ items }: { items: RideHistoryItem[] }) {
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
-                          router.push(
-                            `/booking-success?ride_id=${ride.fullRideId}`
-                          );
+                          router.push(getRideHref(ride.fullRideId));
                         }}
                         sx={{
                           height: pxToRem(32),
