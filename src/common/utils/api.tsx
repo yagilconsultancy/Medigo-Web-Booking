@@ -33,3 +33,23 @@ export const extractResponseErrors = (
 
   return <ul>{errorNodes}</ul>;
 };
+
+export const extractApiErrorMessage = (
+  error: unknown,
+  fallback: ReactNode = 'An error occurred'
+): ReactNode => {
+  const maybeAxiosResponse = (error as any)?.response?.data;
+  const maybeResponseData = (error as any)?.data;
+  const apiResponse = maybeAxiosResponse ?? maybeResponseData ?? error;
+
+  if (apiResponse && typeof apiResponse === 'object') {
+    const extracted = extractResponseErrors(apiResponse as ApiResponse<any>);
+    return extracted || fallback;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+};

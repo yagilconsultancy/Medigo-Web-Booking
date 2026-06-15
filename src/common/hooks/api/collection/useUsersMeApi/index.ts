@@ -33,7 +33,11 @@ import type {
   ApiUploadAvatarPayload,
   ApiUploadMyDocumentPayload,
 } from '../../../../types';
-import { extractResponseErrors, tryExecute } from '../../../../utils';
+import {
+  extractApiErrorMessage,
+  extractResponseErrors,
+  tryExecute,
+} from '../../../../utils';
 
 export const useUsersMeApi = () => {
   const doUpdateMyProfile = useUpdateMyProfile();
@@ -63,8 +67,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -81,8 +85,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -97,8 +101,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return false;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return false;
       }
     );
@@ -113,8 +117,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -129,8 +133,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -145,8 +149,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -161,8 +165,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -177,8 +181,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -195,8 +199,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -211,8 +215,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return false;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return false;
       }
     );
@@ -229,8 +233,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -247,8 +251,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -263,8 +267,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -281,8 +285,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -299,8 +303,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -315,8 +319,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return false;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return false;
       }
     );
@@ -333,8 +337,8 @@ export const useUsersMeApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );

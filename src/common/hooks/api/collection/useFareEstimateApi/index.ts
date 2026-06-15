@@ -5,7 +5,11 @@ import type {
   ApiBaseFareEstimateResponse,
   ApiFareEstimateRequest,
 } from '../../../../types';
-import { extractResponseErrors, tryExecute } from '../../../../utils';
+import {
+  extractApiErrorMessage,
+  extractResponseErrors,
+  tryExecute,
+} from '../../../../utils';
 
 export const useFareEstimateApi = () => {
   const doBaseFareEstimate = useBaseFareEstimate();
@@ -30,8 +34,13 @@ export const useFareEstimateApi = () => {
           toast.error(extractResponseErrors(responseData));
         }
       },
-      async () => {
-        toast.error('An error occurred while creating the fare estimate');
+      async (error) => {
+        toast.error(
+          extractApiErrorMessage(
+            error,
+            'An error occurred while creating the fare estimate'
+          )
+        );
       }
     );
     return { success, data };
@@ -53,8 +62,13 @@ export const useFareEstimateApi = () => {
           toast.error(extractResponseErrors(responseData));
         }
       },
-      async () => {
-        toast.error('An error occurred while creating the base fare estimate');
+      async (error) => {
+        toast.error(
+          extractApiErrorMessage(
+            error,
+            'An error occurred while creating the base fare estimate'
+          )
+        );
       }
     );
     return result;

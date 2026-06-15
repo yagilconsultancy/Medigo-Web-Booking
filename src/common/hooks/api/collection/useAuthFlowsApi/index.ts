@@ -25,7 +25,11 @@ import {
   REGISTER_ACCOUNT_KEY,
   REGISTER_USER_ID_KEY,
 } from '../../../../constants';
-import { extractResponseErrors, tryExecute } from '../../../../utils';
+import {
+  extractApiErrorMessage,
+  extractResponseErrors,
+  tryExecute,
+} from '../../../../utils';
 
 export const useAuthFlowsApi = () => {
   const router = useRouter();
@@ -75,7 +79,7 @@ export const useAuthFlowsApi = () => {
           return null;
         }
 
-        toast.error('An error occurred');
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -90,8 +94,8 @@ export const useAuthFlowsApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -106,8 +110,8 @@ export const useAuthFlowsApi = () => {
         toast.error(extractResponseErrors(responseData));
         return false;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return false;
       }
     );
@@ -122,8 +126,8 @@ export const useAuthFlowsApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -138,8 +142,8 @@ export const useAuthFlowsApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -154,8 +158,8 @@ export const useAuthFlowsApi = () => {
         toast.error(extractResponseErrors(responseData));
         return false;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return false;
       }
     );
@@ -174,12 +178,14 @@ export const useAuthFlowsApi = () => {
         return false;
       },
       async (error: any) => {
-        // Check if it's a 401 error (wrong current password)
-        if (error?.response?.status === 401) {
-          toast.error('Current password is incorrect');
-        } else {
-          toast.error('An error occurred while changing password');
-        }
+        toast.error(
+          extractApiErrorMessage(
+            error,
+            error?.response?.status === 401
+              ? 'Current password is incorrect'
+              : 'An error occurred while changing password'
+          )
+        );
         return false;
       }
     );
@@ -194,8 +200,8 @@ export const useAuthFlowsApi = () => {
         toast.error(extractResponseErrors(responseData));
         return false;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return false;
       }
     );
@@ -210,8 +216,8 @@ export const useAuthFlowsApi = () => {
         toast.error(extractResponseErrors(responseData));
         return false;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return false;
       }
     );

@@ -27,6 +27,7 @@ import type {
   ApiSubmitVehicleChecklistPayload,
 } from '../../../../types';
 import {
+  extractApiErrorMessage,
   extractResponseErrors,
   setAuthToken,
   setRefreshToken,
@@ -57,8 +58,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -73,8 +74,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -92,8 +93,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -108,8 +109,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -124,8 +125,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -143,8 +144,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -167,8 +168,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -188,8 +189,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -206,8 +207,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -222,8 +223,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return false;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return false;
       }
     );
@@ -238,8 +239,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
@@ -256,8 +257,8 @@ export const useRidesApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );

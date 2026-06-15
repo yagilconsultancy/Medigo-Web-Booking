@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useLogin, useLogout, useRefresh } from '../../mutation';
 import { ApiLoginPayload, ApiRefreshTokenPayload } from '../../../../types';
 import {
+  extractApiErrorMessage,
   extractResponseErrors,
   setAuthToken,
   setRefreshToken,
@@ -130,7 +131,7 @@ export const useAuthApi = () => {
           return false;
         }
 
-        toast.error('An error occurred');
+        toast.error(extractApiErrorMessage(error));
         return false;
       }
     );
@@ -147,8 +148,10 @@ export const useAuthApi = () => {
         toast.success('Logged out successfully');
         router.push('/login');
       },
-      async () => {
-        toast.error('An error occurred during logout');
+      async (error) => {
+        toast.error(
+          extractApiErrorMessage(error, 'An error occurred during logout')
+        );
       }
     );
   };
@@ -171,11 +174,16 @@ export const useAuthApi = () => {
         } else if (response.status === 401) {
           toast.error(extractResponseErrors(responseData));
         } else {
-          toast.error('An error occurred');
+          toast.error(extractApiErrorMessage(responseData));
         }
       },
-      async () => {
-        toast.error('An error occurred during token refresh');
+      async (error) => {
+        toast.error(
+          extractApiErrorMessage(
+            error,
+            'An error occurred during token refresh'
+          )
+        );
       }
     );
 

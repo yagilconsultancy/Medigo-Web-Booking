@@ -1,7 +1,11 @@
 import { toast } from 'sonner';
 import { useCreatePaymentIntent } from '../../mutation';
 import type { ApiCreatePaymentIntentPayload } from '../../../../types';
-import { extractResponseErrors, tryExecute } from '../../../../utils';
+import {
+  extractApiErrorMessage,
+  extractResponseErrors,
+  tryExecute,
+} from '../../../../utils';
 
 export const usePaymentsApi = () => {
   const doCreatePaymentIntent = useCreatePaymentIntent();
@@ -33,8 +37,8 @@ export const usePaymentsApi = () => {
         toast.error(extractResponseErrors(responseData));
         return null;
       },
-      async () => {
-        toast.error('An error occurred');
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
         return null;
       }
     );
