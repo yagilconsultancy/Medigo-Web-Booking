@@ -60,8 +60,9 @@ jobs:
 
             cd /home/ec2-user/medigo-booking
 
-            # Pull latest code
-            git pull origin main
+            # Reset any local changes and pull latest code
+            git fetch origin main
+            git reset --hard origin/main
 
             # Install dependencies
             npm ci --production=false
