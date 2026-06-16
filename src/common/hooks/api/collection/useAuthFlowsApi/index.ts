@@ -155,11 +155,9 @@ export const useAuthFlowsApi = () => {
       async (response) => {
         const responseData = response.data;
         if (responseData.success) return true;
-        toast.error(extractResponseErrors(responseData));
         return false;
       },
-      async (error) => {
-        toast.error(extractApiErrorMessage(error));
+      async () => {
         return false;
       }
     );

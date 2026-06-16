@@ -14,6 +14,7 @@ let apiClient: AxiosInstance | null = null;
 
 const isLoginRoute = (route?: string) => route && route.includes('/login');
 const isRefreshRoute = (route?: string) => route && route.includes('/refresh');
+const isLogoutRoute = (route?: string) => route && route.includes('/logout');
 const isChangePasswordRoute = (route?: string) =>
   route && route.includes('/change-password');
 
@@ -52,6 +53,7 @@ export const getApiClient = () => {
         if (
           isLoginRoute(originalRequest?.url) ||
           isRefreshRoute(originalRequest?.url) ||
+          isLogoutRoute(originalRequest?.url) ||
           isChangePasswordRoute(originalRequest?.url)
         ) {
           return Promise.reject(error);
@@ -138,8 +140,12 @@ export const getApiClient = () => {
 
   // Add interceptor to requests to set the bearer token
   apiClient.interceptors.request.use((config) => {
-    // Don't intercept if the route is a login route
-    if (isLoginRoute(config.url)) {
+    // Don't attach access tokens to auth endpoints that use their own credentials.
+    if (
+      isLoginRoute(config.url) ||
+      isRefreshRoute(config.url) ||
+      isLogoutRoute(config.url)
+    ) {
       return config;
     }
 

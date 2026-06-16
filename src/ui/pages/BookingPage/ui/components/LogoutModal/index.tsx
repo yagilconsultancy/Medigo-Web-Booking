@@ -6,7 +6,12 @@ import { Box, IconButton, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { getRefreshToken, pxToRem } from '@/common';
+import {
+  getRefreshToken,
+  pxToRem,
+  removeAuthToken,
+  removeRefreshToken,
+} from '@/common';
 import { useAuthFlowsApi } from '@/common/hooks/api/collection';
 import { AppButton, AppModal } from '@/ui/modules/components';
 
@@ -26,20 +31,20 @@ export function LogoutModal({ open, setOpen, onConfirm }: LogoutModalProps) {
     const refreshToken = getRefreshToken();
 
     if (!refreshToken) {
-      // No refresh token, just redirect to login
+      removeAuthToken();
+      removeRefreshToken();
       setOpen(false);
       onConfirm?.();
       router.push('/login');
       return;
     }
 
-    const success = await logout({ refresh_token: refreshToken });
-    if (success) {
-      setOpen(false);
-      onConfirm?.();
-      router.push('/login');
-    }
-    setIsLoggingOut(false);
+    await logout({ refresh_token: refreshToken });
+    removeAuthToken();
+    removeRefreshToken();
+    setOpen(false);
+    onConfirm?.();
+    router.push('/login');
   };
 
   return (
