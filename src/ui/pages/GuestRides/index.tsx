@@ -25,7 +25,7 @@ import { EmptyState } from '@/ui/modules/blocks';
 import {
   RideHistoryAccordion,
   type RideHistoryItem,
-} from '../UserRides/ui/components/RideHistoryAccordion';
+} from './ui/components/RideHistoryAccordion';
 import { RideStatCard } from '../UserRides/ui/components/RideStatCard';
 
 type RideTabKey = 'all' | 'completed' | 'cancelled';
@@ -319,6 +319,16 @@ export function GuestRides() {
                 chargeLabel: 'No charge',
               }
             : undefined,
+
+        payment: {
+          estimatedFare: ride.estimated_fare,
+          currency: ride.currency,
+          specialInstructions: ride.special_instructions,
+          tripType: ride.trip_type,
+          visitType: ride.visit_type,
+          rideType: ride.ride_type,
+          tripStructure: ride.trip_structure,
+        },
       };
     });
   }, [myRides]);

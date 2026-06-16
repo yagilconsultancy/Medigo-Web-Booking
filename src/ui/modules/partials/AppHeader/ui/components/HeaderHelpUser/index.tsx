@@ -1,8 +1,15 @@
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Avatar, Box, ButtonBase, Divider } from '@mui/material';
 import { useState } from 'react';
-import { pxToRem, useGetMyProfile } from '../../../../../../../common';
-import { ProfilePopOverComponent } from '@/ui/pages/BookingPage/ui/components';
+import { usePathname } from 'next/navigation';
+import {
+  getAuthToken,
+  pxToRem,
+  useGetGuestSession,
+  useGetMyProfile,
+} from '../../../../../../../common';
+import { ProfilePopOverComponent as UserProfilePopOverComponent } from '@/ui/pages/BookingPage/ui/components';
+import { ProfilePopOverComponent as GuestProfilePopOverComponent } from '@/ui/pages/GuestBookingPage/ui/components';
 import { StyledLink } from '@/ui/modules/components';
 
 export type HeaderHelpUserProps = {
@@ -16,8 +23,32 @@ export function HeaderHelpUser({
 }: HeaderHelpUserProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
-  const { data: profileResponse } = useGetMyProfile();
-  const profile = profileResponse?.success ? profileResponse.data : null;
+  const pathname = usePathname();
+  const isGuestRoute = pathname.includes('/guest');
+  const sessionId = isGuestRoute ? getAuthToken() : undefined;
+  const { data: userProfileResponse } = useGetMyProfile({
+    enabled: !isGuestRoute,
+  });
+  const { data: guestProfileResponse } = useGetGuestSession(sessionId);
+  const userProfile = userProfileResponse?.success
+    ? userProfileResponse.data
+    : null;
+  const guestProfile = guestProfileResponse?.success
+    ? guestProfileResponse.data
+    : null;
+  const displayName = isGuestRoute
+    ? `${guestProfile?.first_name ?? ''} ${guestProfile?.last_name ?? ''}`.trim()
+    : `${userProfile?.first_name ?? ''} ${userProfile?.last_name ?? ''}`.trim();
+  const initials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('');
+  const avatarUrl = isGuestRoute ? undefined : userProfile?.avatar_url;
+  const ProfilePopOverComponent = isGuestRoute
+    ? GuestProfilePopOverComponent
+    : UserProfilePopOverComponent;
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: pxToRem(12) }}>
@@ -66,8 +97,10 @@ export function HeaderHelpUser({
               boxShadow:
                 '0px 1px 3px 0px rgba(0,0,0,0.10), 0px 1px 2px 0px rgba(0,0,0,0.10)',
             }}
-            src={profile?.avatar_url || undefined}
-          />
+            src={avatarUrl || undefined}
+          >
+            {initials}
+          </Avatar>
 
           {online ? (
             <Box

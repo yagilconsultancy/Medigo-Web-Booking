@@ -45,7 +45,7 @@ function GuestBookingFlowShell({ accountType }: { accountType: AccountType }) {
   const [isBookingRide, setIsBookingRide] = useState(false);
   const { booking } = useBooking();
   const router = useRouter();
-  const { createPaymentIntent } = usePaymentsApi();
+  const { createGuestPaymentIntent } = usePaymentsApi();
   const { createGuestBooking } = useRidesApi();
 
   const stepTitle = steps[activeStep]?.label ?? '';
@@ -190,7 +190,8 @@ function GuestBookingFlowShell({ accountType }: { accountType: AccountType }) {
       const currency =
         booking.vehicle.currency || booking.service.currency || 'CAD';
 
-      const paymentResult = await createPaymentIntent({
+      const paymentResult = await createGuestPaymentIntent({
+        session_id: sessionId,
         amount,
         currency,
         description: booking.trip.notes || 'MediGo booking payment',
@@ -202,7 +203,6 @@ function GuestBookingFlowShell({ accountType }: { accountType: AccountType }) {
           vehicle_type: booking.vehicle.type ?? '',
           trip_type: booking.trip.type ?? '',
         },
-        setup_future_usage: 'on_session',
       });
 
       setIsBookingRide(false);
@@ -210,8 +210,8 @@ function GuestBookingFlowShell({ accountType }: { accountType: AccountType }) {
       if (paymentResult) {
         router.push(
           `/guest/checkout?ride_id=${encodeURIComponent(rideResult.id)}&client_secret=${encodeURIComponent(
-            paymentResult.clientSecret
-          )}&pk=${encodeURIComponent(paymentResult.publishableKey)}`
+            paymentResult.payment_intent
+          )}&pk=${encodeURIComponent(paymentResult.publishable_key)}`
         );
       }
 

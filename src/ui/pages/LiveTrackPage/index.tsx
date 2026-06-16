@@ -8,7 +8,10 @@ import { io, Socket } from 'socket.io-client';
 import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
 import { AppGoogleMapsProvider, AppGoogleMap } from '../../modules/components';
-import type { TruckMarker } from '../../modules/components/AppGoogleMap';
+import type {
+  ComputedRoute,
+  TruckMarker,
+} from '../../modules/components/AppGoogleMap';
 import { pxToRem, getAuthToken, useChat } from '@/common';
 import type { MarkerPosition } from '@/common/types';
 import {
@@ -254,7 +257,7 @@ export function LiveTrackPage() {
       origin: MarkerPosition;
       destination: MarkerPosition;
       waypoints?: MarkerPosition[];
-    }): Promise<{ polyline: MarkerPosition[] } | null> => {
+    }): Promise<ComputedRoute | null> => {
       const summarizeRouteResult = (routeResult: any) => {
         if (!routeResult) return null;
 
@@ -300,10 +303,16 @@ export function LiveTrackPage() {
         });
 
         const route = coordinateResponse?.routes?.[0];
+        const mapPolylines =
+          typeof route?.createPolylines === 'function'
+            ? route.createPolylines()
+            : [];
+
         console.log('[LiveTrack] computeRoute coordinate request', {
           input,
           geocodingResults: coordinateResponse?.geocodingResults ?? null,
           routeSummary: summarizeRouteResult(route),
+          renderedByRouteClass: mapPolylines.length > 0,
         });
 
         const getPolylineFromRoute = (routeResult: any): MarkerPosition[] => {
@@ -347,7 +356,7 @@ export function LiveTrackPage() {
 
         const polyline = getPolylineFromRoute(route);
 
-        if (polyline.length === 0) {
+        if (polyline.length === 0 && mapPolylines.length === 0) {
           console.warn(
             '[LiveTrack] Route API returned no path',
             coordinateResponse
@@ -355,7 +364,7 @@ export function LiveTrackPage() {
           return null;
         }
 
-        return { polyline };
+        return { polyline, mapPolylines };
       } catch (routeError) {
         console.error('[LiveTrack] Failed to compute route', routeError);
         return null;

@@ -438,7 +438,7 @@ export function ReviewStep({ accountType, onEditStep }: ReviewStepProps) {
           onEdit={() => onEditStep(3)}
           rows={[
             { label: 'Vehicle', value: vehicleLabel },
-            { label: 'Ride type', value: booking.vehicle.rideType ?? '—' },
+            // { label: 'Ride type', value: booking.vehicle.rideType ?? '—' },
           ]}
         />
 

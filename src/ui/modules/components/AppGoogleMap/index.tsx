@@ -23,6 +23,11 @@ export type TruckMarker = {
   heading?: number;
 };
 
+export type ComputedRoute = {
+  polyline: MarkerPosition[];
+  mapPolylines?: google.maps.Polyline[];
+};
+
 export type AppGoogleMapProps = {
   markerPositions: MarkerPosition[];
   mapContainerStyle?: React.CSSProperties;
@@ -42,7 +47,7 @@ export type AppGoogleMapProps = {
     origin: MarkerPosition;
     destination: MarkerPosition;
     waypoints?: MarkerPosition[];
-  }) => Promise<{ polyline: MarkerPosition[] } | null>;
+  }) => Promise<ComputedRoute | null>;
 };
 
 function getDistanceSquared(a: MarkerPosition, b: MarkerPosition) {
@@ -233,8 +238,16 @@ export function AppGoogleMap({
     truckMarker?.position ?? null
   );
   const hasFittedRouteRef = useRef(false);
+  const routePolylinesRef = useRef<google.maps.Polyline[]>([]);
+  const [isUsingRouteRenderer, setIsUsingRouteRenderer] = useState(false);
 
   const onLoad = useCallback((m: google.maps.Map) => setMap(m), []);
+
+  const clearRoutePolylines = useCallback(() => {
+    routePolylinesRef.current.forEach((polyline) => polyline.setMap(null));
+    routePolylinesRef.current = [];
+    setIsUsingRouteRenderer(false);
+  }, []);
 
   const allPositions = useMemo<MarkerPosition[]>(() => {
     const points = [...markerPositions];
@@ -249,6 +262,7 @@ export function AppGoogleMap({
   }, [markerPositions, routeOrigin, truckMarker]);
 
   const renderedRoutePath = routePathProp ?? routePath;
+  const hasRoutePathProp = Boolean(routePathProp?.length);
 
   const routeKey = useMemo(
     () =>
@@ -313,7 +327,7 @@ export function AppGoogleMap({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [truckMarker?.position?.lat, truckMarker?.position?.lng]);
+  }, [truckMarker?.position]);
 
   const renderedTruckPosition = useMemo(() => {
     if (!animatedTruckPosition) return null;
@@ -364,15 +378,17 @@ export function AppGoogleMap({
   ]);
 
   useEffect(() => {
-    if (routePathProp?.length) {
+    if (hasRoutePathProp) {
       setRoutePath(null);
       hasFittedRouteRef.current = false;
+      clearRoutePolylines();
       return;
     }
 
-    if (!showDirections || !computeRoute) {
+    if (!showDirections || !computeRoute || !map) {
       setRoutePath(null);
       hasFittedRouteRef.current = false;
+      clearRoutePolylines();
       return;
     }
 
@@ -396,18 +412,46 @@ export function AppGoogleMap({
     computeRoute({ origin, destination, waypoints }).then((result) => {
       if (!cancelled) {
         hasFittedRouteRef.current = false;
+        clearRoutePolylines();
+
+        if (result?.mapPolylines?.length) {
+          result.mapPolylines.forEach((polyline) => {
+            polyline.setOptions({
+              strokeColor: '#2F6FED',
+              strokeOpacity: 1,
+              strokeWeight: 6,
+              zIndex: 1,
+            });
+            polyline.setMap(map);
+          });
+          routePolylinesRef.current = result.mapPolylines;
+          setIsUsingRouteRenderer(true);
+        }
+
         setRoutePath((prev) => {
           if (JSON.stringify(prev) === JSON.stringify(result?.polyline))
             return prev;
           return result?.polyline ?? null;
         });
+      } else {
+        result?.mapPolylines?.forEach((polyline) => polyline.setMap(null));
       }
     });
 
     return () => {
       cancelled = true;
+      clearRoutePolylines();
     };
-  }, [computeRoute, markerPositions, routeKey, routeOrigin, showDirections]);
+  }, [
+    clearRoutePolylines,
+    computeRoute,
+    hasRoutePathProp,
+    map,
+    markerPositions,
+    routeKey,
+    routeOrigin,
+    showDirections,
+  ]);
 
   // ── Empty state ──────────────────────────────────────────────────────────
   if (allPositions.length === 0) {
@@ -460,7 +504,7 @@ export function AppGoogleMap({
   return (
     <GoogleMap mapContainerStyle={mapContainerStyle} onLoad={onLoad}>
       {/* Route polyline */}
-      {renderedRoutePath && (
+      {renderedRoutePath && !isUsingRouteRenderer && (
         <Polyline
           path={renderedRoutePath}
           options={{
