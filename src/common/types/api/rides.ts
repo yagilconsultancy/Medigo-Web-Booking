@@ -287,6 +287,15 @@ export type ApiGuestBooking = {
   booking: ApiGuestCurrentBooking;
 };
 
+export type ApiGuestRideListItem = ApiGuestCurrentBooking;
+
+export type ApiGuestRideList = {
+  session_id: string;
+  rider_id: string;
+  is_guest: boolean;
+  bookings: ApiGuestRideListItem[];
+};
+
 export type ApiCreateSafetyReportPayload = {
   reported_user_id?: string | null;
   ride_id?: string | null;
@@ -334,6 +343,7 @@ export type ApiRecurringRidesResponse = ApiResponse<ApiRecurringRide[]>;
 
 export type ApiGuestSessionResponse = ApiResponse<ApiGuestSession>;
 export type ApiGuestBookingResponse = ApiResponse<ApiGuestBooking>;
+export type ApiGuestRideListResponse = ApiResponse<ApiGuestRideList>;
 
 export type ApiSafetyReportResponse = ApiResponse<ApiSafetyReport>;
 export type ApiSafetyReportsResponse = ApiPaginatedResponse<ApiSafetyReport>;

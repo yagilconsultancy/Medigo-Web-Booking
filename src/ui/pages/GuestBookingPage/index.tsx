@@ -11,7 +11,7 @@ import {
 } from '../../modules/components';
 import { AppLayout } from '../../modules/partials';
 import {
-  getAuthToken,
+  getGuestSessionId,
   pxToRem,
   useAccountStore,
   usePaymentsApi,
@@ -117,7 +117,7 @@ function GuestBookingFlowShell({ accountType }: { accountType: AccountType }) {
 
     if (activeStep === steps.length - 1) {
       setIsBookingRide(true);
-      const sessionId = getAuthToken();
+      const sessionId = getGuestSessionId();
 
       if (!sessionId) {
         setIsBookingRide(false);

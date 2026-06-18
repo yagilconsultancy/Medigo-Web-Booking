@@ -29,7 +29,7 @@ import type {
 import {
   extractApiErrorMessage,
   extractResponseErrors,
-  setAuthToken,
+  setGuestSessionId,
   setRefreshToken,
   tryExecute,
 } from '../../../../utils';
@@ -158,7 +158,7 @@ export const useRidesApi = () => {
         const responseData = response.data;
         if (responseData.success) {
           const token = responseData.data.session_id;
-          setAuthToken(token);
+          setGuestSessionId(token);
 
           toast.success(`${responseData.message}`);
           toast.success(responseData.message || 'Guest session created');

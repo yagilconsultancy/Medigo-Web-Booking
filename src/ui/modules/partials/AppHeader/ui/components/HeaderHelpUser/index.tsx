@@ -3,7 +3,7 @@ import { Avatar, Box, ButtonBase, Divider } from '@mui/material';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import {
-  getAuthToken,
+  getGuestSessionId,
   pxToRem,
   useGetGuestSession,
   useGetMyProfile,
@@ -25,7 +25,7 @@ export function HeaderHelpUser({
   const open = Boolean(anchorEl);
   const pathname = usePathname();
   const isGuestRoute = pathname.includes('/guest');
-  const sessionId = isGuestRoute ? getAuthToken() : undefined;
+  const sessionId = isGuestRoute ? getGuestSessionId() : undefined;
   const { data: userProfileResponse } = useGetMyProfile({
     enabled: !isGuestRoute,
   });

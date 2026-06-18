@@ -15,6 +15,7 @@ export * from './useRidesAnalyticsRecentActivity';
 export * from './usePublicBookingFlowConfig';
 export * from './useGetGuestSession';
 export * from './useGetGuestBooking';
+export * from './useGetGuestRideList';
 export * from './useListRecurringRides';
 export * from './useGetMyRides';
 export * from './useGetRiderStats';

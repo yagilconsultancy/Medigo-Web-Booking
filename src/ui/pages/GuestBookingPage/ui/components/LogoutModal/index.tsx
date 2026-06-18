@@ -6,13 +6,7 @@ import { Box, IconButton, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import {
-  getRefreshToken,
-  pxToRem,
-  removeAuthToken,
-  removeRefreshToken,
-} from '@/common';
-import { useAuthFlowsApi } from '@/common/hooks/api/collection';
+import { pxToRem, removeGuestSessionId } from '@/common';
 import { AppButton, AppModal } from '@/ui/modules/components';
 
 export type LogoutModalProps = {
@@ -23,28 +17,14 @@ export type LogoutModalProps = {
 
 export function LogoutModal({ open, setOpen, onConfirm }: LogoutModalProps) {
   const router = useRouter();
-  const { logout } = useAuthFlowsApi();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    const refreshToken = getRefreshToken();
-
-    if (!refreshToken) {
-      removeAuthToken();
-      removeRefreshToken();
-      setOpen(false);
-      onConfirm?.();
-      router.push('/login');
-      return;
-    }
-
-    await logout({ refresh_token: refreshToken });
-    removeAuthToken();
-    removeRefreshToken();
+    removeGuestSessionId();
     setOpen(false);
     onConfirm?.();
-    router.push('/login');
+    router.push('/guest/login');
   };
 
   return (

@@ -111,8 +111,14 @@ export const ROUTES_SPEC = {
   getGuestSession: (sessionId: string) =>
     `/${API_VERSION}/rides/public/guest-sessions/${sessionId}`,
   createGuestBooking: `/${API_VERSION}/rides/public/guest-bookings`,
-  getGuestBooking: (rideId: string) =>
-    `/${API_VERSION}/rides/public/guest-bookings/${rideId}`,
+  getGuestBooking: (rideId: string, sessionId: string) =>
+    `/${API_VERSION}/rides/public/guest-bookings/${rideId}?session_id=${encodeURIComponent(
+      sessionId
+    )}`,
+  guestRideList: (sessionId: string) =>
+    `/${API_VERSION}/rides/public/guest-bookings?session_id=${encodeURIComponent(
+      sessionId
+    )}`,
   guestPaymentIntent: `/${API_VERSION}/payments/guest/payment-intent`,
 
   // Recurring rides

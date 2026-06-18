@@ -17,7 +17,7 @@ import {
 import { useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import { pxToRem, useGetGuestBooking } from '@/common';
+import { getGuestSessionId, pxToRem, useGetGuestBooking } from '@/common';
 import { AppButton } from '@/ui/modules/components';
 
 function CheckoutForm({ rideId }: { rideId: string }) {
@@ -75,9 +75,11 @@ export function GuestCheckoutPage() {
   const clientSecret = searchParams.get('client_secret') ?? '';
   const publishableKeyFromBackend = searchParams.get('pk') ?? '';
   const rideId = searchParams.get('ride_id') ?? '';
+  const sessionId = getGuestSessionId();
 
   const { data: rideResponse, isLoading } = useGetGuestBooking(
-    rideId || undefined
+    rideId || undefined,
+    sessionId || undefined
   );
   const rideDetail = rideResponse?.success
     ? rideResponse.data.booking.ride

@@ -1,6 +1,7 @@
 import { destroyCookie } from 'nookies';
 import { statusMapping } from '../data';
 import Cookies from 'js-cookie';
+import { GUEST_SESSION_ID_KEY } from '../constants';
 
 interface ArrayType {
   text: string;
@@ -300,6 +301,17 @@ export const setAuthToken = (token: string) => {
   });
 };
 
+export const setGuestSessionId = (sessionId: string) => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(GUEST_SESSION_ID_KEY, sessionId);
+  } catch {
+    console.error('it is not working');
+    // Ignore storage failures so guest session creation can still continue.
+  }
+};
+
 export const setRefreshToken = (token: string) => {
   Cookies.set('medi_refresh', token, {
     expires: 7,
@@ -321,12 +333,28 @@ export const getAuthToken = () => {
   return undefined;
 };
 
+export const getGuestSessionId = () => {
+  if (typeof window === 'undefined') return undefined;
+
+  return window.localStorage.getItem(GUEST_SESSION_ID_KEY) ?? undefined;
+};
+
 export const getRefreshToken = () => {
   return Cookies.get('medi_refresh');
 };
 
 export const removeAuthToken = () => {
   Cookies.remove('medi_auth');
+};
+
+export const removeGuestSessionId = () => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.removeItem(GUEST_SESSION_ID_KEY);
+  } catch {
+    // Ignore storage failures on logout cleanup.
+  }
 };
 
 export const removeRefreshToken = () => {

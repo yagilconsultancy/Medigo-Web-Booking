@@ -26,7 +26,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  getAuthToken,
+  getGuestSessionId,
   pxToRem,
   usePaymentsApi,
   useLiveTrackStore,
@@ -158,7 +158,7 @@ export function RideHistoryAccordion({
     useState<PendingRidePayment | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   const router = useRouter();
-  const sessionId = getAuthToken();
+  const sessionId = getGuestSessionId();
   const { createGuestPaymentIntent, isCreatingGuestPaymentIntent } =
     usePaymentsApi();
   const { setLiveTrackContext } = useLiveTrackStore();

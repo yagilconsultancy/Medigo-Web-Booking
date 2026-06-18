@@ -24,6 +24,7 @@ import type {
   ApiVehicleChecklistsResponse,
   ApiGuestBookingResponse,
   ApiGuestSessionResponse,
+  ApiGuestRideListResponse,
   ApiSharedRideResponse,
   ApiRecurringRidesResponse,
 } from '../../../../types';
@@ -140,11 +141,18 @@ export const getGuestSession = async (sessionId: string) => {
   >(resolveRoute(ROUTES.getGuestSession, sessionId));
 };
 
-export const getGuestBooking = async (rideId: string) => {
+export const getGuestBooking = async (rideId: string, sessionId: string) => {
   return await getApiClient().get<
     ApiGuestBookingResponse,
     AxiosResponse<ApiGuestBookingResponse>
-  >(resolveRoute(ROUTES.getGuestBooking, rideId));
+  >(resolveRoute(ROUTES.getGuestBooking, rideId, sessionId));
+};
+
+export const guestRideList = async (sessionId: string) => {
+  return await getApiClient().get<
+    ApiGuestRideListResponse,
+    AxiosResponse<ApiGuestRideListResponse>
+  >(resolveRoute(ROUTES.guestRideList, sessionId));
 };
 
 export const listRecurringRides = async () => {

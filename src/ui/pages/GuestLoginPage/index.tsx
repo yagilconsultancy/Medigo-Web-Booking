@@ -5,7 +5,7 @@ import { Box, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import * as yup from 'yup';
 
-import { pxToRem, useRidesApi } from '@/common';
+import { pxToRem, setGuestSessionId, useRidesApi } from '@/common';
 import { AppButton, FormikAppTextField } from '@/ui/modules/components';
 import { AppLayout } from '@/ui/modules/partials';
 import { HeaderBackButton } from '@/ui/modules/partials/AppHeader/ui/components';
@@ -39,12 +39,15 @@ export function GuestLoginPage() {
     const firstName = values.firstName.trim();
     const lastName = values.lastName.trim();
 
-    await createGuestSession({
+    const guestSession = await createGuestSession({
       email: values.email.trim(),
       full_name: `${firstName} ${lastName}`,
       first_name: firstName,
       last_name: lastName,
     });
+    if (guestSession?.session_id) {
+      setGuestSessionId(guestSession.session_id);
+    }
   };
 
   return (

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import dayjs from 'dayjs';
 
 import {
+  getGuestSessionId,
   pxToRem,
   useGetGuestBooking,
   useAccountStore,
@@ -70,11 +71,13 @@ export function GuestBookingSuccessPage() {
   const [pendingPayment, setPendingPayment] = useState(false);
 
   const rideId = searchParams.get('ride_id') || '';
+  const sessionId = getGuestSessionId();
   const { accountType } = useAccountStore();
   const { createPaymentIntent, isCreatingPaymentIntent } = usePaymentsApi();
 
   const { data: rideResponse, isLoading } = useGetGuestBooking(
-    rideId || undefined
+    rideId || undefined,
+    sessionId || undefined
   );
   const rideDetail = rideResponse?.success
     ? rideResponse.data.booking.ride

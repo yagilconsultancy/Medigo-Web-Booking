@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getAuthToken, pxToRem, useGetGuestSession } from '@/common';
+import { getGuestSessionId, pxToRem, useGetGuestSession } from '@/common';
 import { StyledImage } from '@/ui/modules/components';
 import { LogoutModal } from '../LogoutModal';
 
@@ -39,7 +39,7 @@ export function ProfilePopOverComponent({
 }: ProfilePopOverComponentProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const sessionId = getAuthToken();
+  const sessionId = getGuestSessionId();
   const { data: profileResponse } = useGetGuestSession(sessionId);
   const profile = profileResponse?.success ? profileResponse.data : null;
   const name = profile
