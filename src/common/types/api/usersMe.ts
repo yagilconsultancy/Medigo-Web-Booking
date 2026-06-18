@@ -39,6 +39,7 @@ export type ApiUserMeProfile = {
 
 export type ApiGetMyProfileResponse = ApiResponse<ApiUserMeProfile>;
 export type ApiUpdateMyProfileResponse = ApiResponse<ApiUserMeProfile>;
+export type ApiDeleteMyProfileResponse = ApiResponse<null>;
 
 // ====================== EMERGENCY CONTACTS ======================
 

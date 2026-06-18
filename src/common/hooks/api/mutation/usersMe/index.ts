@@ -1,4 +1,5 @@
 export * from './useUpdateMyProfile';
+export * from './useDeleteMyProfile';
 export * from './useCreateEmergencyContact';
 export * from './useDeleteEmergencyContact';
 export * from './useUpdateMyConsent';

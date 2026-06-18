@@ -7,6 +7,7 @@ import type {
   ApiCreatePassengerResponse,
   ApiCreateSavedLocationResponse,
   ApiDeleteEmergencyContactResponse,
+  ApiDeleteMyProfileResponse,
   ApiDeletePassengerResponse,
   ApiDeleteSavedLocationResponse,
   ApiCreateSavedLocationPayload,
@@ -66,6 +67,13 @@ export const updateMyProfile = async (payload: ApiUpdateMyProfilePayload) => {
   >(resolveRoute(ROUTES.updateMyProfile), formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
+};
+
+export const deleteMyProfile = async () => {
+  return await getApiClient().delete<
+    ApiDeleteMyProfileResponse,
+    AxiosResponse<ApiDeleteMyProfileResponse>
+  >(resolveRoute(ROUTES.deleteMyProfile));
 };
 
 export const createEmergencyContact = async (

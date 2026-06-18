@@ -5,6 +5,7 @@ import {
   useCreatePassenger,
   useCreateSavedLocation,
   useDeleteEmergencyContact,
+  useDeleteMyProfile,
   useDeletePassenger,
   useDeleteSavedLocation,
   useReorderSavedLocations,
@@ -43,6 +44,7 @@ export const useUsersMeApi = () => {
   const doUpdateMyProfile = useUpdateMyProfile();
   const doCreateEmergencyContact = useCreateEmergencyContact();
   const doDeleteEmergencyContact = useDeleteEmergencyContact();
+  const doDeleteMyProfile = useDeleteMyProfile();
   const doUpdateMyConsent = useUpdateMyConsent();
   const doAdvanceOnboarding = useAdvanceOnboarding();
   const doUploadMyDocument = useUploadMyDocument();
@@ -95,6 +97,22 @@ export const useUsersMeApi = () => {
   const deleteEmergencyContact = async (contactId: string) => {
     return await tryExecute(
       () => doDeleteEmergencyContact.mutateAsync({ contactId }),
+      async (response) => {
+        const responseData = response.data;
+        if (responseData.success) return true;
+        toast.error(extractResponseErrors(responseData));
+        return false;
+      },
+      async (error) => {
+        toast.error(extractApiErrorMessage(error));
+        return false;
+      }
+    );
+  };
+
+  const deleteMyProfile = async () => {
+    return await tryExecute(
+      () => doDeleteMyProfile.mutateAsync(),
       async (response) => {
         const responseData = response.data;
         if (responseData.success) return true;
@@ -348,6 +366,7 @@ export const useUsersMeApi = () => {
     updateMyProfile,
     createEmergencyContact,
     deleteEmergencyContact,
+    deleteMyProfile,
     updateMyConsent,
     advanceOnboarding,
     uploadMyDocument,

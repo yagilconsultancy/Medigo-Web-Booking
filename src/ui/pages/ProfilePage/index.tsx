@@ -23,7 +23,12 @@ import {
   RowStack,
   VisuallyHiddenInput,
 } from '@/ui/modules/components';
-import { NotificationsTab, PersonalTab, SecurityTab } from './ui/components';
+import {
+  DeleteAccountSection,
+  NotificationsTab,
+  PersonalTab,
+  SecurityTab,
+} from './ui/components';
 
 type ProfileTabKey = 'personal' | 'security' | 'notifications';
 
@@ -330,6 +335,10 @@ export function ProfilePage() {
               <SecurityTab phone={snapshot.phone} />
             ) : null}
             {activeTab === 'notifications' ? <NotificationsTab /> : null}
+          </Box>
+
+          <Box sx={{ mt: pxToRem(16) }}>
+            <DeleteAccountSection name={snapshot.name} />
           </Box>
         </Box>
 
