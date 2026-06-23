@@ -364,3 +364,7 @@ export const removeRefreshToken = () => {
 export const toSnakeCase = (value: string): string => {
   return value.trim().toLowerCase().replace(/\s+/g, '_');
 };
+
+export const milesToKilometers = (miles: number) => {
+  return miles * 1.60934;
+};

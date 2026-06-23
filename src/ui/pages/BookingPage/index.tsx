@@ -175,10 +175,8 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
         return;
       }
 
-      // Ride created successfully — now proceed to payment
-      const amount = Math.round((rideResult.estimated_fare ?? 0) * 100); // cents
-      const currency =
-        booking.vehicle.currency || booking.service.currency || 'CAD';
+      const amount = rideResult.estimated_fare;
+      const currency = 'CAD';
 
       const paymentResult = await createPaymentIntent({
         amount,

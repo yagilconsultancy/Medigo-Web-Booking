@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { pxToRem, useGetMyRides } from '@/common';
+import { milesToKilometers, pxToRem, useGetMyRides } from '@/common';
 import { AppFooter, AppLayout } from '@/ui/modules/partials';
 import { HeaderHelpUser } from '@/ui/modules/partials/AppHeader/ui/components';
 import { AppButton, RowStack } from '@/ui/modules/components';
@@ -37,111 +37,6 @@ const TAB_LABELS: Record<RideTabKey, string> = {
   completed: 'Completed',
   cancelled: 'Cancelled',
 };
-
-// const RIDES: RideHistoryItem[] = [
-//   {
-//     id: 'R-10483',
-//     status: 'completed',
-//     serviceName: 'MediGO Wheelchair',
-//     pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
-//     dropoffAddress: 'Sunnybrook Health Sciences Centre, Toronto, ON',
-//     dateLabel: 'Apr 18, 2026',
-//     timeLabel: '9:00 AM',
-//     details: {
-//       driver: 'James Rivera',
-//       vehicle: 'Toyota Sienna — WAV',
-//       distance: '6.2 km',
-//       duration: '18 min',
-//       ratingLabel: 'Rated 5 stars',
-//     },
-//     cancelled: undefined,
-//   },
-//   {
-//     id: 'R-10391',
-//     status: 'completed',
-//     serviceName: 'MediGO Standard',
-//     pickupAddress: 'Sunnybrook Health Sciences Centre, Toronto, ON',
-//     dropoffAddress: '2450 Lawrence Ave E, Toronto, ON',
-//     dateLabel: 'Apr 10, 2026',
-//     timeLabel: '2:30 PM',
-//     details: {
-//       driver: 'James Rivera',
-//       vehicle: 'Toyota Sienna — Standard',
-//       distance: '4.9 km',
-//       duration: '14 min',
-//       ratingLabel: 'Rated 5 stars',
-//     },
-//     cancelled: undefined,
-//   },
-//   {
-//     id: 'R-10288',
-//     status: 'completed',
-//     serviceName: 'MediGO Wheelchair',
-//     pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
-//     dropoffAddress: 'Toronto Rehab Institute, 550 University Ave',
-//     dateLabel: 'Mar 27, 2026',
-//     timeLabel: '11:00 AM',
-//     details: {
-//       driver: 'James Rivera',
-//       vehicle: 'Toyota Sienna — WAV',
-//       distance: '7.3 km',
-//       duration: '22 min',
-//       ratingLabel: 'Rated 5 stars',
-//     },
-//     cancelled: undefined,
-//   },
-//   {
-//     id: 'R-10201',
-//     status: 'cancelled',
-//     serviceName: 'MediGO Wheelchair',
-//     pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
-//     dropoffAddress: 'Toronto General Hospital, 200 Elizabeth St',
-//     dateLabel: 'Mar 15, 2026',
-//     timeLabel: '8:45 AM',
-//     details: undefined,
-//     cancelled: {
-//       requestedVehicleLabel: 'MediGO Wheelchair',
-//       cancelledTitle: 'Cancelled by you',
-//       reason: 'Reason: Appointment rescheduled',
-//       note: 'No driver was assigned before cancellation. Your account was not charged.',
-//       chargeLabel: 'No charge',
-//     },
-//   },
-//   {
-//     id: 'R-10145',
-//     status: 'completed',
-//     serviceName: 'MediGO Standard',
-//     pickupAddress: 'Toronto General Hospital, 200 Elizabeth St',
-//     dropoffAddress: '2450 Lawrence Ave E, Toronto, ON',
-//     dateLabel: 'Mar 3, 2026',
-//     timeLabel: '3:15 PM',
-//     details: {
-//       driver: 'James Rivera',
-//       vehicle: 'Toyota Sienna — Standard',
-//       distance: '5.8 km',
-//       duration: '16 min',
-//       ratingLabel: 'Rated 5 stars',
-//     },
-//     cancelled: undefined,
-//   },
-//   {
-//     id: 'R-10088',
-//     status: 'completed',
-//     serviceName: 'MediGO Stretcher',
-//     pickupAddress: '2450 Lawrence Ave E, Toronto, ON',
-//     dropoffAddress: 'Princess Margaret Cancer Centre, 610 University Ave',
-//     dateLabel: 'Feb 19, 2026',
-//     timeLabel: '10:00 AM',
-//     details: {
-//       driver: 'James Rivera',
-//       vehicle: 'Transit — Stretcher',
-//       distance: '9.4 km',
-//       duration: '28 min',
-//       ratingLabel: 'Rated 5 stars',
-//     },
-//     cancelled: undefined,
-//   },
-// ];
 
 export function UserRidesPage() {
   const router = useRouter();
@@ -336,8 +231,8 @@ export function UserRidesPage() {
       },
       {
         icon: <RouteRoundedIcon sx={{ fontSize: pxToRem(18) }} />,
-        value: summary?.miles_traveled?.toFixed(1) ?? '0.0',
-        label: 'Miles Traveled',
+        value: milesToKilometers(Number(summary?.miles_traveled?.toFixed(1))) ?? '0.0',
+        label: 'Kilometers Traveled',
       },
     ];
   }, [summary]);
@@ -448,7 +343,7 @@ export function UserRidesPage() {
                   <RideStatCard
                     key={stat.label}
                     icon={stat.icon}
-                    value={stat.value}
+                    value={stat.value.toString()}
                     label={stat.label}
                   />
                 ))}
