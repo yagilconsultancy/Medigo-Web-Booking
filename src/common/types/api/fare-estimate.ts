@@ -23,6 +23,7 @@ export type ApiBaseFareEstimateRequest = {
   destination_address: string;
   destination_latitude: number;
   destination_longitude: number;
+  trip_structure?: string;
 };
 
 export interface BaseFareEstimateResponse {

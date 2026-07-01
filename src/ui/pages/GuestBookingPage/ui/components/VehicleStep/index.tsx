@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   BaseFareEstimateResponse,
   formatPrice,
+  getBaseFareCombinedTotal,
   pxToRem,
   useBaseFareEstimate,
 } from '@/common';
@@ -60,8 +61,9 @@ export function VehicleStep({ accountType }: VehicleStepProps) {
       destination_address: booking.address.dropoffAddress,
       destination_latitude: booking.address.dropoffCoordinates.lat,
       destination_longitude: booking.address.dropoffCoordinates.lng,
+      trip_structure: booking.trip.type ?? 'one_way',
     };
-  }, [booking.address]);
+  }, [booking.address, booking.trip.type]);
 
   useEffect(() => {
     const fetchFareEstimate = async () => {
@@ -88,11 +90,10 @@ export function VehicleStep({ accountType }: VehicleStepProps) {
     if (!estimateFareData?.estimates) return [];
 
     return estimateFareData.estimates.map((estimate) => {
-      const careAssistantFee =
-        booking.service.type === 'transport_assistant'
-          ? (booking.service.careAssistantFee ?? 0)
-          : 0;
-      const combinedTotal = estimate.estimated_total + careAssistantFee;
+      const combinedTotal = getBaseFareCombinedTotal(estimate, {
+        serviceType: booking.service.type,
+        careAssistantFee: booking.service.careAssistantFee,
+      });
       const features = estimate.features.map((feature) => ({
         icon: (
           <Box

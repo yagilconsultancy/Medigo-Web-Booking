@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { useMemo } from 'react';
 import dayjs from 'dayjs';
-import { pxToRem } from '@/common';
+import { pxToRem, useTripFareSync } from '@/common';
 import {
   AppDatePickerPopover,
   AppTextField,
@@ -146,7 +146,23 @@ const getFrequencyDescription = (
 };
 
 export function TripStep({ accountType }: TripStepProps) {
-  const { booking, setTrip } = useBooking();
+  const { booking, setTrip, setVehicle } = useBooking();
+
+  // Re-price the selected vehicle from the server whenever the trip type
+  // changes, so the sidebar "Estimated total" reflects one-way vs round-trip
+  // immediately (instead of only after final submit).
+  useTripFareSync({
+    pickupAddress: booking.address.pickupAddress,
+    dropoffAddress: booking.address.dropoffAddress,
+    pickupCoordinates: booking.address.pickupCoordinates,
+    dropoffCoordinates: booking.address.dropoffCoordinates,
+    serviceType: booking.service.type,
+    careAssistantFee: booking.service.careAssistantFee,
+    rideType: booking.vehicle.rideType,
+    tripType: booking.trip.type,
+    onResult: ({ estimatedTotal, currency }) =>
+      setVehicle({ estimatedTotal, currency }),
+  });
 
   const tripType = booking.trip.type;
   const pickupDateValue = toDayjsFromStoredDate(booking.trip.pickupDate);

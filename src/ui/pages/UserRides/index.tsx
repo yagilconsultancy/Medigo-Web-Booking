@@ -231,7 +231,9 @@ export function UserRidesPage() {
       },
       {
         icon: <RouteRoundedIcon sx={{ fontSize: pxToRem(18) }} />,
-        value: milesToKilometers(Number(summary?.miles_traveled?.toFixed(1))) ?? '0.0',
+        value:
+          milesToKilometers(Number(summary?.miles_traveled?.toFixed(1))) ??
+          '0.0',
         label: 'Kilometers Traveled',
       },
     ];
