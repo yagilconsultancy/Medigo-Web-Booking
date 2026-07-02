@@ -170,7 +170,7 @@ export function BookingSuccessPage() {
         return;
       }
 
-      const amount = Math.round((rideDetail.estimated_fare ?? 0) * 100);
+      const amount = rideDetail.estimated_fare ?? 0; // dollars; backend converts to cents for Stripe
       // @ts-ignore
       const currency = rideDetail.currency || 'CAD';
 

@@ -186,7 +186,7 @@ function GuestBookingFlowShell({ accountType }: { accountType: AccountType }) {
       }
 
       // Ride created successfully — now proceed to payment
-      const amount = Math.round((rideResult.estimated_fare ?? 0) * 100); // cents
+      const amount = rideResult.estimated_fare ?? 0; // dollars; backend converts to cents for Stripe
       const currency =
         booking.vehicle.currency || booking.service.currency || 'CAD';
 

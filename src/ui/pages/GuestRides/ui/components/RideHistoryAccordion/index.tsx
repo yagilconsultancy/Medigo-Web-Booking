@@ -175,7 +175,7 @@ export function RideHistoryAccordion({
       }
 
       const ridePayment = pendingPayment.ride.payment;
-      const amount = Math.round((ridePayment?.estimatedFare ?? 0) * 100);
+      const amount = ridePayment?.estimatedFare ?? 0; // dollars; backend converts to cents for Stripe
       const currency = ridePayment?.currency || 'CAD';
 
       const paymentResult = await createGuestPaymentIntent({
