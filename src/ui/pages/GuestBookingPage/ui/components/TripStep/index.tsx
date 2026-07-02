@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { useMemo } from 'react';
 import dayjs from 'dayjs';
+import { toast } from 'sonner';
 import { pxToRem, useTripFareSync } from '@/common';
 import {
   AppDatePickerPopover,
@@ -167,6 +168,42 @@ export function TripStep({ accountType }: TripStepProps) {
   const tripType = booking.trip.type;
   const pickupDateValue = toDayjsFromStoredDate(booking.trip.pickupDate);
   const pickupTime = booking.trip.pickupTime;
+
+  // Block past pickup date/time selection. The calendar is capped at today;
+  // time slots (and the custom picker) reject any time already passed when the
+  // chosen date is today.
+  const minPickupDate = useMemo(() => dayjs().startOf('day'), []);
+
+  const isTimeInPast = (time: string) => {
+    const [hourStr, minuteStr] = time.split(':');
+    const hour = Number(hourStr);
+    const minute = Number(minuteStr);
+    if (!Number.isFinite(hour) || !Number.isFinite(minute)) return false;
+    const referenceDate = pickupDateValue ?? dayjs();
+    return referenceDate
+      .hour(hour)
+      .minute(minute)
+      .second(0)
+      .millisecond(0)
+      .isBefore(dayjs());
+  };
+
+  const handlePickupDateChange = (d: dayjs.Dayjs | null) => {
+    const nextDate = d ? d.format('YYYY-MM-DD') : '';
+    // Drop a previously-picked time if it falls in the past for the new date
+    // (e.g. switching from a future day back to today), forcing a re-pick.
+    const [hourStr, minuteStr] = pickupTime.split(':');
+    const timeNowPast =
+      !!d &&
+      !!pickupTime &&
+      d
+        .hour(Number(hourStr))
+        .minute(Number(minuteStr))
+        .second(0)
+        .millisecond(0)
+        .isBefore(dayjs());
+    setTrip({ pickupDate: nextDate, ...(timeNowPast ? { pickupTime: '' } : {}) });
+  };
   const recurring = booking.trip.isRecurring;
   const recurringEndDateValue = toDayjsFromStoredDate(
     booking.trip.recurringEndDate
@@ -373,9 +410,8 @@ export function TripStep({ accountType }: TripStepProps) {
             <Box sx={{ mt: pxToRem(8) }}>
               <AppDatePickerPopover
                 value={pickupDateValue}
-                onChange={(d) =>
-                  setTrip({ pickupDate: d ? d.format('YYYY-MM-DD') : '' })
-                }
+                minDate={minPickupDate}
+                onChange={handlePickupDateChange}
                 format="MM/DD/YYYY"
                 buttonSx={{
                   width: '100%',
@@ -406,9 +442,11 @@ export function TripStep({ accountType }: TripStepProps) {
             >
               {TIME_SLOTS.map((t) => {
                 const isSelected = pickupTime === t;
+                const disabled = isTimeInPast(t);
                 return (
                   <ButtonBase
                     key={t}
+                    disabled={disabled}
                     onClick={() => setTrip({ pickupTime: t })}
                     sx={{
                       px: pxToRem(10),
@@ -421,6 +459,8 @@ export function TripStep({ accountType }: TripStepProps) {
                       color: isSelected ? '#FFFFFF' : '#0F172A',
                       fontSize: pxToRem(10),
                       fontWeight: 600,
+                      opacity: disabled ? 0.35 : 1,
+                      cursor: disabled ? 'not-allowed' : 'pointer',
                     }}
                   >
                     {t}
@@ -432,7 +472,13 @@ export function TripStep({ accountType }: TripStepProps) {
             <Box sx={{ mt: pxToRem(16) }}>
               <AppTimePickerPopover
                 value={pickupTime}
-                onChange={(t) => setTrip({ pickupTime: t })}
+                onChange={(t) => {
+                  if (isTimeInPast(t)) {
+                    toast.error('Please choose a pickup time in the future.');
+                    return;
+                  }
+                  setTrip({ pickupTime: t });
+                }}
               />
             </Box>
           </Box>

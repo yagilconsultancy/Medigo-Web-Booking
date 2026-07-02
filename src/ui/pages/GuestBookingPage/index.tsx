@@ -90,6 +90,17 @@ function GuestBookingFlowShell({ accountType }: { accountType: AccountType }) {
 
       if (!baseValid) return false;
 
+      // Pickup must not be in the past.
+      const scheduled = new Date(
+        `${booking.trip.pickupDate}T${booking.trip.pickupTime}`
+      );
+      if (
+        Number.isNaN(scheduled.getTime()) ||
+        scheduled.getTime() < Date.now()
+      ) {
+        return false;
+      }
+
       if (!booking.trip.isRecurring) return true;
 
       if (!booking.trip.recurringFrequency) return false;
