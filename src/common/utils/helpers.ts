@@ -81,9 +81,45 @@ export const pxToRem = (px: number): string => {
   return `${px / 16}rem`;
 };
 
-export const handleLogout = () => {
+// Kept in sync with `publicRoutes` in src/middleware.ts
+const PUBLIC_PATH_PREFIXES = [
+  '/login',
+  '/sign-up',
+  '/otp',
+  '/auth',
+  '/forgot-password',
+  '/reset-password',
+  '/activate',
+  '/guest',
+];
+
+export const isPublicPath = (path: string) =>
+  PUBLIC_PATH_PREFIXES.some((route) => path.startsWith(route));
+
+/**
+ * Removes every trace of the authenticated session without navigating.
+ */
+export const clearSession = () => {
   Cookies.remove('medi_auth');
   Cookies.remove('medi_refresh');
+
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.removeItem('access_token');
+  } catch {
+    // Ignore storage failures on logout cleanup.
+  }
+};
+
+export const handleLogout = () => {
+  clearSession();
+
+  if (typeof window === 'undefined') return;
+
+  // Guest and auth pages don't need a session, so don't bounce users off them.
+  if (isPublicPath(window.location.pathname)) return;
+
   window.location.href = `/login`;
 };
 

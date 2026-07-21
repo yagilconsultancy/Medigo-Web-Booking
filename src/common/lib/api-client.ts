@@ -7,8 +7,11 @@ import {
   getAuthToken,
   getRefreshToken,
   setAuthToken,
+  setRefreshToken,
   handleLogout,
 } from '../utils';
+import { ROUTES_SPEC } from '../constants';
+import type { ApiRefreshTokenResponse } from '../types';
 
 let apiClient: AxiosInstance | null = null;
 
@@ -17,6 +20,51 @@ const isRefreshRoute = (route?: string) => route && route.includes('/refresh');
 const isLogoutRoute = (route?: string) => route && route.includes('/logout');
 const isChangePasswordRoute = (route?: string) =>
   route && route.includes('/change-password');
+
+type QueuedRequest = {
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+};
+
+let isRefreshing = false;
+let failedQueue: QueuedRequest[] = [];
+
+const processQueue = (error: unknown, token?: string) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (token) {
+      resolve(token);
+    } else {
+      reject(error);
+    }
+  });
+  failedQueue = [];
+};
+
+/**
+ * Exchanges the refresh token for a new access token.
+ *
+ * Uses a bare axios call so it never re-enters the interceptor below, which
+ * would otherwise recurse when the refresh itself comes back 401.
+ */
+const requestNewAccessToken = async (baseURL: string, refreshToken: string) => {
+  const { data } = await axios.post<ApiRefreshTokenResponse>(
+    `${baseURL}${ROUTES_SPEC.refresh}`,
+    { refresh_token: refreshToken },
+    {
+      timeout: 60000,
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    }
+  );
+
+  if (!data?.success || !data?.data?.access_token) {
+    return null;
+  }
+
+  return data.data;
+};
 
 export const getApiClient = () => {
   if (apiClient) {
@@ -48,93 +96,81 @@ export const getApiClient = () => {
         _retry?: boolean;
       };
 
-      if (error.response && error.response.status === 401) {
-        // Don't intercept if the route is a login, refresh, or change-password route
-        if (
-          isLoginRoute(originalRequest?.url) ||
-          isRefreshRoute(originalRequest?.url) ||
-          isLogoutRoute(originalRequest?.url) ||
-          isChangePasswordRoute(originalRequest?.url)
-        ) {
+      if (error.response?.status !== 401) {
+        return Promise.reject(error);
+      }
+
+      // These endpoints carry their own credentials — a 401 from them is a
+      // real answer for the caller to handle, not an expired access token.
+      if (
+        isLoginRoute(originalRequest?.url) ||
+        isRefreshRoute(originalRequest?.url) ||
+        isLogoutRoute(originalRequest?.url) ||
+        isChangePasswordRoute(originalRequest?.url)
+      ) {
+        return Promise.reject(error);
+      }
+
+      // The retried request came back 401 too: the fresh token isn't good
+      // enough, so there is nothing left to try.
+      if (originalRequest._retry) {
+        handleLogout();
+        return Promise.reject(error);
+      }
+
+      const refreshToken = getRefreshToken();
+
+      if (!refreshToken) {
+        handleLogout();
+        return Promise.reject(error);
+      }
+
+      originalRequest._retry = true;
+
+      // A refresh is already in flight — wait for it instead of racing it,
+      // otherwise parallel 401s each burn a single-use refresh token.
+      if (isRefreshing) {
+        return new Promise<string>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+          }
+          return apiClient!(originalRequest);
+        });
+      }
+
+      isRefreshing = true;
+
+      try {
+        const tokens = await requestNewAccessToken(baseURL, refreshToken);
+
+        if (!tokens) {
+          processQueue(error);
+          handleLogout();
           return Promise.reject(error);
         }
 
-        // If this is a retry attempt that failed, logout
-        // if (originalRequest._retry) {
-        // handleLogout();
-        return Promise.reject(error);
-        // }
+        setAuthToken(tokens.access_token);
+        if (tokens.refresh_token) {
+          setRefreshToken(tokens.refresh_token);
+        }
 
-        // If we're already refreshing, queue this request
-        // if (isRefreshing) {
-        //   return new Promise((resolve, reject) => {
-        //     failedQueue.push({ resolve, reject });
-        //   })
-        //     .then(() => {
-        //       // Retry the original request with new token
-        //       const token = getAuthToken();
-        //       if (token && originalRequest.headers) {
-        //         originalRequest.headers.Authorization = `Bearer ${token}`;
-        //       }
-        //       return apiClient!(originalRequest);
-        //     })
-        //     .catch((err) => {
-        //       return Promise.reject(err);
-        //     });
-        // }
+        processQueue(null, tokens.access_token);
 
-        // // Mark that we're refreshing
-        // originalRequest._retry = true;
-        // isRefreshing = true;
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`;
+        }
 
-        // const refreshToken = getRefreshToken();
-
-        // if (!refreshToken) {
-        //   // No refresh token available, logout
-        //   isRefreshing = false;
-        //   handleLogout();
-        //   return Promise.reject(error);
-        // }
-
-        // try {
-        //   // Attempt to refresh the token
-        //   const response = await refreshTokenService({
-        //     refresh_token: refreshToken,
-        //   });
-
-        //   if (response.data.success && response.data.data?.access_token) {
-        //     const newToken = response.data.data.access_token;
-
-        //     // Update the stored token
-        //     setAuthToken(newToken);
-
-        //     // Update the failed request with new token
-        //     if (originalRequest.headers) {
-        //       originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        //     }
-
-        //     // Process the queue of failed requests
-        //     processQueue(null);
-
-        //     // Retry the original request
-        //     return apiClient!(originalRequest);
-        //   } else {
-        //     // Refresh failed, logout
-        //     processQueue(error);
-        //     handleLogout();
-        //     return Promise.reject(error);
-        //   }
-        // } catch (refreshError) {
-        //   // Refresh request failed, logout
-        //   processQueue(error);
-        //   handleLogout();
-        //   return Promise.reject(refreshError);
-        // } finally {
-        //   isRefreshing = false;
-        // }
+        return apiClient!(originalRequest);
+      } catch (refreshError) {
+        // Refresh token expired or revoked — the session is unrecoverable.
+        processQueue(refreshError);
+        handleLogout();
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
-
-      return Promise.reject(error);
     }
   );
 
