@@ -4,3 +4,4 @@ export * from './useAuthFlowsApi';
 export * from './useUsersMeApi';
 export * from './useRidesApi';
 export * from './useFareEstimateApi';
+export * from './useAccountDeletionApi';

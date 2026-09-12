@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import dayjs from 'dayjs';
 import {
+  businessDateTimeToIso,
   FareEstimateResponse,
   formatPrice,
   pxToRem,
@@ -49,13 +50,11 @@ export function ReviewStep({ accountType, onEditStep }: ReviewStepProps) {
   const { mutateAsync: createFareEstimate, isPending: isCreatingFareEstimate } =
     useFareEstimate();
 
-  const scheduledAtIso = useMemo(() => {
-    if (!booking.trip.pickupDate) return null;
-    const candidate = booking.trip.pickupTime
-      ? dayjs(`${booking.trip.pickupDate} ${booking.trip.pickupTime}`)
-      : dayjs(booking.trip.pickupDate);
-    return candidate.isValid() ? candidate.toISOString() : null;
-  }, [booking.trip.pickupDate, booking.trip.pickupTime]);
+  const scheduledAtIso = useMemo(
+    () =>
+      businessDateTimeToIso(booking.trip.pickupDate, booking.trip.pickupTime),
+    [booking.trip.pickupDate, booking.trip.pickupTime]
+  );
 
   const fareEstimatePayload = useMemo(() => {
     const pickup = booking.address.pickupCoordinates;

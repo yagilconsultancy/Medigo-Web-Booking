@@ -29,6 +29,11 @@ export const ROUTES_SPEC = {
 
   createPaymentIntent: `/${API_VERSION}/payments/mobile/payment-intent`,
 
+  // Public account deletion (the URL published on the Google Play listing).
+  requestAccountDeletion: `/${API_VERSION}/users/public/account-deletion/request`,
+  verifyAccountDeletion: `/${API_VERSION}/users/public/account-deletion/verify`,
+  resendAccountDeletionOtp: `/${API_VERSION}/users/public/account-deletion/resend-otp`,
+
   // Users (Me)
   getMyProfile: `/${API_VERSION}/users/me`,
   updateMyProfile: `/${API_VERSION}/users/me`,

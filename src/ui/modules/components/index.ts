@@ -33,3 +33,4 @@ export * from './ColorPicker';
 export * from './FormikColorPicker';
 export * from './BookingStepper';
 export * from './AppPhoneInput';
+export * from './AppLabel';

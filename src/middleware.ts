@@ -9,6 +9,9 @@ const publicRoutes = [
   '/reset-password',
   '/activate',
   '/guest',
+  // Published on the Google Play listing, so it has to open for anyone with no
+  // session at all — a redirect to /login here fails Play's review.
+  '/medigo-delete-account',
 ];
 
 export default async function middleware(req: NextRequest) {

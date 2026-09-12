@@ -12,6 +12,8 @@ import {
 import { AppLayout } from '../../modules/partials';
 import { HeaderHelpUser } from '../../modules/partials/AppHeader/ui/components';
 import {
+  businessDateTime,
+  businessDateTimeToIso,
   pxToRem,
   useAccountStore,
   usePaymentsApi,
@@ -91,13 +93,11 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
       if (!baseValid) return false;
 
       // Pickup must not be in the past.
-      const scheduled = new Date(
-        `${booking.trip.pickupDate}T${booking.trip.pickupTime}`
+      const scheduled = businessDateTime(
+        booking.trip.pickupDate,
+        booking.trip.pickupTime
       );
-      if (
-        Number.isNaN(scheduled.getTime()) ||
-        scheduled.getTime() < Date.now()
-      ) {
+      if (!scheduled || scheduled.valueOf() < Date.now()) {
         return false;
       }
 
@@ -129,13 +129,13 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
     if (activeStep === steps.length - 1) {
       setIsBookingRide(true);
 
-      // Build the scheduled_at ISO string from date + time
+      // Build the scheduled_at ISO string from date + time, reading the entry
+      // as business-zone wall-clock rather than the booker's local zone.
       const scheduledAt =
-        booking.trip.pickupDate && booking.trip.pickupTime
-          ? new Date(
-              `${booking.trip.pickupDate}T${booking.trip.pickupTime}`
-            ).toISOString()
-          : new Date().toISOString();
+        businessDateTimeToIso(
+          booking.trip.pickupDate,
+          booking.trip.pickupTime
+        ) ?? new Date().toISOString();
 
       const ridePayload: Record<string, any> = {
         ride_type: booking.vehicle.type ?? 'ambulatory',

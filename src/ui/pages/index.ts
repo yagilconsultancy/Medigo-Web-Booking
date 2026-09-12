@@ -19,3 +19,4 @@ export * from './GuestBookingPage';
 export * from './GuestRides';
 export * from './GuestBookingSuccessPage';
 export * from './GuestCheckoutPage';
+export * from './DeleteAccountPage';

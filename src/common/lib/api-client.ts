@@ -20,6 +20,14 @@ const isRefreshRoute = (route?: string) => route && route.includes('/refresh');
 const isLogoutRoute = (route?: string) => route && route.includes('/logout');
 const isChangePasswordRoute = (route?: string) =>
   route && route.includes('/change-password');
+/**
+ * Endpoints under `/users/public/` are deliberately unauthenticated (the
+ * account-deletion form is reachable straight off the Google Play listing).
+ * A 401 from one means the gateway is missing the public path, not that the
+ * caller's session expired — so don't attach a token to them and don't let
+ * their 401 log a signed-in rider out.
+ */
+const isPublicRoute = (route?: string) => route && route.includes('/public/');
 
 type QueuedRequest = {
   resolve: (token: string) => void;
@@ -106,7 +114,8 @@ export const getApiClient = () => {
         isLoginRoute(originalRequest?.url) ||
         isRefreshRoute(originalRequest?.url) ||
         isLogoutRoute(originalRequest?.url) ||
-        isChangePasswordRoute(originalRequest?.url)
+        isChangePasswordRoute(originalRequest?.url) ||
+        isPublicRoute(originalRequest?.url)
       ) {
         return Promise.reject(error);
       }
@@ -180,7 +189,8 @@ export const getApiClient = () => {
     if (
       isLoginRoute(config.url) ||
       isRefreshRoute(config.url) ||
-      isLogoutRoute(config.url)
+      isLogoutRoute(config.url) ||
+      isPublicRoute(config.url)
     ) {
       return config;
     }
