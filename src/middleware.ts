@@ -12,6 +12,9 @@ const publicRoutes = [
   // Published on the Google Play listing, so it has to open for anyone with no
   // session at all — a redirect to /login here fails Play's review.
   '/medigo-delete-account',
+  // A rider shares this link with family. It must open for anyone, with no
+  // login; the server only returns a limited read-only view.
+  '/track',
 ];
 
 export default async function middleware(req: NextRequest) {
