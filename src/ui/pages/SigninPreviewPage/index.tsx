@@ -51,21 +51,6 @@ function Welcome({ onLogin }: { onLogin: () => void }) {
   return (
     <main className={s.stage}>
       <div className={s.glow} aria-hidden />
-      <div className={s.skyline} aria-hidden>
-        {heights.map((h, i) => (
-          <i key={i} style={{ height: `${h}%` }} />
-        ))}
-      </div>
-      <div className={s.sign} aria-hidden>
-        <div className={s.plate} />
-        <div className={s.pole} />
-      </div>
-      <div className={s.road} aria-hidden>
-        <div className={s.lane} />
-      </div>
-      <div className={s.car}>
-        <MediGoLogo label="MediGo" />
-      </div>
       <div className={s.copy}>
         <h1 className={cx(s.title, s.rise, s.d1)}>Welcome to MediGo</h1>
         <p className={cx(s.tag, s.rise, s.d2)}>
@@ -94,6 +79,23 @@ function Welcome({ onLogin }: { onLogin: () => void }) {
         >
           Book as a guest
         </button>
+      </div>
+      <div className={s.scene} aria-hidden>
+        <div className={s.skyline}>
+          {heights.map((h, i) => (
+            <i key={i} style={{ height: `${h}%` }} />
+          ))}
+        </div>
+        <div className={s.sign}>
+          <div className={s.plate} />
+          <div className={s.pole} />
+        </div>
+        <div className={s.road}>
+          <div className={s.lane} />
+        </div>
+        <div className={s.car}>
+          <MediGoLogo label="MediGo" />
+        </div>
       </div>
       <div className={cx(s.foot, s.rise, s.d5)}>web.getmedigo.com</div>
     </main>
@@ -205,7 +207,7 @@ function SignIn() {
           text: 'continue_with',
           shape: 'rectangular',
           logo_alignment: 'center',
-          width: Math.min(400, googleSlot.current.offsetWidth || 400),
+          width: Math.min(340, googleSlot.current.offsetWidth || 340),
         });
       })
       .catch(() => {
