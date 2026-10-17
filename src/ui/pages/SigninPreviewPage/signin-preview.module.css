@@ -125,11 +125,13 @@
   animation: lane 1s var(--ease) both;
 }
 .car {
+  /* Shrinks on short screens so the vehicle never covers the buttons. */
+  --cw: clamp(200px, min(70vw, calc((62vh - 250px) * 2.08)), 540px);
   position: absolute;
-  width: min(540px, 70vw);
+  width: var(--cw);
   left: 50%;
   bottom: 28.5%;
-  margin-left: calc(min(540px, 70vw) / -2);
+  margin-left: calc(var(--cw) / -2);
   animation: drive 1s var(--ease) both;
 }
 .car svg {
@@ -147,7 +149,7 @@
 }
 .copy {
   position: absolute;
-  inset: 9vh 0 auto;
+  inset: min(9vh, 72px) 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -158,7 +160,7 @@
 .title {
   margin: 0;
   font-weight: 700;
-  font-size: clamp(32px, 5vw, 60px);
+  font-size: clamp(30px, min(5vw, 7vh), 60px);
   letter-spacing: -0.01em;
   line-height: 1.1;
 }
