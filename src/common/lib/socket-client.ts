@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { getAuthToken } from '../utils';
+import { getAuthToken, getGuestSessionId } from '../utils';
 
 // Socket.IO connection configuration
 const SOCKET_URL =
@@ -32,6 +32,7 @@ export const getTrackingSocket = (): Socket => {
     path: SOCKET_PATH,
     auth: {
       token: token,
+      guest_session_id: token ? undefined : getGuestSessionId(),
     },
     reconnection: true,
     reconnectionDelay: 1000,

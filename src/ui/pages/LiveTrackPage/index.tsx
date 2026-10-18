@@ -12,7 +12,7 @@ import type {
   ComputedRoute,
   TruckMarker,
 } from '../../modules/components/AppGoogleMap';
-import { pxToRem, getAuthToken, useChat } from '@/common';
+import { pxToRem, getAuthToken, getGuestSessionId, useChat } from '@/common';
 import type { MarkerPosition } from '@/common/types';
 import {
   DriverChatDrawer,
@@ -109,7 +109,7 @@ export function LiveTrackPage() {
 
     const socket = io(`${serverUrl}/tracking`, {
       path: socketPath,
-      auth: { token },
+      auth: { token, guest_session_id: token ? undefined : getGuestSessionId() },
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
