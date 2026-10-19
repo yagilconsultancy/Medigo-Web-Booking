@@ -4,6 +4,7 @@ import { Box, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import { useRouter } from 'next/navigation';
 import * as yup from 'yup';
+import { newPasswordRule } from '@/common/utils/passwordRule';
 import { toast } from 'sonner';
 import {
   AppButton,
@@ -26,10 +27,7 @@ const validationSchema = yup.object({
     .required(
       'Reset token is required. Please check your email for the token.'
     ),
-  newPassword: yup
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .required('New password is required'),
+  newPassword: newPasswordRule('New password is required'),
   confirmPassword: yup
     .string()
     .oneOf([yup.ref('newPassword')], 'Passwords must match')

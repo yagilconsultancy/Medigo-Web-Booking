@@ -184,8 +184,7 @@ export function RideHistoryAccordion({
       const paymentResult = await createPaymentIntent({
         amount,
         currency,
-        description:
-          rideDetail.special_instructions || 'MediGo booking payment',
+        description: 'MediGo booking payment',
         order_id: pendingPayment.rideId,
         metadata: {
           account_type: accountType,

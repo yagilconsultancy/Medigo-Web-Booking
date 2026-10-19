@@ -154,6 +154,12 @@ export function TrackSharedRidePage({ token }: { token: string }) {
           referrerPolicy: 'no-referrer',
         }
       );
+      // 429 (too many requests) or 408 (timeout) are temporary: keep the
+      // trip on screen, say we are retrying, and try again on the next tick.
+      if (response.status === 429 || response.status === 408) {
+        setRetrying(true);
+        return;
+      }
       if (response.status >= 400 && response.status < 500) {
         stoppedRef.current = true;
         setUnavailable(true);
