@@ -182,8 +182,7 @@ export function RideHistoryAccordion({
         session_id: sessionId,
         amount,
         currency,
-        description:
-          ridePayment?.specialInstructions || 'MediGo booking payment',
+        description: 'MediGo booking payment',
         order_id: pendingPayment.rideId,
         metadata: {
           account_type: 'guest',

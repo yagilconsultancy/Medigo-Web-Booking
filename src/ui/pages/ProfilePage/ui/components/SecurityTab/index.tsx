@@ -3,6 +3,7 @@
 import { Box, Divider, Paper, Typography } from '@mui/material';
 import { FormikProvider, useFormik } from 'formik';
 import * as Yup from 'yup';
+import { newPasswordRule } from '@/common/utils/passwordRule';
 import { useState } from 'react';
 import { pxToRem } from '@/common';
 import { useAuthFlowsApi } from '@/common/hooks/api/collection';
@@ -19,9 +20,7 @@ type SecurityFormValues = {
 
 const validationSchema = Yup.object({
   currentPassword: Yup.string().required('Current password is required'),
-  newPassword: Yup.string()
-    .min(8, 'Password must be at least 8 characters')
-    .required('New password is required'),
+  newPassword: newPasswordRule('New password is required'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('newPassword')], 'Passwords must match')
     .required('Confirm password is required'),

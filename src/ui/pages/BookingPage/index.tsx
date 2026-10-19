@@ -192,7 +192,7 @@ function BookingFlowShell({ accountType }: { accountType: AccountType }) {
       const paymentResult = await createPaymentIntent({
         amount,
         currency,
-        description: booking.trip.notes || 'MediGo booking payment',
+        description: 'MediGo booking payment',
         order_id: rideResult.id,
         metadata: {
           account_type: accountType,

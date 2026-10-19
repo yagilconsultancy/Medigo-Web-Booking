@@ -5,6 +5,7 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import { Box, Divider, MenuItem, Select, Typography } from '@mui/material';
 import { Form, Formik } from 'formik';
 import * as yup from 'yup';
+import { newPasswordRule } from '@/common/utils/passwordRule';
 import {
   AppButton,
   FormikAppPasswordField,
@@ -42,7 +43,7 @@ const individualSchema = yup.object({
     .string()
     .email('Enter a valid email address')
     .required('Email is required'),
-  password: yup.string().required('Password is required'),
+  password: newPasswordRule(),
 });
 
 const facilitySchema = yup.object({
@@ -52,7 +53,7 @@ const facilitySchema = yup.object({
     .string()
     .email('Enter a valid email address')
     .required('Email is required'),
-  password: yup.string().required('Password is required'),
+  password: newPasswordRule(),
 });
 
 export function SignUpPage() {

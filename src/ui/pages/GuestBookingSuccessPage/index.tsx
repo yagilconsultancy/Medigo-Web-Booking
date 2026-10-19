@@ -176,8 +176,7 @@ export function GuestBookingSuccessPage() {
       const paymentResult = await createPaymentIntent({
         amount,
         currency,
-        description:
-          rideDetail.special_instructions || 'MediGo booking payment',
+        description: 'MediGo booking payment',
         order_id: rideId,
         metadata: {
           account_type: accountType,

@@ -205,7 +205,7 @@ function GuestBookingFlowShell({ accountType }: { accountType: AccountType }) {
         session_id: sessionId,
         amount,
         currency,
-        description: booking.trip.notes || 'MediGo booking payment',
+        description: 'MediGo booking payment',
         order_id: rideResult.id,
         metadata: {
           account_type: accountType,
