@@ -7,8 +7,7 @@ on:
   pull_request:
     branches:
       - '**'
-  # Lets the deploy be re-run from the Actions tab without a new commit
-  # (used to switch the sign-in preview on or off).
+  # Lets the deploy be re-run from the Actions tab without a new commit.
   workflow_dispatch:
 
 jobs:
@@ -42,11 +41,6 @@ jobs:
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           NEXT_PUBLIC_TAWK_CHAT_ID: ${{ secrets.NEXT_PUBLIC_TAWK_CHAT_ID }}
           NEXT_PUBLIC_CLOUD_FRONT_BASE_URL: ${{ secrets.NEXT_PUBLIC_CLOUD_FRONT_BASE_URL }}
-          NEXT_PUBLIC_SIGNIN_PREVIEW: ${{ vars.SIGNIN_PREVIEW }}
-          NEXT_PUBLIC_SIGNIN_PREVIEW_UNTIL: ${{ vars.SIGNIN_PREVIEW_UNTIL }}
-          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
-          NEXT_PUBLIC_APPLE_SERVICE_ID: ${{ vars.APPLE_SERVICE_ID }}
-          NEXT_PUBLIC_APPLE_REDIRECT_URI: ${{ vars.APPLE_REDIRECT_URI }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -83,11 +77,6 @@ jobs:
             echo "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}" >> .env
             echo "NEXT_PUBLIC_TAWK_CHAT_ID=${{ secrets.NEXT_PUBLIC_TAWK_CHAT_ID }}" >> .env
             echo "NEXT_PUBLIC_CLOUD_FRONT_BASE_URL=${{ secrets.NEXT_PUBLIC_CLOUD_FRONT_BASE_URL }}" >> .env
-            echo "NEXT_PUBLIC_SIGNIN_PREVIEW=${{ vars.SIGNIN_PREVIEW }}" >> .env
-            echo "NEXT_PUBLIC_SIGNIN_PREVIEW_UNTIL=${{ vars.SIGNIN_PREVIEW_UNTIL }}" >> .env
-            echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID }}" >> .env
-            echo "NEXT_PUBLIC_APPLE_SERVICE_ID=${{ vars.APPLE_SERVICE_ID }}" >> .env
-            echo "NEXT_PUBLIC_APPLE_REDIRECT_URI=${{ vars.APPLE_REDIRECT_URI }}" >> .env
             echo "NODE_ENV=production" >> .env
 
             # Build the project
