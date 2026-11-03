@@ -13,7 +13,11 @@ import {
 } from '../../modules/components';
 import { AppLayout } from '../../modules/partials';
 import { HeaderBackButton } from '../../modules/partials/AppHeader/ui/components';
-import { pxToRem, useAuthFlowsApi } from '../../../common';
+import {
+  FORGOT_PASSWORD_USER_ID_KEY,
+  pxToRem,
+  useAuthFlowsApi,
+} from '../../../common';
 
 type ResetPasswordFormValues = {
   token: string;
@@ -24,9 +28,9 @@ type ResetPasswordFormValues = {
 const validationSchema = yup.object({
   token: yup
     .string()
-    .required(
-      'Reset token is required. Please check your email for the token.'
-    ),
+    .trim()
+    .required('Reset token is required. Please check your email for the token.')
+    .length(6, 'The reset token is 6 characters. Please check your email.'),
   newPassword: newPasswordRule('New password is required'),
   confirmPassword: yup
     .string()
@@ -45,12 +49,33 @@ export function ResetPasswordPage() {
   };
 
   const handleSubmit = async (values: ResetPasswordFormValues) => {
+    let userId: string | null = null;
+    try {
+      userId = sessionStorage.getItem(FORGOT_PASSWORD_USER_ID_KEY);
+    } catch {
+      userId = null;
+    }
+
+    if (!userId) {
+      toast.error(
+        'This reset session has expired. Please request a new reset token.'
+      );
+      router.push('/forgot-password');
+      return;
+    }
+
     const success = await resetPassword({
-      token: values.token,
+      user_id: userId,
+      code: values.token.trim(),
       new_password: values.newPassword,
     });
 
     if (success) {
+      try {
+        sessionStorage.removeItem(FORGOT_PASSWORD_USER_ID_KEY);
+      } catch {
+        // nothing to clean up
+      }
       toast.success(
         'Password reset successfully. Please sign in with your new password.'
       );

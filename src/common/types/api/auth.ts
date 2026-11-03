@@ -64,7 +64,8 @@ export type ApiForgotPasswordPayload = {
 };
 
 export type ApiResetPasswordPayload = {
-  token: string;
+  user_id: string;
+  code: string;
   new_password: string;
 };
 

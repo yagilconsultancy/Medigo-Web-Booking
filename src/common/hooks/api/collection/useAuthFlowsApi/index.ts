@@ -22,6 +22,7 @@ import type {
   ApiVerifyOtpPayload,
 } from '../../../../types';
 import {
+  FORGOT_PASSWORD_USER_ID_KEY,
   REGISTER_ACCOUNT_KEY,
   REGISTER_USER_ID_KEY,
 } from '../../../../constants';
@@ -194,7 +195,18 @@ export const useAuthFlowsApi = () => {
       () => doForgotPassword.mutateAsync(payload),
       async (response) => {
         const responseData = response.data;
-        if (responseData.success) return true;
+        if (responseData.success) {
+          // The reset step needs this id together with the emailed code.
+          const userId = responseData.data?.user_id;
+          if (userId && typeof window !== 'undefined') {
+            try {
+              sessionStorage.setItem(FORGOT_PASSWORD_USER_ID_KEY, userId);
+            } catch {
+              // storage unavailable: the reset page asks for a new code
+            }
+          }
+          return true;
+        }
         toast.error(extractResponseErrors(responseData));
         return false;
       },
